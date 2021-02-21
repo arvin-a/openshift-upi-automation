@@ -124,6 +124,5 @@ Update the domain name of the nodes to match your domain
 
 ```Shell
 cd src/ansible
-ansible-playbook playbooks/openshift-O^3-cluster-deploy.yaml -i `pwd`/vars/tenant1/inventory -e config=`pwd`/vars/tenant1/main.yaml
-
+ansible-playbook playbooks/openshift-O^3-cluster-deploy.yaml -i `pwd`/vars/O^3/inventory -e config=`pwd`/vars/O^3/main.yaml
 ```
