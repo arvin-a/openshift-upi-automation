@@ -79,6 +79,5 @@ If you will be installing OCS as a storage provider in your cluster, you need to
 
 ```Shell
 cd ocp-upi/src/ansible
-ansible-playbook playbooks/openshift-libvirt-cluster-deploy.yaml -i `pwd`/vars/tenant1/inventory -e config=`pwd`/vars/tenant1/main.yaml
-
+ansible-playbook playbooks/openshift-libvirt-cluster-deploy.yaml -i `pwd`/vars/libvirt/inventory -e config=`pwd`/vars/libvirt/main.yaml
 ```
