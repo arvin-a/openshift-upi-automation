@@ -88,7 +88,7 @@ Update the following variables
 
 <b>http_base_url</b> - The base URL of your web-server. Make sure you don't have an / at the end
 
-### <b>src/ansible/vars/tenant1/vars.yaml</b>
+### <b>src/ansible/vars/O^3/vars.yaml</b>
 
 <b>base_domain</b> - The base domain of your cluster.
 
