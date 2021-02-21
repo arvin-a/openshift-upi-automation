@@ -1,0 +1,122 @@
+# Run sample
+
+# cd to ansible directory
+# ansible-playbook playbooks/openshift-O^3-cluster-deploy.yaml -i `pwd`/vars/O^3/inventory -e config=`pwd`/vars/O^3/main.yaml
+
+#### Options
+# --skip-tags pre-deploy
+# --tags openshift-install-time-operations,openshift-auth-provider
+
+
+- name: Load configs
+  hosts: all:localhost
+  connection: local
+  roles:
+    - ansible-config-load
+  tags:
+    - always
+
+- name: Setup Staging Directory
+  hosts: localhost
+  connection: local
+  roles:
+    - staging-dir-setup
+  tags:
+    - staging-dir-setup
+    - pre-deploy
+
+- name: Download Artifacts
+  hosts: localhost
+  connection: local
+  roles:
+    - openshift-download-artifacts
+  tags:
+    - openshift-download-artifacts
+    - pre-deploy
+
+- name: Creat OpenShift manifest
+  hosts: localhost
+  connection: local
+  roles:
+    - openshift-create-manifest
+  tags:
+    - openshift-create-manifest
+
+
+- name: Create OpenShift iginition
+  hosts: localhost
+  connection: local
+  roles:
+    - openshift-iginition-create
+  tags:
+    - openshift-iginition
+
+- name: Upload bootstrap ignition to webserver
+  hosts: localhost
+  connection: local
+  roles:
+    - openshift-iginition-bootstrap-upload-to-webserver
+  tags:
+    - openshift-iginition
+    
+- name: Overwrite bootstrap ignition with ignition pointer
+  hosts: localhost
+  connection: local
+  roles:
+    - openshift-iginition-update
+  tags:
+    - openshift-iginition
+
+
+- name: Setup Project on Infra OCP cluster for O^3 cluster
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ infra_cluster_kubeconfig }}"
+  roles:
+    - ozone-setup-project-on-infra-ocp
+  tags:
+    - ozone-setup-project-on-infra-ocp
+
+
+- name: Deploy VMs for O^3 cluster nodes
+  hosts: bootstrap:control:worker
+  connection: local
+  gather_facts: false
+  environment:
+    KUBECONFIG: "{{ infra_cluster_kubeconfig }}"
+  roles:
+    - ozone-deploy-vm
+  tags:
+    - ozone-deploy-vm
+    - deploy
+
+
+- name: OCP install time operations
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - openshift-install-time-operations
+  tags:
+    - openshift-install-time-operations
+
+
+- name: Output kubeadmin password
+  hosts: localhost
+  connection: local
+  roles:
+    - openshift-show-admin-credentials
+  tags:
+    - openshift-show-admin-credentials
+
+# - name: Add HTPasswd auth provider
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - openshift-auth-provider
+#   tags:
+#     - openshift-auth-provider

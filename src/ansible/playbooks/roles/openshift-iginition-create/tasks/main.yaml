@@ -1,0 +1,22 @@
+---
+
+- name: Run OCP Ignition Configs
+  shell:
+    chdir: "{{ staging_dir }}"
+    cmd: "{{ staging_dir }}/openshift-install create ignition-configs --dir {{ ocp_install_dir }}"
+
+- name: Setup Kubeconfig location
+  file:
+    state: directory
+    path: "{{ kubeconfig_dir }}"
+    group: "wheel"
+    mode: "0660"
+    recurse: yes
+
+- name: Copy kubeconfig to Kubeconfig dir
+  copy:
+    src: "{{ ocp_install_dir }}/auth/kubeconfig"
+    dest: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
+    group: "wheel"
+    mode: "0661"
+

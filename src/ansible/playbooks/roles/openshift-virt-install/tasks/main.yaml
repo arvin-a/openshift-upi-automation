@@ -1,0 +1,47 @@
+---
+
+- name: Apply OpenShift Virtualization NS and OG yaml
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ lookup('template', '01-cnv-ns-og.yaml') }}"
+
+- name: sleep for 5 seconds
+  wait_for:
+    timeout: 5
+
+  
+- name: Apply OpenShift Virtualization Subscription yaml
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ lookup('template', '02-cnv-sub.yaml') }}"
+
+- name: sleep for 20 seconds
+  wait_for:
+    timeout: 20
+
+- name: Wait until OpenShift Virtualization Operator installation has succeeded
+  shell:
+    cmd: oc get csv $(oc get subscriptions.operators.coreos.com hco-operatorhub -n openshift-cnv -o=jsonpath='{.status.currentCSV}') -n openshift-cnv -o=jsonpath='{.status.phase}'
+  register: result
+  until: result.stdout == "Succeeded"
+  retries: 100
+  delay: 5
+
+
+- name: Apply hyperconverged cluster yaml
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ lookup('template', '03-cnv-hc.yaml') }}"
+
+- name: sleep for 30 seconds
+  wait_for:
+    timeout: 30
+
+
+- name: Wait until OpenShift Virtualization hyperconverged cluster installation has succeeded
+  shell:
+    cmd: oc get hyperconverged kubevirt-hyperconverged -n openshift-cnv -o=jsonpath='{.status.conditions[?(@.type=="Available")].status}'
+  register: result
+  until: result.stdout == "True"
+  retries: 100
+  delay: 5

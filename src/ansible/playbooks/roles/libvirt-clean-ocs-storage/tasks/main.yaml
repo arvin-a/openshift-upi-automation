@@ -1,0 +1,11 @@
+---
+
+- name: Check to see if OCS path is valid
+  ansible.builtin.stat:
+    path: "{{ ocs_disk_path }}"
+  register: p
+
+- name: Remove OCS storage directories
+  shell: |
+    rm -rf {{ ocs_disk_path }}/* &> /dev/null
+  when: p.stat.isdir is defined and p.stat.isdir

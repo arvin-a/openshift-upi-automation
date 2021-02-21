@@ -1,0 +1,10 @@
+---
+- name: Remove staging folder if exists
+  file:
+    state: absent
+    path: "{{ staging_dir }}"
+
+- name: Create staging folder
+  file:
+    state: directory
+    path: "{{ staging_dir }}"

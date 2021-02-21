@@ -1,0 +1,10 @@
+---
+- include_vars:
+    file: "{{ config }}"
+  run_once: true
+
+- include_vars:
+    file: "{{ item }}"
+  loop: "{{ configs }}"
+  run_once: true
+  

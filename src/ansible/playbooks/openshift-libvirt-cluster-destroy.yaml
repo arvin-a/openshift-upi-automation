@@ -1,0 +1,50 @@
+# Run sample
+
+# cd to ansible directory
+
+# ansible-playbook playbooks/openshift-libvirt-cluster-destroy.yaml -i `pwd`/vars/libvirt/inventory -e config=`pwd`/vars/libvirt/main.yaml
+
+#### Options
+# --skip-tags pre-deploy
+# --tags openshift-install-time-operations,openshift-auth-provider
+
+
+- name: Load configs
+  hosts: all:localhost
+  connection: local
+  roles:
+    - ansible-config-load
+  tags:
+    - always
+
+# - name: Remove OCP Virtualization
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - openshift-virt-uninstall
+#   tags:
+#     - openshift-virt-uninstall
+
+
+- name: Remove libvirt Cluster VMs
+  hosts: localhost
+  connection: local
+  roles:
+    - libvirt-remove-cluster
+  tags:
+    - libvirt-remove-cluster
+
+
+
+- name: Remove libvirt Cluster VMs
+  hosts: worker
+  connection: local
+  roles:
+    - libvirt-clean-ocs-storage
+  tags:
+    - libvirt-clean-ocs-storage
+  
+
+

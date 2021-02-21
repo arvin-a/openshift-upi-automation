@@ -1,0 +1,4 @@
+---
+configs:
+- "{{ playbook_dir }}/../vars/common.yaml"
+- "{{ playbook_dir }}/../vars/libvirt/vars.yaml"

@@ -1,0 +1,34 @@
+---
+
+- name: remove OCP install folder
+  file:
+    state: absent
+    path: "{{ ocp_install_dir }}"
+
+
+- name: Create OCP install folder
+  file:
+    state: directory
+    path: "{{ ocp_install_dir }}"
+
+
+- name: Process OCP install config template
+  template: 
+    src: install-config.yaml
+    dest: "{{ item }}"
+  with_items:
+    - "{{ ocp_install_dir }}"
+    - "{{ staging_dir }}"
+
+
+- name: Create OCP manifests
+  shell:
+    chdir: "{{ staging_dir }}"
+    cmd: "{{ staging_dir }}/openshift-install create manifests --dir {{ ocp_install_dir }}"
+
+# Separate partition for ETCD for better performance
+- name: Process machine config for disk partitioning
+  template: 
+    src: 98-etcd-partition.yaml
+    dest: "{{ ocp_install_dir }}/manifests"
+  when: platform == "O^3"

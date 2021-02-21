@@ -1,0 +1,89 @@
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachine
+metadata:
+  annotations:
+    kubevirt.io/latest-observed-api-version: v1alpha3
+    kubevirt.io/storage-observed-api-version: v1alpha3
+    name.os.template.kubevirt.io/rhel8.3: Red Hat Enterprise Linux 8.0 or higher
+  name: bootstrap
+  namespace: {{ ocp_cluster_name }}
+  labels:
+    app: bootstrap
+    os.template.kubevirt.io/rhel8.3: 'true'
+    vm.kubevirt.io/template: rhel8-server-large-v0.11.3
+    vm.kubevirt.io/template.namespace: openshift
+    vm.kubevirt.io/template.revision: '1'
+    vm.kubevirt.io/template.version: v0.12.3
+    workload.template.kubevirt.io/server: 'true'
+spec:
+  dataVolumeTemplates:
+    - apiVersion: cdi.kubevirt.io/v1alpha1
+      kind: DataVolume
+      metadata:
+        name: rhcos-bootstrap-disk-0
+      spec:
+        pvc:
+          accessModes:
+            - {{ infra_cluster_storage_access_mode }}
+          resources:
+            requests:
+              storage: 120Gi
+          storageClassName: {{ infra_cluster_storage_class_name }}
+          volumeMode: {{ infra_cluster_storage_volume_mode }}
+        source:
+          pvc:
+            name: rhcos-dv
+            namespace: {{ ocp_cluster_name }}
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: bootstrap
+        kubevirt.io/size: large
+        os.template.kubevirt.io/rhel8.3: 'true'
+        vm.kubevirt.io/name: bootstrap
+        workload.template.kubevirt.io/server: 'true'
+    spec:
+      domain:
+        cpu:
+          cores: 4
+          sockets: 1
+          threads: 1
+        devices:
+          autoattachPodInterface: false
+          disks:
+            - disk:
+                bus: virtio
+              name: cloudinitdisk
+            - bootOrder: 1
+              disk:
+                bus: virtio
+              name: disk-0
+          interfaces:
+            - bridge: {}
+              macAddress: '02:00:00:43:7a:2c'
+              model: virtio
+              name: nic-0
+          networkInterfaceMultiqueue: true
+          rng: {}
+        machine:
+          type: pc-q35-rhel8.2.0
+        resources:
+          requests:
+            memory: 16Gi
+            cpu: "4"
+      evictionStrategy: LiveMigrate
+      hostname: bootstrap
+      networks:
+        - multus:
+            networkName: {{ infra_cluster_bridge_name }}
+          name: nic-0
+      terminationGracePeriodSeconds: 180
+      volumes:
+        - dataVolume:
+            name: rhcos-bootstrap-disk-0
+          name: disk-0
+        - cloudInitConfigDrive:
+            secretRef:
+              name: bootstrap-ign
+          name: cloudinitdisk

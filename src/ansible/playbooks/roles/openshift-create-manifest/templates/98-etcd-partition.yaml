@@ -1,0 +1,35 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: master
+  name: 98-etcd-partition
+spec:
+  config:
+    ignition:
+      version: 3.1.0
+    storage:
+      disks:
+      - device: /dev/vdc
+        partitions:
+        - sizeMiB: 0
+          startMiB: 0
+          label: etcd
+      filesystems:
+        - path: /var/lib/etcd
+          device: /dev/disk/by-partlabel/etcd
+          format: xfs
+          wipeFilesystem: true
+    systemd:
+      units:
+        - name: var-lib-etcd.mount
+          enabled: true
+          contents: |
+            [Unit]
+            Before=local-fs.target
+            [Mount]
+            Where=/var/lib/etcd
+            What=/dev/disk/by-partlabel/etcd
+            [Install]
+            WantedBy=local-fs.target
+            

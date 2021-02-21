@@ -1,0 +1,57 @@
+### DO NOT ALTER THE VALUES IN THIS SECTION ################################################
+
+# OCP installer and client download URls.
+ocp_bin_base_url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp"
+ocp_bin_release_url: "{{ ocp_bin_base_url }}/{{ ocp_bin_channel }}-{{ ocp_bin_version }}"
+ocp_bin_client_archive_name: "openshift-client-linux.tar.gz"
+ocp_bin_installer_archive_name: "openshift-install-linux.tar.gz"
+ocp_bin_client_url: "{{ ocp_bin_release_url }}/{{ ocp_bin_client_archive_name }}"
+ocp_bin_installer_url: "{{ ocp_bin_release_url }}/{{ ocp_bin_installer_archive_name }}"
+
+# RHCOS images base URLs.
+rhcos_bin_version: "latest"
+rhcos_bin_base_url: "https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos"
+rhcos_bin_release_url: "{{ rhcos_bin_base_url }}/{{ ocp_bin_version }}/{{ rhcos_bin_version }}"
+
+## RHCOS image to be used for OpenShift Virtualization
+kubevirt_rhcos_bin_archive_name: "rhcos-openstack.x86_64.qcow2.gz"
+kubevirt_rhcos_bin_file_name: "rhcos-openstack.x86_64.qcow2"
+
+## RHCOS image to be used for KVM 
+libvirt_rhcos_bin_archive_name: "rhcos-qemu.x86_64.qcow2.gz"
+libvirt_rhcos_bin_file_name: "rhcos-qemu.x86_64.qcow2"
+
+# OCP install directory
+ocp_install_dir: "{{ staging_dir }}/ocp-install"
+
+### bootstrap VM vars
+bootstrap_ign: "{{ ocp_install_dir }}/bootstrap-pointer.ign"
+bootstrap_type: "bootstrap"
+
+############################################################################################
+
+# Base directory for staging. This is where all the OCP binaries will be downloaded to
+staging_base_dir: /tmp/ansible
+
+# web server
+http_file_server_base_path: "/var/www/html" # Change this to the base path of your webserver"
+http_file_server_path: "{{ http_file_server_base_path }}/{{ ocp_cluster_name }}"
+
+# Change this to the base url of your webserver, make sure you don't have a / at the end
+http_base_url: "http://t640.arvhomelab.com:8080"
+
+# kubeconfig folder, location of your kubeconfig files for your infra and tenant cluster
+kubeconfig_dir: "/kubeconfig"
+
+
+## RHCOS SSH key <- will need this to ssh into your rhcos nodes 
+rhcos_ssh_pub_key: ssh-rsa AAAAB3Nz...
+
+# If you have private registry that you want the cluster to trust add your cert here
+# If no set it to additional_trust_bundle: ""
+additional_trust_bundle: |
+  -----BEGIN CERTIFICATE-----
+  -----END CERTIFICATE-----
+
+## pull secret for the cluster
+pull_secret: '{"auths":{"cloud.openshift.com":{"auth":"b3BlbnNoaWZ0LXJ...}}}'

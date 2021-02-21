@@ -1,0 +1,13 @@
+{
+    "ignition": {
+        "config": {
+            "merge": [
+                {
+                    "source": "{{ http_base_url }}/{{ ocp_cluster_name }}/bootstrap.ign"
+                }
+            ]
+        },
+        "security": {},
+        "version": "3.1.0"
+    }
+}

@@ -1,0 +1,6 @@
+---
+
+- name: Apply vm yaml
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ lookup('template', 'rhcos-vm.yaml') }}"

@@ -1,0 +1,9 @@
+---
+
+- name: Remove Bootstrap VM
+  shell: |
+    virsh destroy bootstrap &> /dev/null
+    virsh undefine bootstrap &> /dev/null
+
+
+

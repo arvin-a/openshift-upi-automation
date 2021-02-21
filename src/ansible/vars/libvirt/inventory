@@ -1,0 +1,13 @@
+[bootstrap]
+bootstrap.ocp-infra1.arvhomelab.com custom_vm_type='bootstrap' custom_vm_name='bootstrap' custom_mac='02:00:00:16:94:d4'
+
+[control]
+control1.ocp-infra1.arvhomelab.com custom_vm_type='master' custom_vm_name='control1' custom_mac='02:00:00:be:30:19'
+control2.ocp-infra1.arvhomelab.com custom_vm_type='master' custom_vm_name='control2' custom_mac='02:00:00:3d:5f:2b'
+control3.ocp-infra1.arvhomelab.com custom_vm_type='master' custom_vm_name='control3' custom_mac='02:00:00:03:ff:8f'
+
+[worker]
+worker1.ocp-infra1.arvhomelab.com custom_vm_type='worker' custom_vm_name='worker1' custom_mac='02:00:00:a1:13:f3' ocs_disk_path='/storage/p4600-2.1'
+worker2.ocp-infra1.arvhomelab.com custom_vm_type='worker' custom_vm_name='worker2' custom_mac='02:00:00:94:e8:8e' ocs_disk_path='/storage/p4600-2.2'
+worker3.ocp-infra1.arvhomelab.com custom_vm_type='worker' custom_vm_name='worker3' custom_mac='02:00:00:11:51:f5' ocs_disk_path='/storage/p4600-2.3'
+

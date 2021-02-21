@@ -1,0 +1,22 @@
+---
+
+- name: Wait for bootstrap completion
+  shell:
+    cmd: "{{ staging_dir }}/openshift-install wait-for bootstrap-complete --dir {{ ocp_install_dir }}"
+
+
+- name: Approve certs
+  vars: 
+    worker_host_count: "{{ groups['worker'] | length }}" 
+  shell: |
+    oc get csr -o name | xargs oc adm certificate approve &> /dev/null
+    oc get nodes | grep worker | wc -l
+  register: result
+  until: result.stdout == worker_host_count
+  retries: 100
+  delay: 15
+
+
+- name: Wait for installation completion
+  shell:
+    cmd: "{{ staging_dir }}/openshift-install wait-for install-complete --dir {{ ocp_install_dir }}"

@@ -1,0 +1,180 @@
+# Run sample
+
+# cd to ansible directory
+
+# sudo ansible-playbook playbooks/openshift-libvirt-cluster-deploy.yaml -i `pwd`/vars/libvirt/inventory -e config=`pwd`/vars/libvirt/main.yaml
+
+#### Options
+# --skip-tags pre-deploy
+# --tags openshift-install-time-operations,openshift-auth-provider
+
+
+- name: Load configs
+  hosts: all:localhost
+  connection: local
+  roles:
+    - ansible-config-load
+  tags:
+    - always
+
+- name: Setup Staging Directory
+  hosts: localhost
+  connection: local
+  roles:
+    - staging-dir-setup
+  tags:
+    - staging-dir-setup
+    - pre-deploy
+
+- name: Download Artifacts
+  hosts: localhost
+  connection: local
+  roles:
+    - openshift-download-artifacts
+  tags:
+    - openshift-download-artifacts
+    - pre-deploy
+
+- name: Create OpenShift manifest
+  hosts: localhost
+  connection: local
+  roles:
+    - openshift-create-manifest
+  tags:
+    - openshift-create-manifest
+
+
+- name: Create OpenShift iginition
+  hosts: localhost
+  connection: local
+  roles:
+    - openshift-iginition-create
+  tags:
+    - openshift-iginition
+
+- name: Upload bootstrap ignition to webserver
+  hosts: localhost
+  connection: local
+  roles:
+    - openshift-iginition-bootstrap-upload-to-webserver
+  tags:
+    - openshift-iginition
+    
+- name: Overwrite bootstrap ignition with ignition pointer
+  hosts: localhost
+  connection: local
+  roles:
+    - openshift-iginition-update
+  tags:
+    - openshift-iginition
+    
+
+- name: Setup libvirt VM image
+  hosts: localhost
+  connection: local
+  roles:
+    - libvirt-setup-vm-image
+  tags:
+    - libvirt-setup-vm-image
+    - lbvirt-setup
+
+- name: Deploy libvirt Bootstrap VM
+  hosts: bootstrap
+  connection: local
+  roles:
+    - libvirt-deploy-vms
+  tags:
+    - libvirt-deploy-vms
+
+
+- name: Deploy libvirt Control VMs
+  hosts: control
+  connection: local
+  roles:
+    - libvirt-deploy-vms
+  tags:
+    - libvirt-deploy-vms
+
+- name: Deploy libvirt Worker VMs
+  hosts: worker
+  connection: local
+  roles:
+    - libvirt-deploy-vms
+  tags:
+    - libvirt-deploy-vms
+
+
+- name: OCP install time operations
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - openshift-install-time-operations
+  tags:
+    - openshift-install-time-operations
+
+
+- name: Remove Bootstrap VM
+  hosts: localhost
+  connection: local
+  roles:
+    - libvirt-remove-bootstrap
+  tags:
+    - libvirt-remove-bootstrap
+
+- name: Output kubeadmin password
+  hosts: localhost
+  connection: local
+  roles:
+    - openshift-show-admin-credentials
+  tags:
+    - openshift-show-admin-credentials
+   
+
+# - name: Add HTPasswd auth provider
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - openshift-auth-provider
+#   tags:
+#     - openshift-auth-provider
+
+
+- name: Install OCS
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: openshift-ocs-install
+      when: ocs_install == True
+  tags:
+    - openshift-ocs-install
+
+
+# - name: Install OpenShift Virtualization
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - openshift-virt-install
+#   tags:
+#     - openshift-virt-install
+
+
+# - name: Create network bridge
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - openshift-create-bridge
+#   tags:
+#     - openshift-create-bridge
+
+
+

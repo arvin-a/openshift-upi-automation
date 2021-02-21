@@ -1,0 +1,15 @@
+---
+# If you decide to add this to the playbook, make sure to update the htpasswd file with your own credentials. You would also need to update the cluster admin task at the end of this role to reflect the user you want to make cluster admin
+
+- name: Create htpasswd secret
+  shell:
+    cmd: "oc create secret generic htpass-secret --from-file=htpasswd={{ role_path }}/files/users.htpasswd -n openshift-config"
+
+- name: Create HTPasswd oauth provider
+  shell:
+    cmd: "oc apply -f {{ role_path }}/files/htpasswd-oauth.yaml"
+
+
+- name: Make users cluster admin
+  shell: |
+    oc adm policy add-cluster-role-to-user cluster-admin arvin &> /dev/null

@@ -1,0 +1,56 @@
+---
+
+- name: Define temp dir for downloading artifacts
+  set_fact:
+    artifact_download_dir: "{{ staging_dir }}/temp"
+
+- name: Create artifacts folder
+  file:
+    state: directory
+    path: "{{ artifact_download_dir }}"
+
+
+
+#### Get OC CLI
+- name: Download OC CLI archive
+  get_url:
+    url: "{{ ocp_bin_client_url }}"
+    dest: "{{ artifact_download_dir }}"
+
+- name: Extract OC CLI archive
+  unarchive:
+    src: "{{ artifact_download_dir }}/{{ ocp_bin_client_archive_name }}"
+    dest: "{{ artifact_download_dir }}"
+
+- name: Copy OC CLI to /usr/bin
+  copy:
+    src: "{{ artifact_download_dir }}/oc"
+    dest: /usr/bin
+    mode: '0755'
+  become: yes
+
+
+
+#### Get OCP Installer
+- name: Download OCP Installer archive
+  get_url:
+    url: "{{ ocp_bin_installer_url }}"
+    dest: "{{ artifact_download_dir }}"
+
+- name: Extract OCP Installer archive
+  unarchive:
+    src: "{{ artifact_download_dir }}/{{ ocp_bin_installer_archive_name }}"
+    dest: "{{ staging_dir }}"
+
+
+#### Get RHCOS Image
+- name: Download RHCOS archive
+  get_url:
+    url: "{{ rhcos_bin_qcow_url }}"
+    dest: "{{ staging_dir }}"
+
+# using gunzip since unarchive doesn't seem to be able to handle .gz
+- name: Unzip RHCOS archive
+  shell:
+    chdir: "{{ staging_dir }}"
+    cmd: "gunzip  {{ staging_dir }}/{{ rhcos_bin_archive_name }}"

@@ -1,0 +1,14 @@
+---
+
+- name: Get kubeadmin password
+  shell:
+    cmd: "cat {{ ocp_install_dir }}/auth/kubeadmin-password"
+  register: kubeadmin_pass
+
+- name: Show kubeadmin password
+  debug: 
+    msg: 
+      - "---------- Credentials ----------"
+      - "kubeadmin"
+      - "{{ kubeadmin_pass.stdout }}"
+      - "---------------------------------"  

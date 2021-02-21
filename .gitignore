@@ -1,0 +1,7 @@
+ocp-install
+openshift-install
+*qcow2*
+**/temp
+.ansible
+*.arv
+update-bastion.sh

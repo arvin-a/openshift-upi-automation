@@ -1,0 +1,39 @@
+---
+- name: Process all templates
+  template:
+    src: "{{ item }}"
+    dest: "{{ staging_dir }}"
+  with_fileglob:
+    - ../templates/*
+
+- name: Create Namespace
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ lookup('template', 'namespace.yaml') }}"
+
+
+- name: Apply Network Attachment Definition
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ lookup('template', 'bridge-nad.yaml') }}"
+
+
+- name: Create secrets from Ignition files
+  command: oc create secret generic {{ item }}-ign --from-file=userdata={{ ocp_install_dir }}/{{ item }}.ign -n {{ ocp_cluster_name }}
+  loop:
+    - master
+    - worker
+
+- name: Create bootstrap secrets from Ignition file
+  command: oc create secret generic bootstrap-ign --from-file=userdata={{ ocp_install_dir }}/bootstrap-pointer.ign -n {{ ocp_cluster_name }}
+
+
+- name: set block arguemnet var if Block volume is selected
+  set_fact:
+     block_vol_option: "--block-volume"
+     when: infra_cluster_storage_volume_mode == "Block"
+
+- name: Upload RHCOS image to a DV
+  shell:
+    cmd: "virtctl image-upload dv rhcos-dv --size=120Gi --storage-class={{ infra_cluster_storage_class_name }} --image-path={{ staging_dir }}/{{ rhcos_bin_file_name }} --namespace {{ ocp_cluster_name }} --insecure {{ block_vol_option }} --access-mode {{ infra_cluster_storage_access_mode }}"
+
