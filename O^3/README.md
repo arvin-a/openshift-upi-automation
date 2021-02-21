@@ -123,7 +123,7 @@ Update the domain name of the nodes to match your domain
 ## Run the playbook
 
 ```Shell
-cd ocp-upi/src/ansible
+cd src/ansible
 ansible-playbook playbooks/openshift-O^3-cluster-deploy.yaml -i `pwd`/vars/tenant1/inventory -e config=`pwd`/vars/tenant1/main.yaml
 
 ```
