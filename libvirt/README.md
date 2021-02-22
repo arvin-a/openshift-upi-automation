@@ -46,7 +46,7 @@ Update the following variables
 
 <b>http_base_url</b> - The base URL of your web-server. Make sure you don't have an / at the end
 
-### <b>src/ansible/vars/infra1/vars.yaml</b>
+### <b>src/ansible/vars/libvirt/vars.yaml</b>
 
 <b>base_domain</b> - The base domain of your cluster.
 
@@ -79,6 +79,5 @@ If you will be installing OCS as a storage provider in your cluster, you need to
 
 ```Shell
 cd ocp-upi/src/ansible
-ansible-playbook playbooks/openshift-libvirt-cluster-deploy.yaml -i `pwd`/vars/tenant1/inventory -e config=`pwd`/vars/tenant1/main.yaml
-
+ansible-playbook playbooks/openshift-libvirt-cluster-deploy.yaml -i `pwd`/vars/libvirt/inventory -e config=`pwd`/vars/libvirt/main.yaml
 ```
