@@ -37,6 +37,8 @@ pip3 install openshift
 ```
 4. Install a web-server that will serve files over HTTP (In future updates I will add functionality to be able to upload the ignition files to a remote http server)
 
+5. Install OpenShift Virtualization on your infrastructure cluster from Operator Hub
+
 5. Download virtctl and add it to a folder referenced by your PATH variable. Typically /usr/bin
 
 6. Setup kubeconfig file for the infrastructure cluster

@@ -1,7 +1,7 @@
 # Run sample
 
 # cd to ansible directory
-# ansible-playbook playbooks/openshift-O^3-cluster-destroy.yaml -i `pwd`/vars/tenant1/inventory -e config=`pwd`/vars/tenant1/main.yaml
+# ansible-playbook playbooks/openshift-O^3-cluster-destroy.yaml -i `pwd`/vars/O^3/inventory -e config=`pwd`/vars/O^3/main.yaml
 
 
 - name: Load configs
