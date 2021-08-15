@@ -1,7 +1,7 @@
 # Run sample
 
 # cd to ansible directory
-# ansible-playbook playbooks/openshift-O^3-cluster-deploy.yaml -i `pwd`/vars/O^3/inventory -e config=`pwd`/vars/O^3/main.yaml
+# sudo ansible-playbook playbooks/openshift-O^3-cluster-deploy.yaml -i `pwd`/vars/O^3/inventory -e config=`pwd`/vars/O^3/main.yaml
 
 #### Options
 # --skip-tags pre-deploy
@@ -111,12 +111,13 @@
   tags:
     - openshift-show-admin-credentials
 
-# - name: Add HTPasswd auth provider
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - openshift-auth-provider
-#   tags:
-#     - openshift-auth-provider
+- name: Add HTPasswd auth provider
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - openshift-auth-provider
+  tags:
+    - openshift-auth-provider
+

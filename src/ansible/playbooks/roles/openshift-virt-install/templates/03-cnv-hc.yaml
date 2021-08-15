@@ -1,7 +1,24 @@
 apiVersion: hco.kubevirt.io/v1beta1
 kind: HyperConverged
 metadata:
-  name: kubevirt-hyperconverged
   namespace: openshift-cnv
+  name: kubevirt-hyperconverged
+  annotations:
+    deployOVS: 'false'
 spec:
-  BareMetalPlatform: false
+  liveMigrationConfig:
+    bandwidthPerMigration: 64Mi
+    completionTimeoutPerGiB: 800
+    parallelMigrationsPerCluster: 5
+    parallelOutboundMigrationsPerNode: 2
+    progressTimeout: 150
+  certConfig:
+    ca:
+      duration: 48h0m0s
+      renewBefore: 24h0m0s
+    server:
+      duration: 24h0m0s
+      renewBefore: 12h0m0s
+  featureGates:
+    sriovLiveMigration: false
+    withHostPassthroughCPU: false

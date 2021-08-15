@@ -132,15 +132,15 @@
     - openshift-show-admin-credentials
    
 
-# - name: Add HTPasswd auth provider
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - openshift-auth-provider
-#   tags:
-#     - openshift-auth-provider
+- name: Add HTPasswd auth provider
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - openshift-auth-provider
+  tags:
+    - openshift-auth-provider
 
 
 - name: Install OCS
@@ -155,26 +155,25 @@
     - openshift-ocs-install
 
 
-# - name: Install OpenShift Virtualization
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - openshift-virt-install
-#   tags:
-#     - openshift-virt-install
+- name: Install OpenShift Virtualization
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: openshift-virt-install
+      when: ocp_virt_install == True
+  tags:
+    - openshift-virt-install
 
 
-# - name: Create network bridge
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - openshift-create-bridge
-#   tags:
-#     - openshift-create-bridge
-
-
+- name: Create network bridge
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - openshift-create-bridge
+  tags:
+    - openshift-create-bridge
 

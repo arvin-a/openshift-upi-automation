@@ -1,10 +1,8 @@
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
-  annotations:
-    olm.providedAPIs: LocalVolume.v1.local.storage.openshift.io
-  name: local-storage
-  namespace: local-storage
+  name: local-storage-operator
+  namespace: openshift-local-storage
 spec:
   targetNamespaces:
-  - local-storage
+  - openshift-local-storage

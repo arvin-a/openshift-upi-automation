@@ -6,7 +6,7 @@ ocp_install_dir: "{{ staging_dir }}/ocp-install"
 
 
 # OCP Vars
-ocp_bin_version: "4.6"  # get latest stable release
+ocp_bin_version: "4.8"  # get latest stable release
 ocp_bin_channel: "fast"
 rhcos_bin_qcow_url: "{{ rhcos_bin_release_url }}/{{ libvirt_rhcos_bin_archive_name }}"
 rhcos_bin_archive_name: "{{ libvirt_rhcos_bin_archive_name }}"
@@ -38,6 +38,9 @@ worker_type: "worker"
 base_domain: arvhomelab.com
 
 ### OCS Install vars
-ocs_install: True # Set to False if you will not be installing OCS
+ocs_install: True # Set to True to install OCS
 ocs_node_disk_size: "450" # Size in Gi
 
+
+### OpenShift Virtualization Vars
+ocp_virt_install: True # Set to True to install OCP Virtualization

@@ -26,7 +26,7 @@
 
 - name: Wait until Local Storage CSV has succeeded
   shell:
-    cmd: oc get csv $(oc get csv -n local-storage -o custom-columns=NAME:.metadata.name | grep local-storage) -n local-storage -o=jsonpath='{.status.phase}'
+    cmd: oc get csv $(oc get csv -n openshift-local-storage -o custom-columns=NAME:.metadata.name | grep local-storage) -n openshift-local-storage -o=jsonpath='{.status.phase}'
   register: result
   until: result.stdout == "Succeeded"
   retries: 100
