@@ -52,13 +52,11 @@ Update the following variables
 
 <b>ocp_cluster_name</b> - The name of your cluster
 
-<b>infra_cluster_name</b> - This will be the name of your infrastructure cluster. Make sure to have named the kubeconfig for this cluster the same which should be located under /kubeconfig as described in the Pre-Req section
-
 <b>staging_dir</b> - Changing the stating location is optional. Make sure to have at least 4GB of space on that drive
 
 <b>cluster_vms_storage_base_dir</b> - Update the base path to where you want all virtual disks for your cluster to be stored
  
- <b>libvirt_bridge_name</b> - The name of the bridge insterface on the KVM virtualization host
+<b>libvirt_bridge_name</b> - The name of the bridge insterface on the KVM virtualization host
 
 
 ## Update inventory file
