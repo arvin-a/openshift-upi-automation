@@ -9,12 +9,12 @@
   file:
     state: directory
     path: "{{ kubeconfig_dir }}"
-    mode: "0771"
+    mode: "0774"
     recurse: yes
 
 - name: Copy kubeconfig to Kubeconfig dir
   copy:
     src: "{{ ocp_install_dir }}/auth/kubeconfig"
     dest: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
-    mode: "0661"
+    mode: "0664"
 

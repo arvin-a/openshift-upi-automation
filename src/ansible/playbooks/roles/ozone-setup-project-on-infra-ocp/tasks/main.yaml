@@ -7,13 +7,13 @@
     - ../templates/*
 
 - name: Create Namespace
-  community.kubernetes.k8s:
+  k8s:
     state: present
     definition: "{{ lookup('template', 'namespace.yaml') }}"
 
 
 - name: Apply Network Attachment Definition
-  community.kubernetes.k8s:
+  k8s:
     state: present
     definition: "{{ lookup('template', 'bridge-nad.yaml') }}"
 

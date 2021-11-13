@@ -39,7 +39,7 @@ base_domain: arvhomelab.com
 
 ### OCS Install vars
 ocs_install: True # Set to True to install OCS
-ocs_node_disk_size: "450" # Size in Gi
+ocs_node_disk_size: "650" # Size in Gi
 
 
 ### OpenShift Virtualization Vars

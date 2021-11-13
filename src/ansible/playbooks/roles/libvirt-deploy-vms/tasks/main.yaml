@@ -55,7 +55,8 @@
     cmd: "virsh pool-create-as --name {{ custom_vm_name }}-ocs --type dir --target {{ ocs_disk_path }}"
   when: 
     - custom_vm_type == worker_type
-    - ocs_install == True
+    - ocs_disk_path is defined
+    - ocs_install is defined and ocs_install == True
 
 
 ## Using Shell instead of built in copy because it copies to a temp location first
@@ -105,7 +106,9 @@
         --qemu-commandline='-fw_cfg name=opt/com.coreos/config,file={{ vm_pool_dir }}/{{ type }}.ign'"
   when: 
     - custom_vm_type == worker_type
-    - ocs_install == True
+    - ocs_install is defined and ocs_install == True
+    - ocs_disk_path is defined
+
 
 - name: Create Worker VMs
   shell:
@@ -119,7 +122,7 @@
         --qemu-commandline='-fw_cfg name=opt/com.coreos/config,file={{ vm_pool_dir }}/{{ type }}.ign'"
   when: 
     - custom_vm_type == worker_type
-    - ocs_install == False
+    - ocs_disk_path is not defined
 
 - name: Create Control Plane VM
   shell:

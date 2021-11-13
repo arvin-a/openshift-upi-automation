@@ -1,7 +1,7 @@
 ---
 
 - name: Delete hyperconverged cluster yaml
-  community.kubernetes.k8s:
+  k8s:
     state: absent
     definition: "{{ lookup('template', '03-cnv-hc.yaml') }}"
 
@@ -11,7 +11,7 @@
 
 
 - name: Delete OpenShift Virtualization Subscription yaml
-  community.kubernetes.k8s:
+  k8s:
     state: absent
     definition: "{{ lookup('template', '02-cnv-sub.yaml') }}"
 
@@ -21,7 +21,7 @@
 
 
 - name: Delete OpenShift Virtualization NS and OG yaml
-  community.kubernetes.k8s:
+  k8s:
     state: absent
     definition: "{{ lookup('template', '01-cnv-ns-og.yaml') }}"
 
