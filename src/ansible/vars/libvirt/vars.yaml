@@ -6,7 +6,7 @@ ocp_install_dir: "{{ staging_dir }}/ocp-install"
 
 
 # OCP Vars
-ocp_bin_version: "4.6"
+ocp_bin_version: "4.7"
 ocp_bin_channel: "fast"
 rhcos_bin_qcow_url: "{{ rhcos_bin_release_url }}/{{ libvirt_rhcos_bin_archive_name }}"
 rhcos_bin_archive_name: "{{ libvirt_rhcos_bin_archive_name }}"

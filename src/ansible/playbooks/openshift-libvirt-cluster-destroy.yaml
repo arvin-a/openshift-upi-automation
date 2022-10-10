@@ -2,7 +2,7 @@
 
 # cd to ansible directory
 
-# ansible-playbook playbooks/openshift-libvirt-cluster-destroy.yaml -i `pwd`/vars/libvirt/inventory -e config=`pwd`/vars/libvirt/main.yaml
+# sudo ansible-playbook playbooks/openshift-libvirt-cluster-destroy.yaml -i `pwd`/vars/libvirt/inventory -e config=`pwd`/vars/libvirt/main.yaml
 
 #### Options
 # --skip-tags pre-deploy

@@ -141,6 +141,7 @@
 #     - openshift-auth-provider
 #   tags:
 #     - openshift-auth-provider
+#     - post-install
 
 
 - name: Install OCS
@@ -153,28 +154,31 @@
       when: ocs_install == True
   tags:
     - openshift-ocs-install
+    - post-install
 
 
-# - name: Install OpenShift Virtualization
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - openshift-virt-install
-#   tags:
-#     - openshift-virt-install
+- name: Install OpenShift Virtualization
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - openshift-virt-install
+  tags:
+    - openshift-virt-install
+    - post-install
 
 
-# - name: Create network bridge
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - openshift-create-bridge
-#   tags:
-#     - openshift-create-bridge
+- name: Create network bridge
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - openshift-create-bridge
+  tags:
+    - openshift-create-bridge
+    - post-install
 
 
 
