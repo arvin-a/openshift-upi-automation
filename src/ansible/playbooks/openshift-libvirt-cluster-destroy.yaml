@@ -1,8 +1,8 @@
 # Run sample
 
 # cd to ansible directory
-
-# ansible-playbook playbooks/openshift-libvirt-cluster-destroy.yaml -i `pwd`/vars/libvirt/inventory -e config=`pwd`/vars/libvirt/main.yaml
+# export VARSDIR=`pwd`/vars/libvirt
+# sudo ansible-playbook playbooks/openshift-libvirt-cluster-destroy.yaml -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
 
 #### Options
 # --skip-tags pre-deploy
@@ -29,7 +29,7 @@
 
 
 - name: Remove libvirt Cluster VMs
-  hosts: localhost
+  hosts: all
   connection: local
   roles:
     - libvirt-remove-cluster

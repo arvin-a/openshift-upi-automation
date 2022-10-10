@@ -1,57 +1,26 @@
 ---
 
-
+- name: General vars for VMs
+  set_fact:
+    vm_name: "{{ custom_vm_name }}-{{ ocp_cluster_name }}"
 
 - name: Destroy VMS
-  command: virsh destroy {{ item }}
+  command: virsh destroy {{ vm_name }}
   ignore_errors: yes
-  loop:
-    - bootstrap
-    - control1
-    - control2
-    - control3
-    - worker1
-    - worker2
-    - worker3
-
 
 - name: Undefine VMS
-  command: virsh undefine {{ item }}
+  command: virsh undefine {{ vm_name }}
   ignore_errors: yes
-  loop:
-    - bootstrap
-    - control1
-    - control2
-    - control3
-    - worker1
-    - worker2
-    - worker3
+
 - name: Undefine VMS
-  command: virsh undefine {{ item }}
+  command: virsh undefine {{ vm_name }}
   ignore_errors: yes
-  loop:
-    - bootstrap
-    - control1
-    - control2
-    - control3
-    - worker1
-    - worker2
-    - worker3
+
 
 - name: Destroy storage pools
-  command: virsh pool-destroy {{ item }}
+  command: virsh pool-destroy {{ vm_name }}
   ignore_errors: yes
-  loop:
-    - bootstrap
-    - control1
-    - control2
-    - control3
-    - worker1
-    - worker2
-    - worker3
-    - worker1-ocs
-    - worker2-ocs
-    - worker3-ocs
+
 
 - name: Remove storage directories
   shell: |

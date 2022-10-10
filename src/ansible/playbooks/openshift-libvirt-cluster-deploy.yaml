@@ -2,7 +2,8 @@
 
 # cd to ansible directory
 
-# sudo ansible-playbook playbooks/openshift-libvirt-cluster-deploy.yaml -i `pwd`/vars/libvirt/inventory -e config=`pwd`/vars/libvirt/main.yaml
+# export VARSDIR=`pwd`/vars/libvirt
+# sudo ansible-playbook playbooks/openshift-libvirt-cluster-deploy.yaml -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
 
 #### Options
 # --skip-tags pre-deploy
@@ -116,7 +117,7 @@
 
 
 - name: Remove Bootstrap VM
-  hosts: localhost
+  hosts: bootstrap
   connection: local
   roles:
     - libvirt-remove-bootstrap
@@ -153,6 +154,19 @@
       when: ocs_install == True
   tags:
     - openshift-ocs-install
+    - post-install
+
+
+- name: Install Nmstate Operator
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - openshift-nmstate-install
+  tags:
+    - openshift-nmstate-install
+    - post-install
 
 
 - name: Install OpenShift Virtualization
@@ -165,6 +179,7 @@
       when: ocp_virt_install == True
   tags:
     - openshift-virt-install
+    - post-install
 
 
 - name: Create network bridge
@@ -176,4 +191,5 @@
     - openshift-create-bridge
   tags:
     - openshift-create-bridge
+    - post-install
 

@@ -6,10 +6,13 @@
     path: "{{ ocp_install_dir }}"
 
 
-- name: Create OCP install folder
+- name: Create OCP install folder and backup
   file:
     state: directory
-    path: "{{ ocp_install_dir }}"
+    path: "{{ item }}"
+  with_items:
+    - "{{ ocp_install_dir }}"
+    - "{{ staging_backup_dir }}"
 
 
 - name: Process OCP install config template
@@ -18,7 +21,7 @@
     dest: "{{ item }}"
   with_items:
     - "{{ ocp_install_dir }}"
-    - "{{ staging_dir }}"
+    - "{{ staging_backup_dir }}"
 
 
 - name: Create OCP manifests

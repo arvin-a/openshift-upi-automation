@@ -1,9 +1,13 @@
 ---
 
+- name: General vars for VMs
+  set_fact:
+    vm_name: "{{ custom_vm_name }}-{{ ocp_cluster_name }}"
+
 - name: Remove Bootstrap VM
   shell: |
-    virsh destroy bootstrap &> /dev/null
-    virsh undefine bootstrap &> /dev/null
+    virsh destroy {{ vm_name }} &> /dev/null
+    virsh undefine {{ vm_name }} &> /dev/null
 
 
 

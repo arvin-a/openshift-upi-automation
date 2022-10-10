@@ -1,4 +1,13 @@
 ---
+- name: General vars for VMs
+  set_fact:
+    vm_name: "{{ custom_vm_name }}-{{ ocp_cluster_name }}"
+
+
+- name: Destroy storage pools
+  command: virsh pool-destroy {{ vm_name }}-ocs
+  ignore_errors: yes
+
 
 - name: Check to see if OCS path is valid
   ansible.builtin.stat:

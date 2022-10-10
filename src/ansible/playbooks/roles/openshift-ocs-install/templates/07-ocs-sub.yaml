@@ -4,7 +4,7 @@ metadata:
   name: ocs-operator
   namespace: openshift-storage
 spec:
-  channel: "stable-4.8"
+  channel: "stable-{{ ocp_bin_version }}"
   installPlanApproval: Automatic
   name: ocs-operator
   source: redhat-operators

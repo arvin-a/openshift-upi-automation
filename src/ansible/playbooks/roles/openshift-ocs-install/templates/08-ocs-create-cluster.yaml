@@ -22,7 +22,7 @@ spec:
         - ReadWriteOnce
         resources:
           requests:
-            storage: "650Gi"
+            storage: "250Gi"
         storageClassName: localblock
         volumeMode: Block
     name: ocs-deviceset

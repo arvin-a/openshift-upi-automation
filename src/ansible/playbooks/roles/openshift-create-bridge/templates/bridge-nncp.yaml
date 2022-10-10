@@ -19,4 +19,4 @@ spec:
             stp:
               enabled: false
           port:
-            - name: enp1s0
+            - name: {{ worker_bridge_interface }}

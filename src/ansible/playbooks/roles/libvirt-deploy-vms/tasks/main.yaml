@@ -5,13 +5,16 @@
 # vm_pool_dir
 # inventory mac name
 
+- name: General vars for VMs
+  set_fact:
+    vm_name: "{{ custom_vm_name }}-{{ ocp_cluster_name }}"
 
 - name: Setup vars for Bootstrap VM
   set_fact:
     cpu: "{{ control_cpu }}"
     memory: "{{ control_memory }}"
     type: "{{ bootstrap_type }}"
-    vm_pool_dir: "{{ cluster_vms_storage_base_dir }}/{{ custom_vm_name }}"
+    vm_pool_dir: "{{ cluster_vms_storage_base_dir }}/{{ vm_name }}"
     ignition_src: "{{ bootstrap_ign }}"
   when: custom_vm_type == bootstrap_type
 
@@ -20,7 +23,7 @@
     cpu: "{{ control_cpu }}"
     memory: "{{ control_memory }}"
     type: "{{ control_type }}"
-    vm_pool_dir: "{{ cluster_vms_storage_base_dir }}/{{ custom_vm_name }}"
+    vm_pool_dir: "{{ cluster_vms_storage_base_dir }}/{{ vm_name }}"
     ignition_src: "{{ control_ign }}"
   when: custom_vm_type == control_type
 
@@ -29,7 +32,7 @@
     cpu: "{{ worker_cpu }}"
     memory: "{{ worker_memory }}"
     type: "{{ worker_type }}"
-    vm_pool_dir: "{{ cluster_vms_storage_base_dir }}/{{ custom_vm_name }}"
+    vm_pool_dir: "{{ cluster_vms_storage_base_dir }}/{{ vm_name }}"
     ignition_src: "{{ worker_ign }}"
   when: custom_vm_type == worker_type
 
@@ -46,13 +49,13 @@
 # Create storage pool for VM QCOW
 - name: Create Storage Pool for VM
   shell:
-    cmd: "virsh pool-create-as --name {{ custom_vm_name }} --type dir --target {{ vm_pool_dir }}"
+    cmd: "virsh pool-create-as --name {{ vm_name }} --type dir --target {{ vm_pool_dir }}"
 
 
 # ## Create a second storage pool if vm is worker
 - name: Create Storage Pool for OCS drive for worker VMs
   shell:
-    cmd: "virsh pool-create-as --name {{ custom_vm_name }}-ocs --type dir --target {{ ocs_disk_path }}"
+    cmd: "virsh pool-create-as --name {{ vm_name }}-ocs --type dir --target {{ ocs_disk_path }}"
   when: 
     - custom_vm_type == worker_type
     - ocs_disk_path is defined
@@ -82,12 +85,12 @@
 # ## Create VM
 - name: Create Bootstrap or Control Plane VM
   shell:
-    cmd: "virt-install --import --name {{ custom_vm_name }} \
+    cmd: "virt-install --import --name {{ vm_name }} \
         --ram {{ memory }} --cpu host --vcpus {{ cpu }} \
         --disk {{ vm_pool_dir }}/{{ rhcos_bin_file_name }},format=qcow2,bus=virtio \
         --os-type linux --os-variant rhel8.2 \
         --network bridge={{ libvirt_bridge_name }},mac={{ custom_mac }} \
-        --noreboot \
+        --noreboot --autostart
         --graphics vnc,listen=0.0.0.0 --noautoconsole \
         --qemu-commandline='-fw_cfg name=opt/com.coreos/config,file={{ vm_pool_dir }}/{{ type }}.ign'"
   when: custom_vm_type == control_type or custom_vm_type == bootstrap_type
@@ -95,13 +98,14 @@
 
 - name: Create Worker VMs with extra drives for OCS
   shell:
-    cmd: "virt-install --import --name {{ custom_vm_name }} \
+    cmd: "virt-install --import --name {{ vm_name }} \
         --ram {{ memory }} --cpu host --vcpus {{ cpu }} \
         --disk {{ vm_pool_dir }}/{{ rhcos_bin_file_name }},format=qcow2,bus=virtio \
-        --disk pool='{{ custom_vm_name }}-ocs',size={{ ocs_node_disk_size }},format=raw,bus=virtio \
+        --disk pool='{{ vm_name }}-ocs',size={{ ocs_node_disk_size }},format=raw,bus=virtio \
         --os-type linux --os-variant rhel8.2 \
         --network bridge={{ libvirt_bridge_name }},mac={{ custom_mac }} \
-        --noreboot \
+        --network bridge={{ libvirt_bridge_name }},mac={{ custom_mac2 }} \
+        --noreboot --autostart
         --graphics vnc,listen=0.0.0.0 --noautoconsole \
         --qemu-commandline='-fw_cfg name=opt/com.coreos/config,file={{ vm_pool_dir }}/{{ type }}.ign'"
   when: 
@@ -112,12 +116,13 @@
 
 - name: Create Worker VMs
   shell:
-    cmd: "virt-install --import --name {{ custom_vm_name }} \
+    cmd: "virt-install --import --name {{ vm_name }} \
         --ram {{ memory }} --cpu host --vcpus {{ cpu }} \
         --disk {{ vm_pool_dir }}/{{ rhcos_bin_file_name }},format=qcow2,bus=virtio \
         --os-type linux --os-variant rhel8.2 \
         --network bridge={{ libvirt_bridge_name }},mac={{ custom_mac }} \
-        --noreboot \
+        --network bridge={{ libvirt_bridge_name }},mac={{ custom_mac2 }} \
+        --noreboot --autostart \
         --graphics vnc,listen=0.0.0.0 --noautoconsole \
         --qemu-commandline='-fw_cfg name=opt/com.coreos/config,file={{ vm_pool_dir }}/{{ type }}.ign'"
   when: 
@@ -126,4 +131,4 @@
 
 - name: Create Control Plane VM
   shell:
-    cmd: "virsh start {{ custom_vm_name }}"
+    cmd: "virsh start {{ vm_name }}"
