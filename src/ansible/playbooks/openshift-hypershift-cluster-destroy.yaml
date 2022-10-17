@@ -1,0 +1,33 @@
+# Run sample
+
+# cd to ansible directory
+# export VARSDIR=`pwd`/vars/hypershift
+# sudo ansible-playbook playbooks/openshift-hypershift-cluster-destroy.yaml -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
+
+- name: Load configs
+  hosts: all:localhost
+  connection: local
+  roles:
+    - ansible-config-load
+  tags:
+    - always
+
+- name: Setup Staging Directory
+  hosts: localhost
+  connection: local
+  roles:
+    - staging-dir-setup
+  tags:
+    - staging-dir-setup
+    - pre-deploy
+
+- name: Destroy Hypershift cluster
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ infra_cluster_kubeconfig }}"
+  roles:
+    - hypershift/hypershift-cluster-destroy
+  tags:
+    - hypershift-cluster-destroy
+

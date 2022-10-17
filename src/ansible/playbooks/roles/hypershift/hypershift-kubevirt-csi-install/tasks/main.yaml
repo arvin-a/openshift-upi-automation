@@ -1,0 +1,68 @@
+---
+
+- set_fact:
+    tenant_cluster_kubeconfig: "{{ staging_dir }}/configs/{{ ocp_cluster_name }}"
+    kubevirt_csi_repo: "{{ staging_dir }}/kubevirt-csi-driver"
+    kubevirt_csi_service_kubeconfig_path: "{{ staging_dir }}/{{ kubevirt_csi_service_kubeconfig }}"
+
+
+- name: Clone kubevirt csi repo
+  git:
+    repo: https://github.com/arvin-a/kubevirt-csi-driver.git
+    dest: "{{ kubevirt_csi_repo }}"
+    version: minor-change-01
+
+- debug:
+    msg: 
+      - "{{ kubevirt_csi_repo }}/deploy/infra-cluster-service-account.yaml"
+      - "namespace: {{ infra_cluster_tenant_namespace }}"
+
+- name: Create service account
+  shell:
+    cmd: "oc apply -f {{ kubevirt_csi_repo }}/deploy/infra-cluster-service-account.yaml -n {{ infra_cluster_tenant_namespace }}"
+
+
+- name: Create kubeconfig for service account
+  environment:
+    TENANT_CLUSTER_NAME: "{{ ocp_cluster_name }}"
+  shell:
+    chdir: "{{ kubevirt_csi_repo }}"
+    cmd: "{{ kubevirt_csi_repo }}/hack/create-infra-kubeconfig.sh > {{ kubevirt_csi_service_kubeconfig_path }}"
+
+- name: Create kubeconfig for service account
+  shell:
+    cmd: "cat {{ kubevirt_csi_service_kubeconfig_path }} | base64 -w 0"
+  register: kubevirt_csi_service_kubeconfig_base64
+
+- name: Create namespace in tenant cluster
+  shell:
+    cmd: "oc --kubeconfig {{ tenant_cluster_kubeconfig }} apply -f {{ kubevirt_csi_repo }}/deploy/000-namespace.yaml"
+
+- name: Create secret in tenant cluster
+  environment:
+    INFRA_KUBECONFIG_IN_TENANT_CONTENT: "{{ kubevirt_csi_service_kubeconfig_base64.stdout }}"
+  shell:
+    cmd: "envsubst <  {{ kubevirt_csi_repo }}/deploy/secret-template.yaml | oc --kubeconfig {{ tenant_cluster_kubeconfig }} apply -f -"
+
+- name: Create configmap in tenant cluster
+  environment:
+    INFRA_CLUSTER_NAMESPACE: "{{ infra_cluster_tenant_namespace }}"
+    TENANT_CLUSTER_NAME: "{{ocp_cluster_name }}"
+  shell:
+    cmd: "envsubst <  {{ kubevirt_csi_repo }}/deploy/configmap-template.yaml | oc --kubeconfig {{ tenant_cluster_kubeconfig }} apply -f -"
+
+
+- name: Create CSI driver, permissions and controller for kubevirt csi
+  shell:
+    cmd: "oc --kubeconfig {{ tenant_cluster_kubeconfig }} apply -f {{ kubevirt_csi_repo }}/deploy/{{ item }}"
+  loop:
+    - "000-csi-driver.yaml"
+    - "020-authorization.yaml"
+    - "030-node.yaml"
+    - "040-controller.yaml"
+
+- name: Create kubevirt csi storage class
+  environment: 
+    INFRA_STORAGE_CLASS_NAME: "{{ kubevirt_csi_infra_cluster_sc }}"
+  shell:
+    cmd: "envsubst <  {{ kubevirt_csi_repo }}/deploy/050-storageclass-template.yaml | oc --kubeconfig {{ tenant_cluster_kubeconfig }} apply -f -"

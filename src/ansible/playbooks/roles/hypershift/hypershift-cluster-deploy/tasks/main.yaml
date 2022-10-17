@@ -1,0 +1,115 @@
+---
+# copy infra kubeconfig to staging
+# copy pull-secret to staging
+
+- name: Create config folder
+  file:
+    state: directory
+    path: "{{ staging_dir }}/configs"
+    mode: "0666"
+
+
+- name: Copy pull secret to configs dir
+  copy:
+    content: "{{ pull_secret }}"
+    dest: "{{ staging_dir }}/configs/pull-secret"
+    mode: "0666"
+
+- name: Copy kubeconfig to conigs dir
+  copy:
+    src: "{{ infra_cluster_kubeconfig }}"
+    dest: "{{ staging_dir }}/configs/infra-kubeconfig"
+    mode: "0666"
+
+- name: Run Hypershift Installer
+  shell:
+    cmd: "podman run --rm -it -e KUBECONFIG=/opt/configs/infra-kubeconfig -v {{ staging_dir }}/configs:/opt/configs:z hypershift:latest  create cluster kubevirt --name {{ ocp_cluster_name }} --base-domain {{ base_domain }} --node-pool-replicas={{ worker_count }} --pull-secret /opt/configs/pull-secret --cores {{ worker_cpu }} --memory {{ worker_memory }} --service-publishing-strategy {{ service_publishing_strategy }}"
+
+- name: Destroy Hypershift Cluster
+  vars:
+    patchstr: '[{ "op": "add", "path": "/spec/routeAdmission", "value": {wildcardPolicy: "WildcardsAllowed"}}]'
+  shell:
+    cmd: "oc patch ingresscontroller -n openshift-ingress-operator default --type=json -p '{{ patchstr }}'"
+
+- name: Wait until apiserver is available
+  vars:
+    jsonfilter: '{.status.conditions[?(@.type=="Available")].status}'
+  shell:
+    cmd: "oc get --namespace clusters hostedclusters {{ ocp_cluster_name }} -o=jsonpath='{{ jsonfilter }}'"
+  register: apiserver_available
+  until: apiserver_available.stdout  == "True" 
+  retries: 100
+  delay: 5
+
+- name: Save kubeconfig of Hypershift cluster
+  shell:
+    cmd:  "podman run --rm -it -e KUBECONFIG=/opt/configs/infra-kubeconfig -v {{ staging_dir }}/configs:/opt/configs:z hypershift:latest create kubeconfig --name {{ ocp_cluster_name }} > {{ staging_dir }}/configs/{{ ocp_cluster_name }}"
+
+
+- name: Copy kubeconfig to Kubeconfig dir
+  copy:
+    src: "{{ staging_dir }}/configs/{{ ocp_cluster_name }}"
+    dest: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
+    mode: "0666"
+
+- name: Get nodeport of the ingress service
+  vars:
+    jsonpath: '{.spec.ports[?(@.port==443)].nodePort}'
+  shell:
+    cmd: oc --kubeconfig {{ staging_dir }}/configs/{{ ocp_cluster_name }} get services -n openshift-ingress router-nodeport-default -o=jsonpath='{{ jsonpath }}'
+  register: ingress_nodeport_cmd
+  until: ingress_nodeport_cmd.rc == 0
+  retries: 120
+  delay: 5
+
+
+- set_fact:
+    ingress_nodeport: "{{ ingress_nodeport_cmd.stdout }}"
+
+
+- name: Create ingress service
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'cluster-ingress-service.yaml') }}"
+
+
+- name: Create ingress route
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'cluster-ingress-route.yaml') }}"
+
+
+- name: Wait until cluster is fully up
+  vars:
+    jsonfilter: '{.status.version.history[0].state}'
+  shell:
+    cmd: "oc get --namespace clusters hostedclusters {{ ocp_cluster_name }} -o=jsonpath='{{ jsonfilter }}'"
+  register: apiserver_available
+  until: apiserver_available.stdout  == "Completed" 
+  retries: 240
+  delay: 10
+
+
+- name: Get kubeadmin password
+  shell:
+    cmd: "oc -n {{ infra_cluster_tenant_namespace }} get secret kubeadmin-password  -o json -o=jsonpath='{.data.password}' | base64 -d"
+  register: kubeadmin_password_result
+
+- name: Get console url
+  shell:
+    cmd: "oc  --kubeconfig {{ staging_dir }}/configs/{{ ocp_cluster_name }} whoami --show-console"
+  register: console_url_result
+
+- set_fact:
+    tenant_kubeadmin_password: "{{ kubeadmin_password_result.stdout }}"
+    tenant_console_url: "{{ console_url_result.stdout }}"
+
+
+- name: Display console route and kubeadmin password
+  debug:
+    msg:
+      - "Kubeadmin password:"
+      - "{{ tenant_kubeadmin_password }}"
+      - ""
+      - "Console URL:"
+      - "{{ tenant_console_url }}"

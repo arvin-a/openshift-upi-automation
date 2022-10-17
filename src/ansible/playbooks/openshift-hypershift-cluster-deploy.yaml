@@ -1,0 +1,44 @@
+# Run sample
+
+# cd to ansible directory
+# export VARSDIR=`pwd`/vars/hypershift
+# sudo ansible-playbook playbooks/openshift-hypershift-cluster-deploy.yaml -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
+
+- name: Load configs
+  hosts: all:localhost
+  connection: local
+  roles:
+    - ansible-config-load
+  tags:
+    - always
+
+- name: Setup Staging Directory
+  hosts: localhost
+  connection: local
+  roles:
+    - staging-dir-setup
+  tags:
+    - staging-dir-setup
+    - pre-deploy
+
+# Run Hypershift installer
+- name: Create Hypershift cluster
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ infra_cluster_kubeconfig }}"
+  roles:
+    - hypershift/hypershift-cluster-deploy
+  tags:
+    - hypershift-cluster-deploy
+
+
+- name: Install kubevirt csi driver
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ infra_cluster_kubeconfig }}"
+  roles:
+    - hypershift/hypershift-kubevirt-csi-install
+  tags:
+    - hypershift-kubevirt-csi-install

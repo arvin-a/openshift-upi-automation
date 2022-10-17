@@ -1,0 +1,16 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: "{{ ocp_cluster_name }}-443"
+  namespace: {{ infra_cluster_tenant_namespace }}
+spec:
+  host: data.apps.{{ocp_cluster_name }}.{{ base_domain }}
+  wildcardPolicy: Subdomain
+  tls:
+    termination: passthrough
+  port:
+    targetPort: https-443
+  to:
+    kind: Service
+    name: apps-ingress
+    weight: 100

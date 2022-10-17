@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ ocp_cluster_name }}
+  name: apps-ingress
+  namespace: {{ infra_cluster_tenant_namespace }}
+spec:
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: https-443
+    port: 443
+    protocol: TCP
+    targetPort: {{ ingress_nodeport }}
+  selector:
+    kubevirt.io: virt-launcher
+  sessionAffinity: None
+  type: ClusterIP
