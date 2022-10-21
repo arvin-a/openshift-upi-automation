@@ -8,7 +8,7 @@
 
 - name: Clone kubevirt csi repo
   git:
-    repo: https://github.com/arvin-a/kubevirt-csi-driver.git
+    repo: https://github.com/arvin-a/csi-driver.git
     dest: "{{ kubevirt_csi_repo }}"
     version: minor-change-01
 
@@ -40,13 +40,13 @@
 
 - name: Create secret in tenant cluster
   environment:
-    INFRA_KUBECONFIG_IN_TENANT_CONTENT: "{{ kubevirt_csi_service_kubeconfig_base64.stdout }}"
+    INFRA_KUBEVIRT_CSI_SERVICE_KUBECONFIG_BASE64: "{{ kubevirt_csi_service_kubeconfig_base64.stdout }}"
   shell:
     cmd: "envsubst <  {{ kubevirt_csi_repo }}/deploy/secret-template.yaml | oc --kubeconfig {{ tenant_cluster_kubeconfig }} apply -f -"
 
 - name: Create configmap in tenant cluster
   environment:
-    INFRA_CLUSTER_NAMESPACE: "{{ infra_cluster_tenant_namespace }}"
+    INFRA_CLUSTER_TENANT_NAMESPACE: "{{ infra_cluster_tenant_namespace }}"
     TENANT_CLUSTER_NAME: "{{ocp_cluster_name }}"
   shell:
     cmd: "envsubst <  {{ kubevirt_csi_repo }}/deploy/configmap-template.yaml | oc --kubeconfig {{ tenant_cluster_kubeconfig }} apply -f -"
