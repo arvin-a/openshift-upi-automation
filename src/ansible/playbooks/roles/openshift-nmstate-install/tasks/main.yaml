@@ -1,23 +1,16 @@
 ---
-
 - name: Create Nmstate namespace
   k8s:
     state: present
-    definition: "{{ lookup('template', '01-nmstate-ns.yaml') }}"
+    definition: "{{ lookup('template', item ) }}"
+  with_items:
+    - 01-nmstate-ns.yaml
+    - 02-operator-group.yaml
+    - 03-nmstate-sub.yaml
 
 - name: sleep for 5 seconds
   wait_for:
-    timeout: 5
-
-  
-- name: Create Nmstate Subscription
-  k8s:
-    state: present
-    definition: "{{ lookup('template', '02-nmstate-sub.yaml') }}"
-
-- name: sleep for 20 seconds
-  wait_for:
-    timeout: 20
+    timeout: 10
 
 - name: Wait until nmstate Operator installation has succeeded
   shell:
@@ -30,4 +23,4 @@
 - name: Create Nmstate instance
   k8s:
     state: present
-    definition: "{{ lookup('template', '03-nmstate-instance.yaml') }}"
+    definition: "{{ lookup('template', '04-nmstate-instance.yaml') }}"

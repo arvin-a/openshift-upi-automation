@@ -21,11 +21,18 @@
     dest: "{{ staging_dir }}/configs/infra-kubeconfig"
     mode: "0666"
 
+
+- name: Install Hypershift on Infra cluster
+  shell:
+    cmd: "podman run --rm -it -e KUBECONFIG=/opt/configs/infra-kubeconfig -v {{ staging_dir }}/configs:/opt/configs:z hypershift:latest  install"
+
+
+
 - name: Run Hypershift Installer
   shell:
     cmd: "podman run --rm -it -e KUBECONFIG=/opt/configs/infra-kubeconfig -v {{ staging_dir }}/configs:/opt/configs:z hypershift:latest  create cluster kubevirt --name {{ ocp_cluster_name }} --base-domain {{ base_domain }} --node-pool-replicas={{ worker_count }} --pull-secret /opt/configs/pull-secret --cores {{ worker_cpu }} --memory {{ worker_memory }} --service-publishing-strategy {{ service_publishing_strategy }}"
 
-- name: Destroy Hypershift Cluster
+- name: Patch Infra cluster to allow wildcard policy
   vars:
     patchstr: '[{ "op": "add", "path": "/spec/routeAdmission", "value": {wildcardPolicy: "WildcardsAllowed"}}]'
   shell:
