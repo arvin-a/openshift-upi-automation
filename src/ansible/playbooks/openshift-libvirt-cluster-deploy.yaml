@@ -144,16 +144,16 @@
     - openshift-auth-provider
 
 
-- name: Install OCS
+- name: Install ODF
   hosts: localhost
   connection: local
   environment:
     KUBECONFIG: "{{ cluster_kubeconfig }}"
   roles:
-    - role: openshift-ocs-install
-      when: ocs_install == True
+    - role: openshift-odf-install
+      when: odf_install == True
   tags:
-    - openshift-ocs-install
+    - openshift-odf-install
     - post-install
 
 

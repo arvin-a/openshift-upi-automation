@@ -31,3 +31,11 @@
   tags:
     - hypershift-cluster-destroy
 
+- name: Remove cluster kubeconfig
+  hosts: localhost
+  connection: local
+  roles:
+    - openshift-remove-kubeconfig
+  tags:
+    - openshift-remove-kubeconfig
+    - cleanup

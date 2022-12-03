@@ -40,9 +40,9 @@ worker_bridge_interface: enp1s0
 ## Base domain for the cluster
 base_domain: arvhomelab.com
 
-### OCS Install vars
-ocs_install: True # Set to True to install OCS
-ocs_node_disk_size: "650" # Size in Gi
+### ODF Install vars
+odf_install: True # Set to True to install odf
+odf_node_disk_size: "650" # Size in Gi
 
 
 ### OpenShift Virtualization Vars

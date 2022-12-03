@@ -24,13 +24,19 @@
 
 - name: Install Hypershift on Infra cluster
   shell:
-    cmd: "podman run --rm -it -e KUBECONFIG=/opt/configs/infra-kubeconfig -v {{ staging_dir }}/configs:/opt/configs:z hypershift:latest  install"
+    cmd: "podman run --rm -it -e KUBECONFIG=/opt/configs/infra-kubeconfig -v {{ staging_dir }}/configs:/opt/configs:z {{ hypershift_image }} install --hypershift-image  {{ hypershift_operator_image }}"
 
 
 
-- name: Run Hypershift Installer
+- name: Run Hypershift Installer with specific version
   shell:
-    cmd: "podman run --rm -it -e KUBECONFIG=/opt/configs/infra-kubeconfig -v {{ staging_dir }}/configs:/opt/configs:z hypershift:latest  create cluster kubevirt --name {{ ocp_cluster_name }} --base-domain {{ base_domain }} --node-pool-replicas={{ worker_count }} --pull-secret /opt/configs/pull-secret --cores {{ worker_cpu }} --memory {{ worker_memory }} --service-publishing-strategy {{ service_publishing_strategy }}"
+    cmd: "podman run --rm -it -e KUBECONFIG=/opt/configs/infra-kubeconfig -v {{ staging_dir }}/configs:/opt/configs:z {{ hypershift_image }}  create cluster kubevirt --name {{ ocp_cluster_name }} --base-domain {{ base_domain }} --node-pool-replicas={{ worker_count }} --pull-secret /opt/configs/pull-secret --cores {{ worker_cpu }} --memory {{ worker_memory }} --service-publishing-strategy {{ service_publishing_strategy }} --etcd-storage-class {{ infra_cluster_fast_storage_class_name }} --infra-id {{ infra_cluster_name }} --release-image quay.io/openshift-release-dev/ocp-release:{{ hypershift_cluster_version }}-x86_64"
+  when: hypershift_cluster_version is defined
+
+- name: Run Hypershift Installer with latest version
+  shell:
+    cmd: "podman run --rm -it -e KUBECONFIG=/opt/configs/infra-kubeconfig -v {{ staging_dir }}/configs:/opt/configs:z {{ hypershift_image }}  create cluster kubevirt --name {{ ocp_cluster_name }} --base-domain {{ base_domain }} --node-pool-replicas={{ worker_count }} --pull-secret /opt/configs/pull-secret --cores {{ worker_cpu }} --memory {{ worker_memory }} --service-publishing-strategy {{ service_publishing_strategy }} --etcd-storage-class {{ infra_cluster_fast_storage_class_name }} --infra-id {{ infra_cluster_name }}"
+  when: hypershift_cluster_version is not defined
 
 - name: Patch Infra cluster to allow wildcard policy
   vars:
@@ -50,7 +56,7 @@
 
 - name: Save kubeconfig of Hypershift cluster
   shell:
-    cmd:  "podman run --rm -it -e KUBECONFIG=/opt/configs/infra-kubeconfig -v {{ staging_dir }}/configs:/opt/configs:z hypershift:latest create kubeconfig --name {{ ocp_cluster_name }} > {{ staging_dir }}/configs/{{ ocp_cluster_name }}"
+    cmd:  "podman run --rm -it -e KUBECONFIG=/opt/configs/infra-kubeconfig -v {{ staging_dir }}/configs:/opt/configs:z {{ hypershift_image }} create kubeconfig --name {{ ocp_cluster_name }} > {{ staging_dir }}/configs/{{ ocp_cluster_name }}"
 
 
 - name: Copy kubeconfig to Kubeconfig dir

@@ -1,18 +1,14 @@
 platform: "hypershift"
-
-
+ocp_version: "4.11"
+hypershift_image: "quay.io/openshift/origin-hypershift"
 infra_cluster_name: "ocp-infra1"
 infra_cluster_base_domain: "arvhomelab.com"
 infra_cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ infra_cluster_name }}"
 infra_cluster_tenant_namespace: "clusters-{{ ocp_cluster_name }}"
-# infra_cluster_bridge_name: "br1"
-# infra_cluster_storage_class_name: "ocs-storagecluster-ceph-rbd"
-# infra_cluster_storage_volume_mode: "Block" # If your storage class supports block, its recommended you use that
-# infra_cluster_storage_access_mode: "ReadWriteMany" # If your storage class supports it, ReadWriteMany is recommended
 
 ## Hypershift cluster vars
-base_domain: "apps.{{ infra_cluster_name }}.{{ infra_cluster_base_domain }}"
 ocp_cluster_name: "ocp-hyper1"
+base_domain: "apps.{{ infra_cluster_name }}.{{ infra_cluster_base_domain }}"
 service_publishing_strategy: "NodePort"
 
 cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
@@ -21,13 +17,12 @@ staging_backup_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}/backup"
 ocp_install_dir: "{{ staging_dir }}/ocp-install"
 
 # OCP Vars
-ocp_bin_version: "4.11"
+ocp_bin_version: "{{ ocp_version }}"
 ocp_bin_channel: "fast"
 rhcos_bin_qcow_url: "{{ rhcos_bin_release_url }}/{{ kubevirt_rhcos_bin_archive_name }}"
 rhcos_bin_archive_name: "{{ kubevirt_rhcos_bin_archive_name }}"
 rhcos_bin_file_name: "{{ kubevirt_rhcos_bin_file_name }}"
 ocp_network_type: "OpenShiftSDN"
-
 
 ### WORKER vars
 worker_count: "2"

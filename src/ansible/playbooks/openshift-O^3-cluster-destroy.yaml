@@ -1,8 +1,7 @@
 # Run sample
 
 # cd to ansible directory
-# sudo ansible-playbook playbooks/openshift-O^3-cluster-destroy.yaml -i `pwd`/vars/O^3/inventory -e config=`pwd`/vars/O^3/main.yaml
-
+# sudo ansible-playbook playbooks/openshift-O^3-cluster-destroy.yaml -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
 
 - name: Load configs
   hosts: all:localhost
@@ -11,7 +10,6 @@
     - ansible-config-load
   tags:
     - always
-
 
 - name: Destroy O^3 cluster
   hosts: localhost
@@ -23,3 +21,11 @@
   tags:
     - ozone-destroy-cluster
 
+- name: Remove cluster kubeconfig
+  hosts: localhost
+  connection: local
+  roles:
+    - openshift-remove-kubeconfig
+  tags:
+    - openshift-remove-kubeconfig
+    - cleanup

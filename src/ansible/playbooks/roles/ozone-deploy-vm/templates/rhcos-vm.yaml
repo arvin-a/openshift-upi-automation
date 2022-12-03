@@ -39,8 +39,8 @@ spec:
             - {{ infra_cluster_storage_access_mode }}
           resources:
             requests:
-              storage: 10Gi
-          storageClassName: {{ infra_cluster_storage_class_name }}
+              storage: 5Gi
+          storageClassName: {{ infra_cluster_fast_storage_class_name }}
           volumeMode: {{ infra_cluster_storage_volume_mode }}
         source:
           blank: {}            

@@ -1,0 +1,4 @@
+- name: Remove cluster kubeconfig file from Kubeconfig dir
+  file:
+    path: "{{ ocp_install_dir }}/auth/kubeconfig"
+    state: absent

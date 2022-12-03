@@ -1,0 +1,123 @@
+---
+
+- name: Label Worker Nodes
+  shell: |
+    oc label node worker1 cluster.ocs.openshift.io/openshift-storage='' --overwrite
+    oc label node worker1 topology.rook.io/rack=1 --overwrite
+    oc label node worker2 cluster.ocs.openshift.io/openshift-storage='' --overwrite
+    oc label node worker2 topology.rook.io/rack=2 --overwrite
+    oc label node worker3 cluster.ocs.openshift.io/openshift-storage='' --overwrite
+    oc label node worker3 topology.rook.io/rack=3 --overwrite
+
+
+- name: Zap all raw disks for ODF
+  shell: "sgdisk --zap-all /dev/{{ item }}"
+  with_items: "{{ odf_raw_disks }}"
+  when: odf_raw_disks is defined
+
+- name: Create Local Storage Namespace
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '01-local-storage-ns.yaml') }}"
+
+
+- name: Create Local Storage Operator Group and Subscription
+  k8s:
+    state: present
+    definition: "{{ lookup('template', item ) }}"
+  with_items:
+    - 02-local-storage-og.yaml
+    - 03-local-storage-sub.yaml
+
+
+- name: Wait until Local Storage CSV has succeeded
+  shell:
+    cmd: oc get csv $(oc get csv -n openshift-local-storage -o custom-columns=NAME:.metadata.name | grep local-storage) -n openshift-local-storage -o=jsonpath='{.status.phase}'
+  register: result
+  until: result.stdout == "Succeeded"
+  retries: 100
+  delay: 5
+
+
+- name: Create Local Storage Volumes
+  k8s:
+    state: present
+    definition: "{{ lookup('template', item ) }}"
+  with_items:
+    - 04-local-storage-lv.yaml
+    - 04-local-storage-lv-fast.yaml
+
+
+- name: Wait until Local Storage PVs are available
+  shell:
+    cmd: oc get pv | grep local-pv | wc -l
+  register: result
+  until: result.stdout == "4"
+  retries: 100
+  delay: 10
+
+
+- name: Create ODF Namespace
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '05-odf-ns.yaml') }}"
+
+
+- name: Create ODF Operator Group
+  k8s:
+    state: present
+    definition: "{{ lookup('template', item ) }}"
+  with_items:
+    - 06-odf-og.yaml
+    - 07-odf-sub.yaml
+
+
+- name: sleep for 20 seconds
+  wait_for:
+    timeout: 20
+
+
+- name: Wait until ODF CSV has succeeded before continueing
+  shell:
+    cmd: oc get csv $(oc get subscriptions odf-operator -o=jsonpath='{.status.currentCSV}' -n openshift-storage) -n openshift-storage -o=jsonpath='{.status.phase}'
+  register: result
+  until: result.stdout == "Succeeded"
+  retries: 100
+  delay: 10
+
+
+- name: Create ODF Cluster
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '08-odf-create-cluster.yaml') }}"
+
+
+- name: Wait until ODF Cluster is ready
+  shell:
+    cmd: oc get StorageCluster odf-storagecluster -n openshift-storage -o=jsonpath='{.status.phase}'
+  register: result
+  until: result.stdout == "Ready"
+  retries: 100
+  delay: 10
+
+- name: Create ODF CephBlockPool
+  k8s:
+    state: present
+    definition: "{{ lookup('template', item ) }}"
+  with_items:
+    - 09-odf-cephblockpool.yaml
+    - 09-odf-cephblockpool-fast.yaml
+    - 10-storage-class.yaml
+    - 10-storage-class-fast.yaml
+
+- name: Wait until CephBlockPools are ready
+  shell: oc get cephblockpool -A -o=jsonpath='{.items[*].status.phase}'
+  register: result
+  until: result.stdout == "Ready Ready"
+  retries: 100
+  delay: 10
+
+- name: Set CephFS as the default storage class
+  shell: |
+   oc patch storageclass odf-storagecluster-ceph-rbd -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class": "true"}}}'
+ 

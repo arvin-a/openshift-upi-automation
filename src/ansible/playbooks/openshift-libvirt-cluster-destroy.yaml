@@ -17,17 +17,6 @@
   tags:
     - always
 
-# - name: Remove OCP Virtualization
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - openshift-virt-uninstall
-#   tags:
-#     - openshift-virt-uninstall
-
-
 - name: Remove libvirt Cluster VMs
   hosts: all
   connection: local
@@ -36,15 +25,19 @@
   tags:
     - libvirt-remove-cluster
 
-
-
-- name: Remove libvirt Cluster VMs
+- name: Clean ODF Storage
   hosts: worker
   connection: local
   roles:
-    - libvirt-clean-ocs-storage
+    - libvirt-clean-odf-storage
   tags:
-    - libvirt-clean-ocs-storage
+    - libvirt-clean-odf-storage
   
-
-
+- name: Remove cluster kubeconfig
+  hosts: localhost
+  connection: local
+  roles:
+    - openshift-remove-kubeconfig
+  tags:
+    - openshift-remove-kubeconfig
+    - cleanup

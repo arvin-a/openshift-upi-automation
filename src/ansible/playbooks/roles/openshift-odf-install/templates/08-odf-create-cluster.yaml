@@ -1,0 +1,90 @@
+apiVersion: ocs.openshift.io/v1
+kind: StorageCluster
+metadata:
+  name: odf-storagecluster
+  namespace: openshift-storage
+spec:
+  manageNodes: true
+  managedResources:
+    cephBlockPools:
+      reconcileStrategy: ignore
+    cephFilesystems:
+      reconcileStrategy: ignore
+    cephObjectStoreUsers:
+      reconcileStrategy: ignore
+    cephObjectStores:
+      reconcileStrategy: ignore
+    snapshotClasses:
+      reconcileStrategy: ignore
+    storageClasses:
+      reconcileStrategy: ignore
+  multiCloudGateway:
+    reconcileStrategy: ignore
+  resources:
+    mds:
+      limits:
+        cpu: "3"
+        memory: "8Gi"
+      requests:
+        cpu: "3"
+        memory: "8Gi"
+  monDataDirHostPath: /var/lib/rook
+  storageDeviceSets:
+  - name: odf-deviceset
+    count: 1   # <-- modify count to desired value
+    deviceType: "ssd"
+    deviceClass: "dc-standard"
+    dataPVCTemplate:
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: "690Gi"
+        storageClassName: localblock
+        volumeMode: Block
+    placement:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpression:
+              - key: cluster.ocs.openshift.io/openshift-storage
+                operator: Exists
+    portable: false
+    replica: 2
+    resources:
+      limits:
+        cpu: "2"
+        memory: "5Gi"
+      requests:
+        cpu: "2"
+        memory: "5Gi"
+  - count: 1   # <-- modify count to desired value
+    deviceType: "ssd"
+    deviceClass: "dc-fast"
+    dataPVCTemplate:
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: "260Gi"
+        storageClassName: localblock-fast
+        volumeMode: Block
+    name: odf-deviceset-fast
+    placement:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpression:
+              - key: cluster.ocs.openshift.io/openshift-storage
+                operator: Exists
+    portable: false
+    replica: 2
+    resources:
+      limits:
+        cpu: "2"
+        memory: "5Gi"
+      requests:
+        cpu: "2"
+        memory: "5Gi"

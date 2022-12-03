@@ -1,0 +1,17 @@
+---
+apiVersion: ceph.rook.io/v1
+kind: CephBlockPool
+metadata:
+  name: odf-storagecluster-cephblockpool-fast
+  namespace: openshift-storage
+spec:
+  deviceClass: "dc-fast"
+  enableRBDStats: true
+  failureDomain: rack
+  erasureCoded:
+    codingChunks: 0
+    dataChunks: 0
+  replicated:
+    requireSafeReplicaSize: false
+    size: 2
+    targetSizeRatio: 1.0
