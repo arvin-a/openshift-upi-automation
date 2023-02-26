@@ -21,6 +21,14 @@
     - staging-dir-setup
     - pre-deploy
 
+- name: Build Hyperhift Binary
+  hosts: localhost
+  connection: local
+  roles:
+    - hypershift/hypershift-cli-build
+  tags:
+    - hypershift-cli-build
+
 - name: Destroy Hypershift cluster
   hosts: localhost
   connection: local

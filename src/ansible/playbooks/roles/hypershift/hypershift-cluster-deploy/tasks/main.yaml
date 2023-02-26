@@ -1,13 +1,10 @@
 ---
-# copy infra kubeconfig to staging
-# copy pull-secret to staging
 
 - name: Create config folder
   file:
     state: directory
     path: "{{ staging_dir }}/configs"
     mode: "0666"
-
 
 - name: Copy pull secret to configs dir
   copy:
@@ -21,22 +18,30 @@
     dest: "{{ staging_dir }}/configs/infra-kubeconfig"
     mode: "0666"
 
+- name: Copy ssh pub key to configs dir
+  copy:
+    content: "{{ rhcos_ssh_pub_key }}"
+    dest: "{{ staging_dir }}/configs/pub_key"
+    mode: "0666"
+
 
 - name: Install Hypershift on Infra cluster
   shell:
-    cmd: "podman run --rm -it -e KUBECONFIG=/opt/configs/infra-kubeconfig -v {{ staging_dir }}/configs:/opt/configs:z {{ hypershift_image }} install --hypershift-image  {{ hypershift_operator_image }}"
+    cmd: "{{ hypershift_cli_path }} install --hypershift-image  {{ hypershift_operator_image }}"
 
+- set_fact:
+    install_arguements: "{{ install_arguements | default ('') + ' --' + item.key + ' ' + item.value + ' '}}"
+  loop: "{{ hypershift_installer_args | dict2items }}"
 
+- debug:
+    msg: "{{ install_arguements }}"
 
-- name: Run Hypershift Installer with specific version
+- debug:
+    msg: "{{ hypershift_cli_path }} create cluster {{ cluster_type }} --name {{ ocp_cluster_name }} --base-domain {{ base_domain }} --pull-secret {{ staging_dir }}/configs/pull-secret --etcd-storage-class {{ infra_cluster_fast_storage_class_name }} --infra-id {{ infra_cluster_name }}  --ssh-key {{ staging_dir }}/configs/pub_key {{ install_arguements }}"    
+
+- name: Run Hypershift Installer
   shell:
-    cmd: "podman run --rm -it -e KUBECONFIG=/opt/configs/infra-kubeconfig -v {{ staging_dir }}/configs:/opt/configs:z {{ hypershift_image }}  create cluster kubevirt --name {{ ocp_cluster_name }} --base-domain {{ base_domain }} --node-pool-replicas={{ worker_count }} --pull-secret /opt/configs/pull-secret --cores {{ worker_cpu }} --memory {{ worker_memory }} --service-publishing-strategy {{ service_publishing_strategy }} --etcd-storage-class {{ infra_cluster_fast_storage_class_name }} --infra-id {{ infra_cluster_name }} --release-image quay.io/openshift-release-dev/ocp-release:{{ hypershift_cluster_version }}-x86_64"
-  when: hypershift_cluster_version is defined
-
-- name: Run Hypershift Installer with latest version
-  shell:
-    cmd: "podman run --rm -it -e KUBECONFIG=/opt/configs/infra-kubeconfig -v {{ staging_dir }}/configs:/opt/configs:z {{ hypershift_image }}  create cluster kubevirt --name {{ ocp_cluster_name }} --base-domain {{ base_domain }} --node-pool-replicas={{ worker_count }} --pull-secret /opt/configs/pull-secret --cores {{ worker_cpu }} --memory {{ worker_memory }} --service-publishing-strategy {{ service_publishing_strategy }} --etcd-storage-class {{ infra_cluster_fast_storage_class_name }} --infra-id {{ infra_cluster_name }}"
-  when: hypershift_cluster_version is not defined
+    cmd: "{{ hypershift_cli_path }} create cluster {{ cluster_type }} --name {{ ocp_cluster_name }} --base-domain {{ base_domain }} --pull-secret {{ staging_dir }}/configs/pull-secret --etcd-storage-class {{ infra_cluster_fast_storage_class_name }} --infra-id {{ infra_cluster_name }}  --ssh-key {{ staging_dir }}/configs/pub_key {{ install_arguements }}"
 
 - name: Patch Infra cluster to allow wildcard policy
   vars:
@@ -56,7 +61,7 @@
 
 - name: Save kubeconfig of Hypershift cluster
   shell:
-    cmd:  "podman run --rm -it -e KUBECONFIG=/opt/configs/infra-kubeconfig -v {{ staging_dir }}/configs:/opt/configs:z {{ hypershift_image }} create kubeconfig --name {{ ocp_cluster_name }} > {{ staging_dir }}/configs/{{ ocp_cluster_name }}"
+    cmd:  "{{ hypershift_cli_path }} create kubeconfig --name {{ ocp_cluster_name }} > {{ staging_dir }}/configs/{{ ocp_cluster_name }}"
 
 
 - name: Copy kubeconfig to Kubeconfig dir
@@ -65,32 +70,7 @@
     dest: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
     mode: "0666"
 
-- name: Get nodeport of the ingress service
-  vars:
-    jsonpath: '{.spec.ports[?(@.port==443)].nodePort}'
-  shell:
-    cmd: oc --kubeconfig {{ staging_dir }}/configs/{{ ocp_cluster_name }} get services -n openshift-ingress router-nodeport-default -o=jsonpath='{{ jsonpath }}'
-  register: ingress_nodeport_cmd
-  until: ingress_nodeport_cmd.rc == 0
-  retries: 120
-  delay: 5
-
-
-- set_fact:
-    ingress_nodeport: "{{ ingress_nodeport_cmd.stdout }}"
-
-
-- name: Create ingress service
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'cluster-ingress-service.yaml') }}"
-
-
-- name: Create ingress route
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'cluster-ingress-route.yaml') }}"
-
+- include_tasks: create-ingress.yaml
 
 - name: Wait until cluster is fully up
   vars:
@@ -101,7 +81,6 @@
   until: apiserver_available.stdout  == "Completed" 
   retries: 240
   delay: 10
-
 
 - name: Get kubeadmin password
   shell:
@@ -116,7 +95,6 @@
 - set_fact:
     tenant_kubeadmin_password: "{{ kubeadmin_password_result.stdout }}"
     tenant_console_url: "{{ console_url_result.stdout }}"
-
 
 - name: Display console route and kubeadmin password
   debug:

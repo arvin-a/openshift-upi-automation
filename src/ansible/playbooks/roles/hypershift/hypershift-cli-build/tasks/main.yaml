@@ -1,0 +1,17 @@
+
+- name: Check if Hypershift binary exists
+  stat:
+    path: "{{ hypershift_cli_path }}"
+  register: hypershift_cli_check
+
+
+
+- name: Build Hypershift installer binary
+  shell: |
+    podman run --rm --privileged -it -v \
+    {{ staging_dir }}:/output docker.io/library/golang:1.18 /bin/bash -c \
+    'git clone -b release-{{ ocp_version }} https://github.com/openshift/hypershift.git && \
+    cd hypershift/ && \
+    make hypershift && \
+    mv bin/hypershift /output/hypershift'
+  when: not hypershift_cli_check.stat.exists or update_hypershift_cli is defined

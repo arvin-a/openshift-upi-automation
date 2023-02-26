@@ -1,19 +1,19 @@
 ---
 
-- name: Create config folder
-  file:
-    state: directory
-    path: "{{ staging_dir }}/configs"
-    mode: "0666"
+# - name: Create config folder
+#   file:
+#     state: directory
+#     path: "{{ staging_dir }}/configs"
+#     mode: "0666"
 
 
-- name: Copy kubeconfig to conigs dir
-  copy:
-    src: "{{ infra_cluster_kubeconfig }}"
-    dest: "{{ staging_dir }}/configs/infra-kubeconfig"
-    mode: "0666"
+# - name: Copy kubeconfig to conigs dir
+#   copy:
+#     src: "{{ infra_cluster_kubeconfig }}"
+#     dest: "{{ staging_dir }}/configs/infra-kubeconfig"
+#     mode: "0666"
 
 - name: Destroy Hypershift Cluster
   shell:
-    cmd: "podman run --rm -it -e KUBECONFIG=/opt/configs/infra-kubeconfig -v {{ staging_dir }}/configs:/opt/configs:z {{ hypershift_image }}  destroy cluster kubevirt --name {{ ocp_cluster_name }}"
+    cmd: "{{ hypershift_cli_path }} destroy cluster kubevirt --name {{ ocp_cluster_name }}"
 

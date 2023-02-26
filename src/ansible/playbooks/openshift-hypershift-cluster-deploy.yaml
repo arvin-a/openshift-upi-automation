@@ -3,6 +3,10 @@
 # cd to ansible directory
 # export VARSDIR=`pwd`/vars/hypershift
 # sudo ansible-playbook playbooks/openshift-hypershift-cluster-deploy.yaml -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
+## If you are using a vault file in your vars use --vault-id @prompt 
+# sudo ansible-playbook  playbooks/openshift-hypershift-cluster-deploy.yaml  --vault-password-file vaultpass -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
+# -e update_hypershift_cli=true      <- force rebuild of hypershift binary
+
 
 - name: Load configs
   hosts: all:localhost
@@ -21,7 +25,16 @@
     - staging-dir-setup
     - pre-deploy
 
-# Run Hypershift installer
+
+- name: Build Hyperhift Binary
+  hosts: localhost
+  connection: local
+  roles:
+    - hypershift/hypershift-cli-build
+  tags:
+    - hypershift-cli-build
+
+
 - name: Create Hypershift cluster
   hosts: localhost
   connection: local
@@ -33,12 +46,12 @@
     - hypershift-cluster-deploy
 
 
-- name: Install kubevirt csi driver
-  hosts: localhost
-  connection: local
-  environment:
-    KUBECONFIG: "{{ infra_cluster_kubeconfig }}"
-  roles:
-    - hypershift/hypershift-kubevirt-csi-install
-  tags:
-    - hypershift-kubevirt-csi-install
+# - name: Install kubevirt csi driver
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ infra_cluster_kubeconfig }}"
+#   roles:
+#     - hypershift/hypershift-kubevirt-csi-install
+#   tags:
+#     - hypershift-kubevirt-csi-install

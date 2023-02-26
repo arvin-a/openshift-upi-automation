@@ -6,7 +6,10 @@ metadata:
   name: apps-ingress
   namespace: {{ infra_cluster_tenant_namespace }}
 spec:
+  loadBalancerIP: {{ load_balancer_ip }}
+  allocateLoadBalancerNodePorts: true
   internalTrafficPolicy: Cluster
+  externalTrafficPolicy: Cluster
   ipFamilies:
   - IPv4
   ipFamilyPolicy: SingleStack
@@ -18,4 +21,4 @@ spec:
   selector:
     kubevirt.io: virt-launcher
   sessionAffinity: None
-  type: ClusterIP
+  type: LoadBalancer

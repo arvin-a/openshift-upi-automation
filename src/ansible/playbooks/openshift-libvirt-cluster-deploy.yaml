@@ -181,7 +181,6 @@
     - openshift-virt-install
     - post-install
 
-
 - name: Create network bridge
   hosts: localhost
   connection: local
@@ -193,3 +192,13 @@
     - openshift-create-bridge
     - post-install
 
+- name: Metallb install and configure
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - openshift-metallb-install
+  tags:
+    - openshift-metallb-install
+    - post-install

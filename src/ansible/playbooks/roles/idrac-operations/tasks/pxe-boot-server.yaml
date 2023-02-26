@@ -1,0 +1,16 @@
+# https://github.com/dell/dellemc-openmanage-ansible-modules/blob/collections/docs/modules/idrac_boot.rst
+- name: Configure the boot source override mode as pxe.
+  dellemc.openmanage.idrac_boot:
+    idrac_ip: "{{ idrac }}"
+    idrac_user: "{{ idrac_user }}"
+    idrac_password: "{{ idrac_password }}"
+    validate_certs: false
+    boot_source_override_mode: legacy
+    boot_source_override_target: pxe
+    boot_source_override_enabled: once
+    reset_type: "force_restart"
+  register: one_time_boot_operation
+
+- debug:
+    msg: "{{ one_time_boot_operation }}"
+

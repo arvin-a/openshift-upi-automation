@@ -1,0 +1,12 @@
+# https://github.com/dell/dellemc-openmanage-ansible-modules/tree/collections/docs/modules
+
+- name: Get System Inventory
+  dellemc.openmanage.idrac_system_info:
+    idrac_ip: "{{ idrac }}"
+    idrac_user: "{{ user }}"
+    idrac_password: "{{ password }}"
+    validate_certs: false
+  register: server_info
+
+- debug:
+    msg: "{{ server_info }}"

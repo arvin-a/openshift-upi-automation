@@ -1,4 +1,5 @@
 platform: "hypershift"
+cluster_type: kubevirt
 ocp_version: "4.11"
 hypershift_image: "quay.io/openshift/origin-hypershift"
 infra_cluster_name: "ocp-infra1"

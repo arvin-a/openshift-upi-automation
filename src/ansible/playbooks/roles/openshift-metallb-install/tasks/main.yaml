@@ -1,0 +1,59 @@
+
+- name: Apply Metallb NS and OG yaml
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '01-metallb-ns-og.yaml') }}"
+
+- name: sleep for 5 seconds
+  wait_for:
+    timeout: 5
+
+- name: Apply Metallb Subscription yaml
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '02-metallb-sub.yaml') }}"
+
+- name: sleep for 20 seconds
+  wait_for:
+    timeout: 20
+
+- name: Wait until Metallb Operator installation has succeeded
+  shell:
+    cmd: oc get csv $(oc get subscriptions.operators.coreos.com metallb-operator -n metallb-system -o=jsonpath='{.status.currentCSV}') -o=jsonpath='{.status.phase}'
+  register: result
+  until: result.stdout == "Succeeded"
+  retries: 100
+  delay: 5
+
+
+- name: Create Metallb instance
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '03-metallb-instance.yaml') }}"
+
+- name: sleep for 5 seconds
+  wait_for:
+    timeout: 5
+
+
+- name: Wait until Metallb instance is available
+  shell:
+    cmd: oc get metallb -n metallb-system metallb -o=jsonpath='{.status.conditions[?(@.type=="Available")].status}'
+  register: result
+  until: result.stdout == "True"
+  retries: 100
+  delay: 5
+
+- name: Create IP Address Pool
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '04-metallb-ipaddresspool.yaml') }}"
+
+- name: Create L2 Ip Advertisement
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '05-metallb-l2advertisement.yaml') }}"
+
+- name: sleep for 5 seconds
+  wait_for:
+    timeout: 5
