@@ -3,13 +3,13 @@
   vars:
     jsonpath: '{.spec.ports[?(@.port==443)].nodePort}'
   shell:
-    cmd: oc --kubeconfig {{ staging_dir }}/configs/{{ ocp_cluster_name }} get services -n openshift-ingress router-nodeport-default -o=jsonpath='{{ jsonpath }}'
+    cmd: oc --kubeconfig {{ cluster_kubeconfig }} get services -n openshift-ingress router-nodeport-default -o=jsonpath='{{ jsonpath }}'
   register: ingress_nodeport_cmd
   until: ingress_nodeport_cmd.rc == 0
   retries: 120
   delay: 5
 
-- name: Get IP of clyster ingress from DNS
+- name: Get IP of cluster ingress from DNS
   shell:
     cmd: host {{ hypershift_ingress_domain }} | awk '{print $4}'
   register: hostip_cmd

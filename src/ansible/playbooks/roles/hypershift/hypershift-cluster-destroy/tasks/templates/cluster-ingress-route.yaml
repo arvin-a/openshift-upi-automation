@@ -1,0 +1,5 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: "{{ ocp_cluster_name }}-443"
+  namespace: {{ infra_cluster_tenant_namespace }}

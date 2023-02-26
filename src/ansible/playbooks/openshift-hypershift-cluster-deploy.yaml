@@ -46,6 +46,16 @@
     - hypershift-cluster-deploy
 
 
+- name: Add HTPasswd auth provider
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - openshift-auth-provider
+  tags:
+    - openshift-auth-provider
+
 # - name: Install kubevirt csi driver
 #   hosts: localhost
 #   connection: local

@@ -70,6 +70,9 @@
     dest: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
     mode: "0666"
 
+- set_fact:
+    cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
+
 - include_tasks: create-ingress.yaml
 
 - name: Wait until cluster is fully up
@@ -89,7 +92,7 @@
 
 - name: Get console url
   shell:
-    cmd: "oc  --kubeconfig {{ staging_dir }}/configs/{{ ocp_cluster_name }} whoami --show-console"
+    cmd: "oc  --kubeconfig {{ cluster_kubeconfig }} whoami --show-console"
   register: console_url_result
 
 - set_fact:

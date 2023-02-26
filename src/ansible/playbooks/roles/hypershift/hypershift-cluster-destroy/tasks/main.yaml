@@ -1,17 +1,13 @@
 ---
+- name: Delete ingress service
+  k8s:
+    state: absent
+    definition: "{{ lookup('template', 'cluster-ingress-service.yaml') }}"
 
-# - name: Create config folder
-#   file:
-#     state: directory
-#     path: "{{ staging_dir }}/configs"
-#     mode: "0666"
-
-
-# - name: Copy kubeconfig to conigs dir
-#   copy:
-#     src: "{{ infra_cluster_kubeconfig }}"
-#     dest: "{{ staging_dir }}/configs/infra-kubeconfig"
-#     mode: "0666"
+- name: Delete ingress route
+  k8s:
+    state: absent
+    definition: "{{ lookup('template', 'cluster-ingress-route.yaml') }}"
 
 - name: Destroy Hypershift Cluster
   shell:
