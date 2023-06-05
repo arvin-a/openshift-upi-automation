@@ -3,7 +3,7 @@
 # cd to ansible directory
 
 # export VARSDIR=`pwd`/vars/libvirt
-# sudo ansible-playbook playbooks/openshift-libvirt-cluster-deploy.yaml -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
+# sudo ansible-playbook playbooks/openshift-libvirt-bm-cluster-deploy.yaml -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR --vault-password-file vaultpass
 
 #### Options
 # --skip-tags pre-deploy
@@ -53,7 +53,7 @@
   tags:
     - openshift-iginition
 
-- name: Upload bootstrap ignition to webserver
+- name: Upload ignitions to webserver
   hosts: localhost
   connection: local
   roles:
@@ -69,7 +69,6 @@
   tags:
     - openshift-iginition
     
-
 - name: Setup libvirt VM image
   hosts: localhost
   connection: local
@@ -87,7 +86,6 @@
   tags:
     - libvirt-deploy-vms
 
-
 - name: Deploy libvirt Control VMs
   hosts: control
   connection: local
@@ -100,10 +98,20 @@
   hosts: worker
   connection: local
   roles:
-    - libvirt-deploy-vms
+    - role: libvirt-deploy-vms
+      when: node_type is not defined  
   tags:
     - libvirt-deploy-vms
 
+- name: Deploy bare metal workers
+  hosts: worker
+  connection: local
+  roles:
+    - role: idrac-operations
+      action: pxe-boot
+      when:
+        - node_type is defined
+        - node_type == "bm"
 
 - name: OCP install time operations
   hosts: localhost

@@ -56,7 +56,7 @@
   hosts: localhost
   connection: local
   roles:
-    - openshift-iginition-bootstrap-upload-to-webserver
+    - openshift-iginition-upload-to-webserver
   tags:
     - openshift-iginition
     

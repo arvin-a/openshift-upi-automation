@@ -1,0 +1,36 @@
+# Run sample
+
+# cd to ansible directory
+# export VARSDIR=`pwd`/vars/libvirt
+# sudo ansible-playbook playbooks/openshift-libvirt-bm-cluster-destroy.yaml -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR --vault-password-file vaultpass
+
+#### Options
+# --skip-tags pre-deploy
+# --tags openshift-install-time-operations,openshift-auth-provider
+
+
+- name: Load configs
+  hosts: all:localhost
+  connection: local
+  roles:
+    - ansible-config-load
+  tags:
+    - always
+
+- name: Remove libvirt Cluster VMs
+  hosts: bootstrap:control
+  connection: local
+  roles:
+    - libvirt-remove-cluster
+  tags:
+    - libvirt-remove-cluster
+
+  
+- name: Remove cluster kubeconfig
+  hosts: localhost
+  connection: local
+  roles:
+    - openshift-remove-kubeconfig
+  tags:
+    - openshift-remove-kubeconfig
+    - cleanup

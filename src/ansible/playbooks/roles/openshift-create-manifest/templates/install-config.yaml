@@ -20,6 +20,6 @@ networking:
 platform:
   none: {}
 additionalTrustBundle: |
-{{ additional_trust_bundle | indent(width=2, indentfirst=true) }}
+{{ additional_trust_bundle | indent(width=2, first=true) }}
 pullSecret: '{{ pull_secret }}'
 sshKey: '{{ rhcos_ssh_pub_key }}'
