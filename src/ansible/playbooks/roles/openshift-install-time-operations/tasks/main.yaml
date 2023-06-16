@@ -20,3 +20,9 @@
 - name: Wait for installation completion
   shell:
     cmd: "{{ staging_dir }}/openshift-install wait-for install-complete --dir {{ ocp_install_dir }}"
+
+
+# One last csr approve attempt in case there are any CSRs left over
+- name: Approve certs part 2
+  shell: |
+    oc get csr -o name | xargs oc adm certificate approve &> /dev/null

@@ -9,7 +9,6 @@
 # --skip-tags pre-deploy
 # --tags openshift-install-time-operations,openshift-auth-provider
 
-
 - name: Load configs
   hosts: all:localhost
   connection: local
@@ -17,6 +16,7 @@
     - ansible-config-load
   tags:
     - always
+
 
 - name: Setup Staging Directory
   hosts: localhost
@@ -27,6 +27,7 @@
     - staging-dir-setup
     - pre-deploy
 
+
 - name: Download Artifacts
   hosts: localhost
   connection: local
@@ -35,6 +36,7 @@
   tags:
     - openshift-download-artifacts
     - pre-deploy
+
 
 - name: Create OpenShift manifest
   hosts: localhost
@@ -53,6 +55,7 @@
   tags:
     - openshift-iginition
 
+
 - name: Upload bootstrap ignition to webserver
   hosts: localhost
   connection: local
@@ -60,7 +63,8 @@
     - openshift-iginition-upload-to-webserver
   tags:
     - openshift-iginition
-    
+  
+
 - name: Overwrite bootstrap ignition with ignition pointer
   hosts: localhost
   connection: local
@@ -68,7 +72,7 @@
     - openshift-iginition-update
   tags:
     - openshift-iginition
-    
+
 
 - name: Setup libvirt VM image
   hosts: localhost
@@ -78,6 +82,7 @@
   tags:
     - libvirt-setup-vm-image
     - lbvirt-setup
+
 
 - name: Deploy libvirt Bootstrap VM
   hosts: bootstrap
@@ -95,6 +100,7 @@
     - libvirt-deploy-vms
   tags:
     - libvirt-deploy-vms
+
 
 - name: Deploy libvirt Worker VMs
   hosts: worker
@@ -123,6 +129,7 @@
     - libvirt-remove-bootstrap
   tags:
     - libvirt-remove-bootstrap
+
 
 - name: Output kubeadmin password
   hosts: localhost
@@ -181,6 +188,7 @@
     - openshift-virt-install
     - post-install
 
+
 - name: Create network bridge
   hosts: localhost
   connection: local
@@ -192,6 +200,7 @@
     - openshift-create-bridge
     - post-install
 
+
 - name: Metallb install and configure
   hosts: localhost
   connection: local
@@ -201,4 +210,15 @@
     - openshift-metallb-install
   tags:
     - openshift-metallb-install
+    - post-install
+
+- name: Multi Cluster Engine install and configure
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - openshift-mce-install
+  tags:
+    - openshift-mce-install
     - post-install

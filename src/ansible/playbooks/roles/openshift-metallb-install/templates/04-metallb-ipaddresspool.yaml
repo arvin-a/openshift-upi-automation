@@ -6,4 +6,4 @@ metadata:
 spec:
   addresses:
   - 192.168.3.221-192.168.3.230
-  autoAssign: false
+  autoAssign: true

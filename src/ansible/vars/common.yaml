@@ -35,10 +35,12 @@ staging_base_dir: /tmp/ansible
 
 # web server
 http_file_server_base_path: "/var/www/html" # Change this to the base path of your webserver"
+http_file_server_os_path: "{{ http_file_server_base_path }}/{{ kubevirt_rhcos_bin_file_name }}"
 http_file_server_path: "{{ http_file_server_base_path }}/{{ ocp_cluster_name }}"
 
 # Change this to the base url of your webserver, make sure you don't have a / at the end
 http_base_url: "https://t640.arvhomelab.com"
+http_os_base_url: "{{ http_base_url }}/os"
 
 # kubeconfig folder, location of your kubeconfig files for your infra and tenant cluster
 kubeconfig_dir: "/kubeconfig"

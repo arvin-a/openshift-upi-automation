@@ -6,12 +6,21 @@
 
 
 
+
 - name: Build Hypershift installer binary
   shell: |
-    podman run --rm --privileged -it -v \
-    {{ staging_dir }}:/output docker.io/library/golang:1.18 /bin/bash -c \
-    'git clone -b release-{{ ocp_version }} https://github.com/openshift/hypershift.git && \
-    cd hypershift/ && \
-    make hypershift && \
-    mv bin/hypershift /output/hypershift'
+    cd {{ staging_dir }}
+    wget --no-check-certificate  https://hypershift-cli-download-multicluster-engine.apps.ocp-infra1.arvhomelab.com/linux/amd64/hypershift.tar.gz
+    tar xvf hypershift.tar.gz
+    chmod +x hypershift
   when: not hypershift_cli_check.stat.exists or update_hypershift_cli is defined
+
+# - name: Build Hypershift installer binary
+#   shell: |
+#     podman run --rm --privileged -it -v \
+#     {{ staging_dir }}:/output docker.io/library/golang:1.18 /bin/bash -c \
+#     'git clone -b release-{{ ocp_version }} https://github.com/openshift/hypershift.git && \
+#     cd hypershift/ && \
+#     make hypershift && \
+#     mv bin/hypershift /output/hypershift'
+#   when: not hypershift_cli_check.stat.exists or update_hypershift_cli is defined

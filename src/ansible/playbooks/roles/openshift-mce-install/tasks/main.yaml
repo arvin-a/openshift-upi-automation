@@ -1,0 +1,43 @@
+---
+- name: Apply MCE NS and OG yaml
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '01-mce-ns-og.yaml') }}"
+
+- name: sleep for 5 seconds
+  wait_for:
+    timeout: 5
+  
+- name: Apply MCE Subscription yaml
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '02-mce-sub.yaml') }}"
+
+- name: sleep for 20 seconds
+  wait_for:
+    timeout: 20
+
+- name: Wait until MCE Operator installation has succeeded
+  shell:
+    cmd: oc get csv $(oc get subscriptions.operators.coreos.com multicluster-engine -n multicluster-engine -o=jsonpath='{.status.currentCSV}') -n multicluster-engine -o=jsonpath='{.status.phase}'
+  register: result
+  until: result.stdout == "Succeeded"
+  retries: 100
+  delay: 5
+
+- name: Apply MCE Instance yaml
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '03-mce-instance.yaml') }}"
+
+- name: sleep for 30 seconds
+  wait_for:
+    timeout: 30
+
+- name: Wait until OpenShift Virtualization hyperconverged cluster installation has succeeded
+  shell:
+    cmd: oc get MultiClusterEngine multiclusterengine -n multicluster-engine -o=jsonpath='{.status.conditions[?(@.type=="Available")].status}'
+  register: result
+  until: result.stdout == "True"
+  retries: 100
+  delay: 5

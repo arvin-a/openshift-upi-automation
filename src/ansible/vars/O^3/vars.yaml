@@ -6,20 +6,23 @@ ocp_cluster_name: "ocp-tenant1"
 
 cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
 staging_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}"
+staging_backup_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}/backup"
 ocp_install_dir: "{{ staging_dir }}/ocp-install"
 infra_cluster_name: "ocp-infra1"
 infra_cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ infra_cluster_name }}"
 infra_cluster_bridge_name: "br1"
-infra_cluster_storage_class_name: "ocs-storagecluster-ceph-rbd"
+infra_cluster_storage_class_name: "odf-storagecluster-ceph-rbd"
+infra_cluster_fast_storage_class_name: "odf-storagecluster-ceph-rbd-fast"
 infra_cluster_storage_volume_mode: "Block" # If your storage class supports block, its recommended you use that
 infra_cluster_storage_access_mode: "ReadWriteMany" # If your storage class supports it, ReadWriteMany is recommended
 
 # OCP Vars
-ocp_bin_version: "4.10"
+ocp_bin_version: "4.12"
 ocp_bin_channel: "fast"
 rhcos_bin_qcow_url: "{{ rhcos_bin_release_url }}/{{ kubevirt_rhcos_bin_archive_name }}"
 rhcos_bin_archive_name: "{{ kubevirt_rhcos_bin_archive_name }}"
 rhcos_bin_file_name: "{{ kubevirt_rhcos_bin_file_name }}"
+ocp_network_type: "OVNKubernetes"
 
 ### CONTROL vars
 control_ign: "{{ ocp_install_dir }}/master.ign"

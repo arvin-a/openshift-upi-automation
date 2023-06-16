@@ -29,6 +29,8 @@
 - name: Build Hyperhift Binary
   hosts: localhost
   connection: local
+  environment:
+    KUBECONFIG: "{{ infra_cluster_kubeconfig }}"
   roles:
     - hypershift/hypershift-cli-build
   tags:
@@ -39,6 +41,7 @@
   hosts: localhost
   connection: local
   environment:
+    KUBERNETES_MASTER: "{{ infra_cluster_kubeconfig }}"
     KUBECONFIG: "{{ infra_cluster_kubeconfig }}"
   roles:
     - hypershift/hypershift-cluster-deploy

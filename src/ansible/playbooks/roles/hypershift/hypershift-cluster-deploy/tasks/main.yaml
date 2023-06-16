@@ -24,24 +24,27 @@
     dest: "{{ staging_dir }}/configs/pub_key"
     mode: "0666"
 
-
-- name: Install Hypershift on Infra cluster
-  shell:
-    cmd: "{{ hypershift_cli_path }} install --hypershift-image  {{ hypershift_operator_image }}"
-
 - set_fact:
     install_arguements: "{{ install_arguements | default ('') + ' --' + item.key + ' ' + item.value + ' '}}"
   loop: "{{ hypershift_installer_args | dict2items }}"
 
 - debug:
-    msg: "{{ install_arguements }}"
+    msg:
+      - "HyperShift Cluster params"
+      - "Cluster Type: {{ cluster_type }}"
+      - "Cluster Name: {{ ocp_cluster_name }}"
+      - "Base Domain: {{ base_domain }}"
+      - "Infra cluster storage class: {{ infra_cluster_fast_storage_class_name }}"
+      - "Infra cluster name: {{ infra_cluster_name }}"
+      - "Install Arguements: {{ install_arguements }}"
 
-- debug:
-    msg: "{{ hypershift_cli_path }} create cluster {{ cluster_type }} --name {{ ocp_cluster_name }} --base-domain {{ base_domain }} --pull-secret {{ staging_dir }}/configs/pull-secret --etcd-storage-class {{ infra_cluster_fast_storage_class_name }} --infra-id {{ infra_cluster_name }}  --ssh-key {{ staging_dir }}/configs/pub_key {{ install_arguements }}"    
 
-- name: Run Hypershift Installer
-  shell:
-    cmd: "{{ hypershift_cli_path }} create cluster {{ cluster_type }} --name {{ ocp_cluster_name }} --base-domain {{ base_domain }} --pull-secret {{ staging_dir }}/configs/pull-secret --etcd-storage-class {{ infra_cluster_fast_storage_class_name }} --infra-id {{ infra_cluster_name }}  --ssh-key {{ staging_dir }}/configs/pub_key {{ install_arguements }}"
+# - debug:
+#     msg: "{{ hypershift_cli_path }} create cluster {{ cluster_type }} --name {{ ocp_cluster_name }} --base-domain {{ base_domain }} --pull-secret {{ staging_dir }}/configs/pull-secret --etcd-storage-class {{ infra_cluster_fast_storage_class_name }} --infra-id {{ infra_cluster_name }}  --ssh-key {{ staging_dir }}/configs/pub_key {{ install_arguements }}"
+
+# - name: Run Hypershift Installer
+#   shell:
+#     cmd: "{{ hypershift_cli_path }} create cluster {{ cluster_type }} --name {{ ocp_cluster_name }} --base-domain {{ base_domain }} --pull-secret {{ staging_dir }}/configs/pull-secret --etcd-storage-class {{ infra_cluster_fast_storage_class_name }} --infra-id {{ infra_cluster_name }}  --ssh-key {{ staging_dir }}/configs/pub_key {{ install_arguements }}"
 
 - name: Patch Infra cluster to allow wildcard policy
   vars:
@@ -49,13 +52,29 @@
   shell:
     cmd: "oc patch ingresscontroller -n openshift-ingress-operator default --type=json -p '{{ patchstr }}'"
 
+# Create htpasswd secret for hyperhift cluster
+- name: Create htpasswd secret for the cluster
+  shell:
+    cmd: "oc create secret generic htpass-secret-{{ ocp_cluster_name }} --from-file=htpasswd={{ role_path }}/files/users.htpasswd -n clusters --dry-run=client -o yaml | oc apply -f -"
+
+- name: Create HyperShift Cluster using templated yamls
+  k8s:
+    state: present
+    definition: "{{ lookup('template', item) }}"
+  loop:
+    - "01-hypershift-ns.yaml"
+    - "02-hypershift-pull-secret.yaml"
+    - "03-hypershift-ssh-key-secret.yaml"
+    - "04-hypershift-Hosted-Cluster.yaml"
+    - "05-hypershift-node-pool.yaml"
+
 - name: Wait until apiserver is available
   vars:
     jsonfilter: '{.status.conditions[?(@.type=="Available")].status}'
   shell:
     cmd: "oc get --namespace clusters hostedclusters {{ ocp_cluster_name }} -o=jsonpath='{{ jsonfilter }}'"
   register: apiserver_available
-  until: apiserver_available.stdout  == "True" 
+  until: apiserver_available.stdout  == "True"
   retries: 100
   delay: 5
 
@@ -73,6 +92,11 @@
 - set_fact:
     cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
 
+
+- name: Make users cluster admin
+  shell: |
+    oc --kubeconfig={{ cluster_kubeconfig }} adm policy add-cluster-role-to-user cluster-admin arvin &> /dev/null
+
 - include_tasks: create-ingress.yaml
 
 - name: Wait until cluster is fully up
@@ -81,7 +105,7 @@
   shell:
     cmd: "oc get --namespace clusters hostedclusters {{ ocp_cluster_name }} -o=jsonpath='{{ jsonfilter }}'"
   register: apiserver_available
-  until: apiserver_available.stdout  == "Completed" 
+  until: apiserver_available.stdout  == "Completed"
   retries: 240
   delay: 10
 

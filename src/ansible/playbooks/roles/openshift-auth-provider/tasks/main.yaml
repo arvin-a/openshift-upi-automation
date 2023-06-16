@@ -9,7 +9,6 @@
   shell:
     cmd: "oc apply -f {{ role_path }}/files/htpasswd-oauth.yaml"
 
-
 - name: Make users cluster admin
   shell: |
     oc adm policy add-cluster-role-to-user cluster-admin arvin &> /dev/null
