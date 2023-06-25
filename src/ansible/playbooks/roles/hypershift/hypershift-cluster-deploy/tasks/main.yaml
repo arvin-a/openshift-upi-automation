@@ -96,7 +96,11 @@
 - name: Make users cluster admin
   shell: |
     oc --kubeconfig={{ cluster_kubeconfig }} adm policy add-cluster-role-to-user cluster-admin arvin &> /dev/null
-
+  register: cluster_admin_cmd
+  until: cluster_admin_cmd.rc  == 0
+  retries: 10
+  delay: 10
+  
 - include_tasks: create-ingress.yaml
 
 - name: Wait until cluster is fully up

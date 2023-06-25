@@ -36,8 +36,3 @@ rhcos_bin_qcow_url: "{{ rhcos_bin_release_url }}/{{ kubevirt_rhcos_bin_archive_n
 rhcos_bin_archive_name: "{{ kubevirt_rhcos_bin_archive_name }}"
 rhcos_bin_file_name: "{{ kubevirt_rhcos_bin_file_name }}"
 ocp_network_type: "OpenShiftSDN"
-
-
-# Kubevirt CSI Driver vars
-kubevirt_csi_service_kubeconfig: "kubevirt-csi-service-kubeconfig"
-kubevirt_csi_infra_cluster_sc: "{{ infra_cluster_storage_class_name }}"

@@ -3,4 +3,4 @@ TIMEOUT 2
 PROMPT 0
 LABEL pxeboot
     KERNEL http://192.168.3.2/images/rhcos-4.12.17-x86_64-live-kernel-x86_64
-    APPEND initrd=http://192.168.3.2/images/rhcos-4.12.17-x86_64-live-initramfs.x86_64.img coreos.live.rootfs_url=http://192.168.3.2/images/rhcos-4.12.17-x86_64-live-rootfs.x86_64.img coreos.inst.install_dev=/dev/sda coreos.inst.ignition_url=http://http://t640.arvhomelab.com/ocp-infra2/worker.ign
+    APPEND initrd=images/rhcos-4.12.17-x86_64-live-initramfs.x86_64.img coreos.live.rootfs_url=http://192.168.3.2/images/rhcos-4.12.17-x86_64-live-rootfs.x86_64.img coreos.inst.install_dev=/dev/sda coreos.inst.ignition_url=http://t640.arvhomelab.com/ocp-infra2/worker.ign console=tty0 console=ttyS0,115200n8 rd.neednet=1 ignition.platform.id=metal ignition.firstboot

@@ -6,3 +6,5 @@ metadata:
 spec:
   ipAddressPools:
    - metallb
+  interfaces:
+    - br-ex

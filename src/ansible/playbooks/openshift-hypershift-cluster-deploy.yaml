@@ -58,13 +58,3 @@
     - openshift-auth-provider
   tags:
     - openshift-auth-provider
-
-# - name: Install kubevirt csi driver
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ infra_cluster_kubeconfig }}"
-#   roles:
-#     - hypershift/hypershift-kubevirt-csi-install
-#   tags:
-#     - hypershift-kubevirt-csi-install
