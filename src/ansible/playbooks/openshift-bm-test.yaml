@@ -23,10 +23,15 @@
     - pre-deploy
 
 # Run Hypershift installer
-- name: Test idrac access
+# - name: Test idrac access
+#   hosts: worker
+#   connection: local
+#   roles:
+#     - role: idrac-operations
+#       action: pxe-boot
+
+- name: Test node ssh test
   hosts: worker
   connection: local
   roles:
-    - role: idrac-operations
-      action: pxe-boot
-
+    - role: node-ssh-test

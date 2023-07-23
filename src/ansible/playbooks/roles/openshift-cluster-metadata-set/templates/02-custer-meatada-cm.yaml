@@ -1,0 +1,10 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: cluster-metadata
+  namespace: cluster-metadata
+data:
+  standard-sc: "{{ infra_cluster_storage_class_name }}"
+  fast-sc: "{{ infra_cluster_fast_storage_class_name }}"
+  cluster-role: "{{ cluster_role }}"
+  platform: "{{ platform }}"

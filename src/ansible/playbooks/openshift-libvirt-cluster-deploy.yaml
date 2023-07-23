@@ -228,3 +228,14 @@
   tags:
     - openshift-mce-install
     - post-install
+
+- name: Cluster metadata set
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - openshift-cluster-metadata-set
+  tags:
+    - openshift-cluster-metadata-set
+    - post-install

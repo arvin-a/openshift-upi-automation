@@ -1,5 +1,6 @@
 platform: "hypershift"
 cluster_type: kubevirt
+cluster_role: tenant   # values can be infra or tenant
 ocp_version: "4.13"
 hypershift_image: "hypershift-cli:latest"
 hypershift_operator_image: quay.io/hypershift/hypershift-operator:4.13
@@ -14,8 +15,6 @@ infra_cluster_tenant_namespace: "clusters-{{ ocp_cluster_name }}"
 ocp_cluster_name: "ocp-hyper1"
 base_domain: "apps.{{ infra_cluster_name }}.{{ infra_cluster_base_domain }}"
 hypershift_ingress_domain: "apps.{{ ocp_cluster_name }}.{{ base_domain }}"
-
-storage_provider: lvm  # Options are lvm or odf
 
 hypershift_installer_args:
   node-pool-replicas: "2"

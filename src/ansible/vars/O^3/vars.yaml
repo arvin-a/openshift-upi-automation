@@ -1,5 +1,5 @@
 platform: "O^3"
-
+cluster_role: tenant   # values can be infra or tenant
 ## Update the following with values for your desired environment
 base_domain: arvhomelab.com
 ocp_cluster_name: "ocp-tenant1" 
@@ -11,9 +11,8 @@ ocp_install_dir: "{{ staging_dir }}/ocp-install"
 infra_cluster_name: "ocp-infra1"
 infra_cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ infra_cluster_name }}"
 infra_cluster_bridge_name: "br1"
-storage_provider: lvm  # Options are lvm or odf
 infra_cluster_storage_volume_mode: "Block" # If your storage class supports block, its recommended you use that
-infra_cluster_storage_access_mode: "ReadWriteMany" # If your storage class supports it, ReadWriteMany is recommended
+infra_cluster_storage_access_mode: "ReadWriteOnce" # If your storage class supports it, ReadWriteMany is recommended
 
 # OCP Vars
 ocp_bin_version: "4.12"
@@ -30,7 +29,6 @@ control_memory: "16384"
 control_type: master
 
 ### WORKER vars
-worker_count: "2"
 worker_ign: "{{ ocp_install_dir }}/worker.ign"
 worker_cpu: "4"
 worker_memory: "16384"

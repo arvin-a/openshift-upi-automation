@@ -1,0 +1,27 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: lvms-standard-im
+  annotations:
+    description: Provides RWO and RWOP Filesystem & Block volumes
+provisioner: topolvm.io
+parameters:
+  csi.storage.k8s.io/fstype: xfs
+  topolvm.io/device-class: standard
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: Immediate
+---
+allowVolumeExpansion: true
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    description: Provides RWO and RWOP Filesystem & Block volumes
+  name: lvms-fast-im
+parameters:
+  csi.storage.k8s.io/fstype: xfs
+  topolvm.io/device-class: fast
+provisioner: topolvm.io
+reclaimPolicy: Delete
+volumeBindingMode: Immediate

@@ -46,7 +46,6 @@ http_os_base_url: "{{ http_base_url }}/os"
 kubeconfig_dir: "/kubeconfig"
 
 
-ocp_network_type: "OpenShiftSDN"
 ## RHCOS SSH key <- will need this to ssh into your rhcos nodes 
 rhcos_ssh_pub_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCc2NIZVcpLoWEeZTYA/uPMSI+HYoyJK/NmthImF/Biah0R0eLGdelgPIYYEFRu+ijOnzLRDX9qsbcvud2trOCqjzVsw+vclZfqt8RLDzdvPaPS9S+cTH1QZPKao6QMuhrL1RP8w/HUQe8Ga7o4o9nq66y0ZHzzBHhaGyDWIK0JoBmrE6IpprtqTkyGB+aica9H2MhaQGJkI2ioGqXt+7R4osUEr4pkmm0zg1yvzb5kS1Vk5if2jUapTTZQYQ7Vu/GaLNpF6l3lJnflx7KvPialN0m0QVC16pMVpdbaO+dLLzE1+KecS1+ySHWP6rvUQwnu8McIx5GeaM8kb30fcdKDhXiTmlTEQvBVRtWQ/gRVJxFFbHCzXmtwGqmv0jJDKPWi9PzxavrqaSUt0lSuHe+ksuXniTwXIAbpHO9Q6mwGUWWW4gGUz28SvmfyprYWjtDVejssboqiv3V/YCgGH5s2o0eTdNWpHvkGwRVDO2s3rSbyDIKinoB0st6uIBNtkj0=
 

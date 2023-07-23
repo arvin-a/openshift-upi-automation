@@ -1,0 +1,9 @@
+---
+# This configmap contais metadata for the installed cluster
+- name: Apply cluster metadata yamls
+  k8s:
+    state: present
+    definition: "{{ lookup('template', item ) }}"
+  loop:
+    - "01-cluster-metadata-ns.yaml"
+    - "02-custer-meatada-cm.yaml"

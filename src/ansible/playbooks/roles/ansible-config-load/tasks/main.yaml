@@ -8,7 +8,9 @@
   loop: "{{ configs }}"
   run_once: true
 
-- name: Set Storage Class Names
-  set_fact:
-    infra_cluster_storage_class_name:  "{% if storage_provider=='lvm' %}lvms-standard{% elif storage_provider=='odf'%}odf-storagecluster-ceph-rbd{% endif %}"
-    infra_cluster_fast_storage_class_name:  "{% if storage_provider=='lvm' %}lvms-fast{% elif storage_provider=='odf'%}odf-storagecluster-ceph-rbd-fast{% endif %}"
+- include_tasks: infra-config-load.yaml
+  when: cluster_role == "infra"
+
+- include_tasks: tenant-config-load.yaml
+  when: cluster_role == "tenant"
+
