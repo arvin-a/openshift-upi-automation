@@ -11,8 +11,7 @@ ocp_install_dir: "{{ staging_dir }}/ocp-install"
 infra_cluster_name: "ocp-infra1"
 infra_cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ infra_cluster_name }}"
 infra_cluster_bridge_name: "br1"
-infra_cluster_storage_class_name: "odf-storagecluster-ceph-rbd"
-infra_cluster_fast_storage_class_name: "odf-storagecluster-ceph-rbd-fast"
+storage_provider: lvm  # Options are lvm or odf
 infra_cluster_storage_volume_mode: "Block" # If your storage class supports block, its recommended you use that
 infra_cluster_storage_access_mode: "ReadWriteMany" # If your storage class supports it, ReadWriteMany is recommended
 

@@ -9,12 +9,6 @@
     oc label node worker3 cluster.ocs.openshift.io/openshift-storage='' --overwrite
     oc label node worker3 topology.rook.io/rack=3 --overwrite
 
-
-- name: Zap all raw disks for ODF
-  shell: "sgdisk --zap-all /dev/{{ item }}"
-  with_items: "{{ odf_raw_disks }}"
-  when: odf_raw_disks is defined
-
 - name: Create Local Storage Namespace
   k8s:
     state: present

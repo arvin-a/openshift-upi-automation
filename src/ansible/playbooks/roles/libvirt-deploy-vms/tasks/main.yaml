@@ -53,13 +53,12 @@
 
 
 # ## Create a second storage pool if vm is worker
-- name: Create Storage Pool for ODF drive for worker VMs
+- name: Create Storage Pool for data drive for worker VMs
   shell:
-    cmd: "virsh pool-create-as --name {{ vm_name }}-odf --type dir --target {{ odf_disk_path }}"
+    cmd: "virsh pool-create-as --name {{ vm_name }}-data --type dir --target {{ data_disk_path }}"
   when: 
     - custom_vm_type == worker_type
-    - odf_disk_path is defined
-    - odf_install is defined and odf_install == True
+    - data_storage is defined
 
 
 ## Using Shell instead of built in copy because it copies to a temp location first
@@ -101,8 +100,8 @@
     cmd: "virt-install --import --name {{ vm_name }} \
         --ram {{ memory }} --cpu host --vcpus {{ cpu }} \
         --disk {{ vm_pool_dir }}/{{ rhcos_bin_file_name }},format=qcow2,bus=virtio \
-        --disk pool='{{ vm_name }}-odf',size={{ odf_node_disk_size }},format=raw,bus=virtio \
-        --disk path='{{ odf_fast_disk_path }}',device=disk \
+        --disk pool='{{ vm_name }}-data',size={{ data_disks.standard.size }},format=raw,bus=virtio \
+        --disk path='{{ fast_data_disk_path_on_host }}',device=disk \
         --os-type linux --os-variant rhel8.2 \
         --network bridge={{ libvirt_bridge_name }},mac={{ custom_mac }} \
         --network bridge={{ libvirt_bridge_name }},mac={{ custom_mac2 }} \
@@ -111,8 +110,7 @@
         --qemu-commandline='-fw_cfg name=opt/com.coreos/config,file={{ vm_pool_dir }}/{{ type }}.ign'"
   when: 
     - custom_vm_type == worker_type
-    - odf_install is defined and odf_install == True
-    - odf_disk_path is defined
+    - data_storage is defined
 
 
 - name: Create Worker VMs
@@ -128,8 +126,8 @@
         --qemu-commandline='-fw_cfg name=opt/com.coreos/config,file={{ vm_pool_dir }}/{{ type }}.ign'"
   when: 
     - custom_vm_type == worker_type
-    - odf_disk_path is not defined
+    - data_storage is not defined
 
-- name: Create Control Plane VM
+- name: Start libvirt VM
   shell:
     cmd: "virsh start {{ vm_name }}"

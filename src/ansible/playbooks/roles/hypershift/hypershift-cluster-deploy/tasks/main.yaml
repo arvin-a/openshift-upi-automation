@@ -52,6 +52,15 @@
   shell:
     cmd: "oc patch ingresscontroller -n openshift-ingress-operator default --type=json -p '{{ patchstr }}'"
 
+
+- name: Create HyperShift Cluster namespace and pull secret
+  k8s:
+    state: present
+    definition: "{{ lookup('template', item) }}"
+  loop:
+    - "01-hypershift-ns.yaml"
+    - "02-hypershift-pull-secret.yaml"
+
 # Create htpasswd secret for hyperhift cluster
 - name: Create htpasswd secret for the cluster
   shell:
@@ -62,8 +71,6 @@
     state: present
     definition: "{{ lookup('template', item) }}"
   loop:
-    - "01-hypershift-ns.yaml"
-    - "02-hypershift-pull-secret.yaml"
     - "03-hypershift-ssh-key-secret.yaml"
     - "04-hypershift-Hosted-Cluster.yaml"
     - "05-hypershift-node-pool.yaml"

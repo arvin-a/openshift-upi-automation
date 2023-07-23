@@ -42,10 +42,11 @@ base_domain: arvhomelab.com
 
 ### ODF Install vars
 odf_version: "4.12"
-odf_install: True # Set to True to install odf
 odf_node_disk_size: "690" # Size in Gi
 odf_node_fast_disk_size: "260" # Size in Gi
-odf_raw_disks:
+
+
+data_disk_list_on_host:
   - nvme0n1
   - nvme1n1
 

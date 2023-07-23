@@ -1,0 +1,17 @@
+---
+- name: Zap data disk on host
+  shell: |
+    sgdisk --zap-all --clear {{ fast_data_disk_path_on_host }}
+  throttle: 1
+
+
+- name: Wipe data disk on host
+  shell: |
+    wipefs -a {{ fast_data_disk_path_on_host }}
+  throttle: 1
+
+
+- name: Update device partition table
+  shell: |
+    kpartx -f -v {{ fast_data_disk_path_on_host }}
+  throttle: 1

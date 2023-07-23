@@ -1,0 +1,46 @@
+---
+- name: Apply LVM NS and OG yaml
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '01-lvm-ns-og.yaml') }}"
+
+- name: sleep for 5 seconds
+  wait_for:
+    timeout: 5
+  
+- name: Apply LVM Subscription yaml
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '02-lvm-sub.yaml') }}"
+
+- name: sleep for 20 seconds
+  wait_for:
+    timeout: 20
+
+- name: Wait until LVM Operator installation has succeeded
+  shell:
+    cmd: oc get csv $(oc get subscriptions.operators.coreos.com lvms-operator -n openshift-storage -o=jsonpath='{.status.currentCSV}') -n openshift-storage -o=jsonpath='{.status.phase}'
+  register: result
+  until: result.stdout == "Succeeded"
+  retries: 100
+  delay: 5
+
+- name: Apply LVMCluster Instance yaml
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '03-lvm-cluster.yaml') }}"
+
+- name: sleep for 30 seconds
+  wait_for:
+    timeout: 30
+
+
+### This functionality is broken, waiting for a fix 
+### https://issues.redhat.com/browse/OCPBUGS-15744
+# - name: Wait until LVMCluster is ready
+#   shell:
+#     cmd: oc get LVMCluster -n openshift-storage lvmcluster -o=jsonpath='{.status.state}'
+#   register: result
+#   until: result.stdout == "Ready"
+#   retries: 100
+#   delay: 5

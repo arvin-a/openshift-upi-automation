@@ -159,7 +159,7 @@
     KUBECONFIG: "{{ cluster_kubeconfig }}"
   roles:
     - role: openshift-odf-install
-      when: odf_install == True
+      when: storage_provider == "odf"
   tags:
     - openshift-odf-install
     - post-install

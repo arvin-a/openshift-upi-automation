@@ -27,7 +27,6 @@
     - staging-dir-setup
     - pre-deploy
 
-
 - name: Download Artifacts
   hosts: localhost
   connection: local
@@ -37,7 +36,6 @@
     - openshift-download-artifacts
     - pre-deploy
 
-
 - name: Create OpenShift manifest
   hosts: localhost
   connection: local
@@ -45,7 +43,6 @@
     - openshift-create-manifest
   tags:
     - openshift-create-manifest
-
 
 - name: Create OpenShift iginition
   hosts: localhost
@@ -55,7 +52,6 @@
   tags:
     - openshift-iginition
 
-
 - name: Upload bootstrap ignition to webserver
   hosts: localhost
   connection: local
@@ -63,7 +59,6 @@
     - openshift-iginition-upload-to-webserver
   tags:
     - openshift-iginition
-  
 
 - name: Overwrite bootstrap ignition with ignition pointer
   hosts: localhost
@@ -73,7 +68,6 @@
   tags:
     - openshift-iginition
 
-
 - name: Setup libvirt VM image
   hosts: localhost
   connection: local
@@ -82,7 +76,6 @@
   tags:
     - libvirt-setup-vm-image
     - lbvirt-setup
-
 
 - name: Deploy libvirt Bootstrap VM
   hosts: bootstrap
@@ -150,18 +143,34 @@
   tags:
     - openshift-auth-provider
 
+- name: Clean data disks
+  hosts: worker
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: openshift-clean-storage
+      when:
+        - data_storage is defined
+        - data_storage == True
+  tags:
+    - openshift-clean-storage
 
-- name: Install ODF
+
+- name: Install Cluster Storage Provider
   hosts: localhost
   connection: local
   environment:
     KUBECONFIG: "{{ cluster_kubeconfig }}"
   roles:
     - role: openshift-odf-install
-      when: odf_install == True
+      when: storage_provider == "odf"
+    - role: openshift-lvm-operator-install
+      when: storage_provider == "lvm"
   tags:
-    - openshift-odf-install
+    - openshift-storage-install
     - post-install
+
 
 
 - name: Install Nmstate Operator
@@ -175,7 +184,6 @@
     - openshift-nmstate-install
     - post-install
 
-
 - name: Install OpenShift Virtualization
   hosts: localhost
   connection: local
@@ -188,7 +196,6 @@
     - openshift-virt-install
     - post-install
 
-
 - name: Create network bridge
   hosts: localhost
   connection: local
@@ -199,7 +206,6 @@
   tags:
     - openshift-create-bridge
     - post-install
-
 
 - name: Metallb install and configure
   hosts: localhost

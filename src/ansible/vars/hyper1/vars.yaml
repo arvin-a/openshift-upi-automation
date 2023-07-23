@@ -9,19 +9,19 @@ infra_cluster_name: "ocp-infra1"
 infra_cluster_base_domain: "arvhomelab.com"
 infra_cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ infra_cluster_name }}"
 infra_cluster_tenant_namespace: "clusters-{{ ocp_cluster_name }}"
-infra_cluster_storage_class_name: "odf-storagecluster-ceph-rbd"
-infra_cluster_fast_storage_class_name: "odf-storagecluster-ceph-rbd-fast"
 
 ## Hypershift cluster vars
 ocp_cluster_name: "ocp-hyper1"
 base_domain: "apps.{{ infra_cluster_name }}.{{ infra_cluster_base_domain }}"
 hypershift_ingress_domain: "apps.{{ ocp_cluster_name }}.{{ base_domain }}"
 
+storage_provider: lvm  # Options are lvm or odf
+
 hypershift_installer_args:
   node-pool-replicas: "2"
   cores: "6"
   memory: "16Gi"
-  release-image: "quay.io/openshift-release-dev/ocp-release:{{ hypershift_cluster_version }}-x86_64"
+  # release-image: "quay.io/openshift-release-dev/ocp-release:{{ hypershift_cluster_version }}-x86_64"
   service-publishing-strategy: "NodePort"
 
 cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
