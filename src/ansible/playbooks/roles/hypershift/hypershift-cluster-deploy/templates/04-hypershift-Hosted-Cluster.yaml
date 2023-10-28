@@ -40,7 +40,7 @@ spec:
   pullSecret:
     name: "{{ ocp_cluster_name }}-pull-secret"
   release:
-    image: quay.io/openshift-release-dev/ocp-release:4.13.3-x86_64
+    image: {{ hypershift_release_image }}
   services:
   - service: APIServer
     servicePublishingStrategy:

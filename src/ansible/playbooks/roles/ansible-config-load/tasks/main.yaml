@@ -2,15 +2,18 @@
 - include_vars:
     file: "{{ config }}"
   run_once: true
+  when: action == "base"
 
 - include_vars:
     file: "{{ item }}"
   loop: "{{ configs }}"
   run_once: true
+  when: action == "base"
+
 
 - include_tasks: infra-config-load.yaml
-  when: cluster_role == "infra"
+  when: cluster_role == "infra" and action == "cluster-config"
 
 - include_tasks: tenant-config-load.yaml
-  when: cluster_role == "tenant"
+  when: cluster_role == "tenant" and action == "cluster-config"
 

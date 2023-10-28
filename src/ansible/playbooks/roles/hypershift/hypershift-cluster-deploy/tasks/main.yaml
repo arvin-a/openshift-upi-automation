@@ -1,42 +1,45 @@
 ---
+# - name: Create config folder
+#   file:
+#     state: directory
+#     path: "{{ staging_dir }}/configs"
+#     mode: "0666"
 
-- name: Create config folder
-  file:
-    state: directory
-    path: "{{ staging_dir }}/configs"
-    mode: "0666"
+# - name: Copy pull secret to configs dir
+#   copy:
+#     content: "{{ pull_secret }}"
+#     dest: "{{ staging_dir }}/configs/pull-secret"
+#     mode: "0666"
 
-- name: Copy pull secret to configs dir
-  copy:
-    content: "{{ pull_secret }}"
-    dest: "{{ staging_dir }}/configs/pull-secret"
-    mode: "0666"
 
-- name: Copy kubeconfig to conigs dir
-  copy:
-    src: "{{ infra_cluster_kubeconfig }}"
-    dest: "{{ staging_dir }}/configs/infra-kubeconfig"
-    mode: "0666"
 
-- name: Copy ssh pub key to configs dir
-  copy:
-    content: "{{ rhcos_ssh_pub_key }}"
-    dest: "{{ staging_dir }}/configs/pub_key"
-    mode: "0666"
 
-- set_fact:
-    install_arguements: "{{ install_arguements | default ('') + ' --' + item.key + ' ' + item.value + ' '}}"
-  loop: "{{ hypershift_installer_args | dict2items }}"
+# - name: Copy kubeconfig to configs dir
+#   copy:
+#     content: "{{ vault_payload.kubeconfig }}"
+#     dest: "{{ staging_dir }}/configs/infra-kubeconfig"
+#     mode: "0666"
 
-- debug:
-    msg:
-      - "HyperShift Cluster params"
-      - "Cluster Type: {{ cluster_type }}"
-      - "Cluster Name: {{ ocp_cluster_name }}"
-      - "Base Domain: {{ base_domain }}"
-      - "Infra cluster storage class: {{ infra_cluster_fast_storage_class_name }}"
-      - "Infra cluster name: {{ infra_cluster_name }}"
-      - "Install Arguements: {{ install_arguements }}"
+
+# - name: Copy ssh pub key to configs dir
+#   copy:
+#     content: "{{ rhcos_ssh_pub_key }}"
+#     dest: "{{ staging_dir }}/configs/pub_key"
+#     mode: "0666"
+
+# - set_fact:
+#     install_arguements: "{{ install_arguements | default ('') + ' --' + item.key + ' ' + item.value + ' '}}"
+#   loop: "{{ hypershift_installer_args | dict2items }}"
+
+# - debug:
+#     msg:
+#       - "HyperShift Cluster params"
+#       - "Cluster Type: {{ cluster_type }}"
+#       - "Cluster Name: {{ ocp_cluster_name }}"
+#       - "Base Domain: {{ base_domain }}"
+#       - "Infra cluster storage class: {{ infra_cluster_fast_storage_class_name }}"
+#       - "Infra cluster name: {{ infra_cluster_name }}"
+#       - "Install Arguements: {{ install_arguements }}"
 
 
 # - debug:
@@ -87,18 +90,15 @@
 
 - name: Save kubeconfig of Hypershift cluster
   shell:
-    cmd:  "{{ hypershift_cli_path }} create kubeconfig --name {{ ocp_cluster_name }} > {{ staging_dir }}/configs/{{ ocp_cluster_name }}"
+    cmd: "oc -n {{ infra_cluster_tenant_namespace }} get secret admin-kubeconfig  -o json -o=jsonpath='{.data.kubeconfig}' | base64 -d > {{ cluster_kubeconfig }}"
+  register: kubeconfig_data
 
-
-- name: Copy kubeconfig to Kubeconfig dir
-  copy:
-    src: "{{ staging_dir }}/configs/{{ ocp_cluster_name }}"
-    dest: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
-    mode: "0666"
-
-- set_fact:
-    cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
-
+- include_role:
+    name: openshift-credentials-store
+  vars: 
+    path: "{{ ocp_cluster_name }}"
+    data: 
+      kubeconfig: "{{ lookup('file', cluster_kubeconfig) | b64encode }}"
 
 - name: Make users cluster admin
   shell: |
@@ -120,25 +120,7 @@
   retries: 240
   delay: 10
 
-- name: Get kubeadmin password
-  shell:
-    cmd: "oc -n {{ infra_cluster_tenant_namespace }} get secret kubeadmin-password  -o json -o=jsonpath='{.data.password}' | base64 -d"
-  register: kubeadmin_password_result
-
 - name: Get console url
   shell:
     cmd: "oc  --kubeconfig {{ cluster_kubeconfig }} whoami --show-console"
   register: console_url_result
-
-- set_fact:
-    tenant_kubeadmin_password: "{{ kubeadmin_password_result.stdout }}"
-    tenant_console_url: "{{ console_url_result.stdout }}"
-
-- name: Display console route and kubeadmin password
-  debug:
-    msg:
-      - "Kubeadmin password:"
-      - "{{ tenant_kubeadmin_password }}"
-      - ""
-      - "Console URL:"
-      - "{{ tenant_console_url }}"

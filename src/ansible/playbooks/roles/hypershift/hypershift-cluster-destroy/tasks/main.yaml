@@ -12,4 +12,5 @@
 - name: Destroy Hypershift Cluster
   shell:
     cmd: "{{ hypershift_cli_path }} destroy cluster kubevirt --name {{ ocp_cluster_name }}"
+  ignore_errors: true
 

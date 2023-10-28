@@ -7,7 +7,35 @@
   hosts: all:localhost
   connection: local
   roles:
-    - ansible-config-load
+    - role: ansible-config-load
+      action: base
+  tags:
+    - always
+
+- name: Setup Staging Directory
+  hosts: localhost
+  connection: local
+  roles:
+    - staging-dir-setup
+  tags:
+    - always
+
+- name: Get Infra cluster credentials
+  hosts: localhost
+  connection: local
+  roles:
+    - role: openshift-credentials-get
+      vars:
+        cluster: "{{ infra_cluster_name }}"
+  tags:
+    - always
+
+- name: Load cluster configs
+  hosts: localhost:all
+  connection: local
+  roles:
+    - role: ansible-config-load
+      action: cluster-config
   tags:
     - always
 

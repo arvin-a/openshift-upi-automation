@@ -1,9 +1,9 @@
 platform: "libvirt"
 ocp_cluster_name: "ocp-infra1"
 cluster_role: infra   # values can be infra or tenant
-cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
 staging_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}"
-staging_backup_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}/backup"
+cluster_kubeconfig: "{{ staging_dir }}/kubeconfig"
+staging_backup_dir: "{{ staging_dir }}/backup"
 ocp_install_dir: "{{ staging_dir }}/ocp-install"
 
 # OCP Vars

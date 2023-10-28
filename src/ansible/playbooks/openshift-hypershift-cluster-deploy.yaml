@@ -8,11 +8,21 @@
 # -e update_hypershift_cli=true      <- force rebuild of hypershift binary
 
 
-- name: Load configs
-  hosts: all:localhost
+- name: Include a play after another play
+  import_playbook: openshift-hypershift-cluster-destroy.yaml
+
+- name: Clear errors
+  hosts:  all:localhost
+  connection: local
+  tasks:
+    - meta: clear_host_errors
+
+- name: Load cluster configs
+  hosts: localhost:worker:control
   connection: local
   roles:
-    - ansible-config-load
+    - role: ansible-config-load
+      action: cluster-config
   tags:
     - always
 
@@ -22,19 +32,36 @@
   roles:
     - staging-dir-setup
   tags:
-    - staging-dir-setup
-    - pre-deploy
+    - always
 
-
-- name: Get Hyperhift Binary
+- name: Get Infra cluster credentials
   hosts: localhost
   connection: local
-  environment:
-    KUBECONFIG: "{{ infra_cluster_kubeconfig }}"
   roles:
-    - hypershift/hypershift-cli-build
+    - role: openshift-credentials-get
+      vars:
+        cluster: "{{ infra_cluster_name }}"
   tags:
-    - hypershift-cli-build
+    - always
+
+- name: Load cluster configs
+  hosts: localhost:all
+  connection: local
+  roles:
+    - role: ansible-config-load
+      action: cluster-config
+  tags:
+    - always
+
+# - name: Get Hyperhift Binary
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ infra_cluster_kubeconfig }}"
+#   roles:
+#     - hypershift/hypershift-cli-build
+#   tags:
+#     - hypershift-cli-build
 
 
 - name: Create Hypershift cluster
@@ -47,14 +74,3 @@
     - hypershift/hypershift-cluster-deploy
   tags:
     - hypershift-cluster-deploy
-
-
-- name: Add HTPasswd auth provider
-  hosts: localhost
-  connection: local
-  environment:
-    KUBECONFIG: "{{ cluster_kubeconfig }}"
-  roles:
-    - openshift-auth-provider
-  tags:
-    - openshift-auth-provider

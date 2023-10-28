@@ -25,9 +25,8 @@ spec:
           storageClassName: {{ infra_cluster_storage_class_name }}
           volumeMode: {{ infra_cluster_storage_volume_mode }}
         source:
-          pvc:
-            name: rhcos-dv
-            namespace: {{ ocp_cluster_name }}
+          http:
+            url: "{{ http_rhcos_url }}"
     - apiVersion: cdi.kubevirt.io/v1alpha1
       kind: DataVolume
       metadata:
@@ -84,8 +83,7 @@ spec:
         resources:
           requests:
             memory: 16Gi
-            # cpu: "4"
-      evictionStrategy: LiveMigrate
+            cpu: "4"
       hostname: {{ custom_vm_name }}
       networks:
         - multus:

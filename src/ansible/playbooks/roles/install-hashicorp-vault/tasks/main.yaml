@@ -1,0 +1,17 @@
+- name: "Make sure remote system is initialized correctly"
+  raw: 'ln -s /usr/bin/python3 /usr/bin/python'
+  register: set_symlink
+  failed_when: set_symlink.rc != 0 and set_symlink.rc != 1 
+
+- name: Install pip for more dependencies down the line
+  dnf:
+    name:
+      - python3-pip
+      - python3-setuptools
+    state: present
+
+- name: Install pips for vault module
+  pip:
+    name:
+      - hvac
+    executable: pip3

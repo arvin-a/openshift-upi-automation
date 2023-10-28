@@ -1,13 +1,13 @@
----
-
 - name: Create base QEMU image at the desired size
   shell:
     # chdir: "{{ staging_dir }}"
     cmd: "qemu-img create -f qcow2 -o preallocation=metadata,cluster_size=2M {{ resized_base_qcow }} {{ resized_base_qcow_disk_size }}"
-
+  delegate_to: "{{ groups.hypervisor[0] }}"
 
 - name: Use base RHCOS image and resize it to the new QEMU image
   shell:
     # chdir: "{{ staging_dir }}"
     cmd: "virt-resize --quiet --expand /dev/sda4 {{ base_qcow }} {{ resized_base_qcow }}"
+  delegate_to: "{{ groups.hypervisor[0] }}"
 
+- pause:
