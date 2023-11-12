@@ -65,6 +65,7 @@
     - "{{ web_server_files_bin_path }}"
     - "{{ web_server_files_cluster_path }}"
   when: platform != "bm"
+  become: true
 
 - name: Transfer file to Web Server
   copy:
@@ -72,7 +73,7 @@
     dest: "{{ web_server_files_bin_path }}/{{ rhcos_bin_file_name }}"
   delegate_to: "{{ web_server.name }}"
   when: platform == "O^3"
-
+  become: true
 
 - name: Copy QEMU file to hypervisor host
   copy:
@@ -81,3 +82,4 @@
     mode: '0644'
   delegate_to: "{{ groups.hypervisor[0] }}"
   when: platform == "libvirt"
+  become: true

@@ -1,2 +1,7 @@
-ansible-core==2.15.5
-ansible==3.11.2  
+ansible-core==2.14.11
+ansible
+hvac
+ansible-modules-hashivault
+kubernetes >= 28.0
+openshift >= 0.13
+PyYAML >= 6.0

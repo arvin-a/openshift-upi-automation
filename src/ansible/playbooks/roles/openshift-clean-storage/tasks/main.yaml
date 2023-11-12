@@ -6,6 +6,7 @@
     - "{{ data_disks.standard.disk_path }}"
     - "{{ data_disks.fast.disk_path }}"
   throttle: 1
+  delegate_to: "{{ groups.hypervisor[0] }}"
 
 
 - name: Wipe none OS disks
@@ -15,6 +16,7 @@
     - "{{ data_disks.standard.disk_path }}"
     - "{{ data_disks.fast.disk_path }}"
   throttle: 1
+  delegate_to: "{{ groups.hypervisor[0] }}"
 
 
 - name: Update device partition table
@@ -24,3 +26,4 @@
     - "{{ data_disks.standard.disk_path }}"
     - "{{ data_disks.fast.disk_path }}"
   throttle: 1
+  delegate_to: "{{ groups.hypervisor[0] }}"

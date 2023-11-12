@@ -29,7 +29,6 @@
 
 - name: Setup Staging Directory
   hosts: localhost:hypervisor
-  connection: local
   roles:
     - staging-dir-setup
   tags:
@@ -83,8 +82,7 @@
     - openshift-iginition
 
 - name: Setup libvirt VM image
-  hosts: localhost
-  connection: local
+  hosts: hypervisor
   roles:
     - libvirt-setup-vm-image
   tags:
@@ -92,25 +90,27 @@
     - lbvirt-setup
 
 - name: Deploy libvirt Bootstrap VM
-  hosts: bootstrap
-  connection: local
+  hosts: hypervisor
+  vars:
+    nodes: "{{ groups.bootstrap | list }}"
   roles:
     - libvirt-deploy-vms
   tags:
     - libvirt-deploy-vms
 
-
 - name: Deploy libvirt Control VMs
-  hosts: control
-  connection: local
+  hosts: hypervisor
+  vars:
+    nodes: "{{ groups.control | list }}"
   roles:
     - libvirt-deploy-vms
   tags:
     - libvirt-deploy-vms
 
 - name: Deploy libvirt Worker VMs
-  hosts: worker
-  connection: local
+  hosts: hypervisor
+  vars:
+    nodes: "{{ groups.worker | list }}"
   roles:
     - libvirt-deploy-vms
   tags:
@@ -127,8 +127,9 @@
     - openshift-install-time-operations
 
 - name: Remove Bootstrap VM
-  hosts: bootstrap
-  connection: local
+  hosts: hypervisor
+  vars:
+    node: "{{ groups.bootstrap[0] }}"
   roles:
     - libvirt-remove-bootstrap
   tags:

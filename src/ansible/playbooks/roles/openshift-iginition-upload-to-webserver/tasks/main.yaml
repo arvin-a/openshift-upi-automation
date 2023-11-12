@@ -9,4 +9,5 @@
     - "worker.ign"
     - "bootstrap.ign"
   delegate_to: "{{ web_server.name }}"
+  become: true
   
