@@ -41,6 +41,11 @@ spec:
     name: "{{ ocp_cluster_name }}-pull-secret"
   release:
     image: {{ hypershift_release_image }}
+  secretEncryption:
+    aescbc:
+      activeKey:
+        name: ocp-hyper1-etcd-encryption-key
+    type: aescbc
   services:
   - service: APIServer
     servicePublishingStrategy:

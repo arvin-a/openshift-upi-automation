@@ -26,7 +26,7 @@ spec:
           volumeMode: {{ infra_cluster_storage_volume_mode }}
         source:
           http:
-            url: "{{ http_rhcos_url }}"
+            url: "{{ web_server_http_rhcos_url }}"
     - apiVersion: cdi.kubevirt.io/v1alpha1
       kind: DataVolume
       metadata:

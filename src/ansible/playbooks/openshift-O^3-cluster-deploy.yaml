@@ -2,7 +2,7 @@
 
 # cd to ansible directory
 # export VARSDIR=`pwd`/vars/O^3
-# sudo ansible-playbook playbooks/openshift-O^3-cluster-deploy.yaml -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
+# ansible-playbook playbooks/openshift-O^3-cluster-deploy.yaml -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
 
 #### Options
 # --skip-tags pre-deploy

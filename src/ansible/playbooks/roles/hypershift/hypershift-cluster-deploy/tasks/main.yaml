@@ -1,31 +1,27 @@
 ---
-# - name: Create config folder
-#   file:
-#     state: directory
-#     path: "{{ staging_dir }}/configs"
-#     mode: "0666"
+- name: Create config folder
+  file:
+    state: directory
+    path: "{{ staging_dir }}/configs"
+    mode: "0760"
 
-# - name: Copy pull secret to configs dir
-#   copy:
-#     content: "{{ pull_secret }}"
-#     dest: "{{ staging_dir }}/configs/pull-secret"
-#     mode: "0666"
+- name: Copy pull secret to configs dir
+  copy:
+    content: "{{ pull_secret }}"
+    dest: "{{ staging_dir }}/configs/pull-secret"
+    mode: "0660"
 
+- name: Copy kubeconfig to configs dir
+  copy:
+    content: "{{ vault_payload.kubeconfig }}"
+    dest: "{{ staging_dir }}/configs/infra-kubeconfig"
+    mode: "0660"
 
-
-
-# - name: Copy kubeconfig to configs dir
-#   copy:
-#     content: "{{ vault_payload.kubeconfig }}"
-#     dest: "{{ staging_dir }}/configs/infra-kubeconfig"
-#     mode: "0666"
-
-
-# - name: Copy ssh pub key to configs dir
-#   copy:
-#     content: "{{ rhcos_ssh_pub_key }}"
-#     dest: "{{ staging_dir }}/configs/pub_key"
-#     mode: "0666"
+- name: Copy ssh pub key to configs dir
+  copy:
+    content: "{{ rhcos_ssh_pub_key }}"
+    dest: "{{ staging_dir }}/configs/pub_key"
+    mode: "0660"
 
 # - set_fact:
 #     install_arguements: "{{ install_arguements | default ('') + ' --' + item.key + ' ' + item.value + ' '}}"
@@ -44,6 +40,8 @@
 
 # - debug:
 #     msg: "{{ hypershift_cli_path }} create cluster {{ cluster_type }} --name {{ ocp_cluster_name }} --base-domain {{ base_domain }} --pull-secret {{ staging_dir }}/configs/pull-secret --etcd-storage-class {{ infra_cluster_fast_storage_class_name }} --infra-id {{ infra_cluster_name }}  --ssh-key {{ staging_dir }}/configs/pub_key {{ install_arguements }}"
+
+# - pause:
 
 # - name: Run Hypershift Installer
 #   shell:
@@ -75,8 +73,9 @@
     definition: "{{ lookup('template', item) }}"
   loop:
     - "03-hypershift-ssh-key-secret.yaml"
-    - "04-hypershift-Hosted-Cluster.yaml"
-    - "05-hypershift-node-pool.yaml"
+    - "04-hypershift-cluster-encryption-key.yaml"
+    - "05-hypershift-Hosted-Cluster.yaml"
+    - "06-hypershift-node-pool.yaml"
 
 - name: Wait until apiserver is available
   vars:
@@ -103,10 +102,7 @@
 - name: Make users cluster admin
   shell: |
     oc --kubeconfig={{ cluster_kubeconfig }} adm policy add-cluster-role-to-user cluster-admin arvin &> /dev/null
-  register: cluster_admin_cmd
-  until: cluster_admin_cmd.rc  == 0
-  retries: 10
-  delay: 10
+  ignore_errors: true
   
 - include_tasks: create-ingress.yaml
 

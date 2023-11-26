@@ -4,6 +4,7 @@ metadata:
   name: {{ ocp_cluster_name }}
   namespace: clusters
 spec:
+  arch: amd64
   clusterName: {{ ocp_cluster_name }}
   management:
     autoRepair: false
@@ -16,9 +17,9 @@ spec:
         memory: 16Gi
       rootVolume:
         persistent:
-          size: 16Gi
+          size: 32Gi
         type: Persistent
     type: KubeVirt
   release:
-    image: quay.io/openshift-release-dev/ocp-release:4.13.3-x86_64
+    image: "{{ hypershift_release_image }}"
   replicas: 2

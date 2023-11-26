@@ -13,11 +13,14 @@
     path: "{{ node.data_disk_path }}"
   register: p
   become: True
+  when: node.data_disk_path is defined
 
 - name: Remove data storage directories
   shell: |
     rm -rf {{ node.data_disk_path }}/* &> /dev/null
-  when: p.stat.isdir is defined and p.stat.isdir
+  when: 
+    - node.data_disk_path is defined
+    - p.stat.isdir is defined and p.stat.isdir
   become: True
 
 - name: Zap raw disks for cluster storage
@@ -26,3 +29,5 @@
     wipefs -a {{ node.fast_data_disk_path_on_host }}
     kpartx -f -v {{ node.fast_data_disk_path_on_host }}
   become: True
+  when: 
+    - node.fast_data_disk_path_on_host is defined
