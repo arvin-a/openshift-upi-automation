@@ -1,7 +1,7 @@
 apiVersion: v1
 baseDomain: {{ base_domain }}
 compute:
-- hyperthreading: Enabled   
+- hyperthreading: Enabled
   name: worker
   replicas: 2
 controlPlane:

@@ -1,16 +1,13 @@
 ---
-
-- name: Create http folder for cluster
-  file:
-    state: directory
-    path: "{{ http_file_server_path }}"
-
 - name: Copy ignition files to webserver
   copy:
     src: "{{ ocp_install_dir }}/{{ item }}"
-    dest: "{{ http_file_server_path }}"
+    dest: "{{ web_server_files_cluster_path }}"
     mode: '0644'
   loop:
     - "master.ign"
     - "worker.ign"
     - "bootstrap.ign"
+  delegate_to: "{{ web_server.name }}"
+  become: true
+  

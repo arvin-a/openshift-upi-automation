@@ -1,0 +1,9 @@
+---
+- include_role:
+    name: hashicorp-vault-get-token
+
+- include_role:
+    name: hashicorp-vault-write-secret
+  vars: 
+    secret_path: "{{ path }}"
+    secret_data: "{{ data }}"

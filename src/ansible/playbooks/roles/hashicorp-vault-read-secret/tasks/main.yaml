@@ -1,0 +1,12 @@
+
+---
+- name: Read a kv2 secret from Vault
+  community.hashi_vault.vault_read:
+    url: "{{ vault_url }}"
+    path: "secret/data/{{ secret_path }}"
+    auth_method: token
+    token: "{{ vault_user_token }}"
+  register: secret
+
+- set_fact:
+    vault_payload: "{{ secret.data.data.data }}"

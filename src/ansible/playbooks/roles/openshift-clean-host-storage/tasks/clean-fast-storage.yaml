@@ -1,0 +1,17 @@
+- name: Zap data disk on host
+  shell: |
+    sgdisk --zap-all --clear {{ data_disk }}
+  throttle: 1
+  become: True
+
+- name: Wipe data disk on host
+  shell: |
+    wipefs -a {{ data_disk }}
+  throttle: 1
+  become: True
+
+- name: Update device partition table
+  shell: |
+    kpartx -f -v {{ data_disk }}
+  throttle: 1
+  become: True

@@ -25,7 +25,7 @@
     src: "{{ artifact_download_dir }}/oc"
     dest: /usr/bin
     mode: '0755'
-  become: yes
+  become: true
 
 
 
@@ -46,20 +46,40 @@
   get_url:
     url: "{{ rhcos_bin_qcow_url }}"
     dest: "{{ staging_dir }}"
-  when:
-    - platform != "bm"
+  when: platform != "bm"
 
 # using gunzip since unarchive doesn't seem to be able to handle .gz
 - name: Unzip RHCOS archive
   shell:
     chdir: "{{ staging_dir }}"
     cmd: "gunzip  {{ staging_dir }}/{{ rhcos_bin_archive_name }}"
-  when:
-    - platform != "bm"
+  when: platform != "bm"
 
-- name: Copy RHCOS image to web server
+- name: Create folders on webserver
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: yes
+  delegate_to: "{{ web_server.name }}"
+  loop:
+    - "{{ web_server_files_bin_path }}"
+    - "{{ web_server_files_cluster_path }}"
+  when: platform != "bm"
+  become: true
+
+- name: Transfer file to Web Server
   copy:
     src: "{{ staging_dir }}/{{ rhcos_bin_file_name }}"
-    dest: "{{ http_file_server_os_path }}"
+    dest: "{{ web_server_files_bin_path }}/{{ rhcos_bin_file_name }}"
+  delegate_to: "{{ web_server.name }}"
+  when: platform == "O^3"
+  become: true
 
-# Get artifacts required for bare metal and pxe
+- name: Copy QEMU file to hypervisor host
+  copy:
+    src: "{{ staging_dir }}/{{ rhcos_bin_file_name }}"
+    dest: "{{ base_qcow }}"
+    mode: '0644'
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  when: platform == "libvirt"
+  become: true

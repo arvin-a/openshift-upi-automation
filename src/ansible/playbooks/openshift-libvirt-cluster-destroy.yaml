@@ -13,44 +13,61 @@
   hosts: all:localhost
   connection: local
   roles:
-    - ansible-config-load
+    - role: ansible-config-load
+      action: base
+  tags:
+    - always
+
+- name: Setup Staging Directory
+  hosts: localhost:hypervisor
+  connection: local
+  roles:
+    - staging-dir-setup
+  tags:
+    - always
+
+- name: Load cluster configs
+  hosts: localhost:worker:control:hypervisor:bootstrap
+  connection: local
+  roles:
+    - role: ansible-config-load
+      action: cluster-config
   tags:
     - always
 
 - name: Remove libvirt Cluster VMs
-  hosts: all
-  connection: local
+  hosts: hypervisor
   roles:
     - libvirt-remove-cluster
   tags:
     - libvirt-remove-cluster
 
 - name: Clean Host Storage
-  hosts: worker
-  connection: local
+  hosts: hypervisor
   roles:
     - libvirt-clean-host-storage
   tags:
     - libvirt-clean-host-storage
 
-- name: Clean data disks
-  hosts: worker
-  connection: local
-  roles:
-    - role: openshift-clean-host-storage
-      when:
-        - data_storage is defined
-        - data_storage == True
-  tags:
-    - openshift-clean-host-storage
 
+########### REMOVE ROLE
+# - name: Clean data disks
+#   hosts: hypervisor
+#   connection: local
+#   roles:
+#     - role: openshift-clean-host-storage
+#       when:
+#         - data_storage is defined
+#         - data_storage == True
+#   tags:
+#     - openshift-clean-host-storage
 
-- name: Remove cluster kubeconfig
-  hosts: localhost
-  connection: local
-  roles:
-    - openshift-remove-kubeconfig
-  tags:
-    - openshift-remove-kubeconfig
-    - cleanup
+# - name: Remove cluster kubeconfig
+#   hosts: localhost
+#   connection: local
+#   roles:
+#     - openshift-remove-kubeconfig
+#   tags:
+#     - openshift-remove-kubeconfig
+#     - cleanup
 

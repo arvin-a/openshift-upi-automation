@@ -39,12 +39,11 @@
     state: present
     definition: "{{ lookup('template', '04-lvm-sc.yaml') }}"
     
-### This functionality is broken, waiting for a fix 
-### https://issues.redhat.com/browse/OCPBUGS-15744
-# - name: Wait until LVMCluster is ready
-#   shell:
-#     cmd: oc get LVMCluster -n openshift-storage lvmcluster -o=jsonpath='{.status.state}'
-#   register: result
-#   until: result.stdout == "Ready"
-#   retries: 100
-#   delay: 5
+
+- name: Wait until LVMCluster is ready
+  shell:
+    cmd: oc get LVMCluster -n openshift-storage lvmcluster -o=jsonpath='{.status.state}'
+  register: result
+  until: result.stdout == "Ready"
+  retries: 100
+  delay: 5

@@ -4,11 +4,13 @@
 # export VARSDIR=`pwd`/vars/hypershift
 # sudo ansible-playbook playbooks/openshift-hypershift-cluster-destroy.yaml -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
 
+
 - name: Load configs
   hosts: all:localhost
   connection: local
   roles:
-    - ansible-config-load
+    - role: ansible-config-load
+      action: base
   tags:
     - always
 
@@ -18,8 +20,26 @@
   roles:
     - staging-dir-setup
   tags:
-    - staging-dir-setup
-    - pre-deploy
+    - always
+
+- name: Get Infra cluster credentials
+  hosts: localhost
+  connection: local
+  roles:
+    - role: openshift-credentials-get
+      vars:
+        cluster: "{{ infra_cluster_name }}"
+  tags:
+    - always
+
+- name: Load cluster configs
+  hosts: localhost:all
+  connection: local
+  roles:
+    - role: ansible-config-load
+      action: cluster-config
+  tags:
+    - always
 
 - name: Build Hyperhift Binary
   hosts: localhost
@@ -34,6 +54,7 @@
   connection: local
   environment:
     KUBECONFIG: "{{ infra_cluster_kubeconfig }}"
+    KUBERNETES_MASTER: "{{ infra_cluster_kubeconfig }}"
   roles:
     - hypershift/hypershift-cluster-destroy
   tags:

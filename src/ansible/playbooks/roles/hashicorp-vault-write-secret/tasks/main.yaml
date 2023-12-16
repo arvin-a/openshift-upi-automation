@@ -1,0 +1,11 @@
+## secret_data is a dict item with key value pair for the secrets
+- name: Write a kv2 secret to Vault
+  community.hashi_vault.vault_write:
+    url: "{{ vault_url }}"
+    path: "secret/data/{{ secret_path }}"
+    data:
+      data:
+        "{{ secret_data }}"
+    auth_method: token
+    token: "{{ vault_user_token }}"
+  register: secret

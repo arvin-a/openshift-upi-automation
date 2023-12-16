@@ -9,7 +9,7 @@ metadata:
   name: multicluster-engine
   namespace: multicluster-engine
 spec:
-  channel: stable-2.3
+  channel: stable-2.4
   installPlanApproval: Automatic
   name: multicluster-engine
   source: redhat-operators

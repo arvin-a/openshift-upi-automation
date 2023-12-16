@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  key: T9wjb6M3vNwgt7dNXKsAMgNEiQm1qoDimBdZ4n5GTbc=
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: ocp-hyper1-etcd-encryption-key
+  namespace: clusters
+type: Opaque

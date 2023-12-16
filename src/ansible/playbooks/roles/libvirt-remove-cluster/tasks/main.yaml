@@ -1,27 +1,5 @@
----
-
-- name: General vars for VMs
-  set_fact:
-    vm_name: "{{ custom_vm_name }}-{{ ocp_cluster_name }}"
-
-- name: Destroy VMS
-  command: virsh destroy {{ vm_name }}
-  ignore_errors: yes
-
-- name: Undefine VMS
-  command: virsh undefine {{ vm_name }}
-  ignore_errors: yes
-
-- name: Undefine VMS
-  command: virsh undefine {{ vm_name }}
-  ignore_errors: yes
-
-
-- name: Destroy storage pools
-  command: virsh pool-destroy {{ vm_name }}
-  ignore_errors: yes
-
-
-- name: Remove storage directories
-  shell: |
-    rm -rf {{ cluster_vms_storage_base_dir }} &> /dev/null
+- name: Remove VM and clean up root storage directorories
+  include_tasks: remove-vms.yaml
+  vars:
+    node_name: "{{ hostvars[item].custom_vm_name }}"
+  loop: "{{ groups.bootstrap + groups.control + groups.worker + groups.bootstrap | list }}"

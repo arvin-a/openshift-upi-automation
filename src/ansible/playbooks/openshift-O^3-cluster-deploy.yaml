@@ -2,18 +2,30 @@
 
 # cd to ansible directory
 # export VARSDIR=`pwd`/vars/O^3
-# sudo ansible-playbook playbooks/openshift-O^3-cluster-deploy.yaml -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
+# ansible-playbook playbooks/openshift-O^3-cluster-deploy.yaml -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
 
 #### Options
 # --skip-tags pre-deploy
 # --tags openshift-install-time-operations,openshift-auth-provider
 
 
+
+
+# - name: Include a play after another play
+#   import_playbook: openshift-O^3-cluster-destroy.yaml
+
+# - name: Clear errors
+#   hosts: all:localhost
+#   connection: local
+#   tasks:
+#     - meta: clear_host_errors
+
 - name: Load configs
   hosts: all:localhost
   connection: local
   roles:
-    - ansible-config-load
+    - role: ansible-config-load
+      action: base
   tags:
     - always
 
@@ -23,12 +35,29 @@
   roles:
     - staging-dir-setup
   tags:
-    - staging-dir-setup
-    - pre-deploy
+    - always
 
-- name: Download Artifacts
+- name: Get Infra cluster credentials
   hosts: localhost
   connection: local
+  roles:
+    - role: openshift-credentials-get
+      vars:
+        cluster: "{{ infra_cluster_name }}"
+  tags:
+    - always
+
+- name: Load cluster configs
+  hosts: localhost:all
+  connection: local
+  roles:
+    - role: ansible-config-load
+      action: cluster-config
+  tags:
+    - always
+
+- name: Download Artifacts and stage files
+  hosts: localhost
   roles:
     - openshift-download-artifacts
   tags:
@@ -43,7 +72,6 @@
   tags:
     - openshift-create-manifest
 
-
 - name: Create OpenShift iginition
   hosts: localhost
   connection: local
@@ -54,7 +82,6 @@
 
 - name: Upload bootstrap ignition to webserver
   hosts: localhost
-  connection: local
   roles:
     - openshift-iginition-upload-to-webserver
   tags:
@@ -68,7 +95,6 @@
   tags:
     - openshift-iginition
 
-
 - name: Setup Project on Infra OCP cluster for O^3 cluster
   hosts: localhost
   connection: local
@@ -78,7 +104,6 @@
     - ozone-setup-project-on-infra-ocp
   tags:
     - ozone-setup-project-on-infra-ocp
-
 
 - name: Deploy VMs for O^3 cluster nodes
   hosts: bootstrap:control:worker
@@ -92,7 +117,6 @@
     - ozone-deploy-vm
     - deploy
 
-
 - name: OCP install time operations
   hosts: localhost
   connection: local
@@ -102,7 +126,6 @@
     - openshift-install-time-operations
   tags:
     - openshift-install-time-operations
-
 
 - name: Output kubeadmin password
   hosts: localhost

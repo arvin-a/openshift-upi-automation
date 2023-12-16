@@ -1,0 +1,24 @@
+
+- name: General vars for VMs
+  set_fact:
+    vm_name: "{{ node_name }}-{{ ocp_cluster_name }}"
+
+- name: Destroy VMS
+  command: virsh destroy {{ vm_name }}
+  ignore_errors: yes
+  become: True
+
+- name: Undefine VMS
+  command: virsh undefine {{ vm_name }}
+  ignore_errors: yes
+  become: True
+
+- name: Destroy storage pools
+  command: virsh pool-destroy {{ vm_name }}
+  ignore_errors: yes
+  become: True
+
+- name: Remove storage directories
+  shell: |
+    rm -rf {{ cluster_vms_storage_base_dir }} &> /dev/null
+  become: True

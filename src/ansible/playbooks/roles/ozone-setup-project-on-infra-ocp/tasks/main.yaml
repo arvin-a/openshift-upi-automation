@@ -35,21 +35,3 @@
     state: present
     definition: "{{ lookup('template', 'user-ca-configmap.yaml') }}"
 
-
-- name: Apply DV for RHCOS OS image upload
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'rhcos-dv-upload.yaml') }}"
-
-- pause:
-    seconds: 10
-
-- name: Wait until dv import is complete
-  shell:
-    cmd: "oc get datavolume.cdi.kubevirt.io -n {{ ocp_cluster_name }}"
-  register: dv_status
-  until: dv_status.stdout == ''
-  retries: 30
-  delay: 10
-
-    

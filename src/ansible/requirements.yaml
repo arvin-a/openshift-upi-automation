@@ -1,0 +1,4 @@
+collections:
+- name: community.libvirt
+- name: community.kubernetes
+- name: community.hashi_vault

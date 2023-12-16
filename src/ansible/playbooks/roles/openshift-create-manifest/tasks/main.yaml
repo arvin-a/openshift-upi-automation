@@ -13,6 +13,7 @@
   with_items:
     - "{{ ocp_install_dir }}"
     - "{{ staging_backup_dir }}"
+    - "{{ staging_dir }}/calico"
 
 
 - name: Process OCP install config template
@@ -35,3 +36,35 @@
     src: 98-etcd-partition.yaml
     dest: "{{ ocp_install_dir }}/manifests"
   when: platform == "O^3"
+
+
+# - name: Get calico manifests
+#   shell:
+#     chdir: "{{ staging_dir }}/calico"
+#     cmd:  |
+#       "wget {{ calico_archive_uri }}"
+#       "tar xvf ocp.tgz"
+#       "cp ./ocp/* {{ ocp_install_dir }}/manifests/"
+#   when: ocp_network_type == "Calico"
+
+
+- name: Download Calico archive
+  get_url:
+    url: "{{ calico_archive_uri }}"
+    dest: "{{ staging_dir }}/calico"
+  when: ocp_network_type == "Calico"
+
+- name: Extract Calico archive to manifests directory
+  unarchive:
+    src: "{{ staging_dir }}/calico/ocp.tgz"
+    dest: "{{ staging_dir }}/calico"
+  when: ocp_network_type == "Calico"
+
+- name: Copy Calico manifests to OCP manifests folder
+  copy:
+    src: "{{ staging_dir }}/calico/ocp/"
+    dest: "{{ ocp_install_dir }}/manifests/"
+    mode: '0666'
+  become: true
+  when: ocp_network_type == "Calico"
+

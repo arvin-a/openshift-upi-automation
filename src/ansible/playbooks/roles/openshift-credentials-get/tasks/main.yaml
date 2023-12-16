@@ -1,0 +1,14 @@
+---
+- include_role:
+    name: hashicorp-vault-get-token
+
+- include_role:
+    name: hashicorp-vault-read-secret
+  vars: 
+    secret_path: "{{ cluster }}"
+
+- name: Copy kubeconfig to staging dir
+  copy:
+    content: "{{ vault_payload.kubeconfig | b64decode }}"
+    dest: "{{ staging_dir }}/{{ cluster }}-kubeconfig"
+    mode: "0660"

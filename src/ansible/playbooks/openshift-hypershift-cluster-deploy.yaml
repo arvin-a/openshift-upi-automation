@@ -2,17 +2,25 @@
 
 # cd to ansible directory
 # export VARSDIR=`pwd`/vars/hypershift
-# sudo ansible-playbook playbooks/openshift-hypershift-cluster-deploy.yaml -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
-## If you are using a vault file in your vars use --vault-id @prompt 
-# sudo ansible-playbook  playbooks/openshift-hypershift-cluster-deploy.yaml  --vault-password-file vaultpass -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
+# ansible-playbook playbooks/openshift-hypershift-cluster-deploy.yaml -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
 # -e update_hypershift_cli=true      <- force rebuild of hypershift binary
 
 
-- name: Load configs
-  hosts: all:localhost
+- name: Include a play after another play
+  import_playbook: openshift-hypershift-cluster-destroy.yaml
+
+- name: Clear errors
+  hosts:  all:localhost
+  connection: local
+  tasks:
+    - meta: clear_host_errors
+
+- name: Load cluster configs
+  hosts: localhost:worker:control
   connection: local
   roles:
-    - ansible-config-load
+    - role: ansible-config-load
+      action: cluster-config
   tags:
     - always
 
@@ -22,9 +30,26 @@
   roles:
     - staging-dir-setup
   tags:
-    - staging-dir-setup
-    - pre-deploy
+    - always
 
+- name: Get Infra cluster credentials
+  hosts: localhost
+  connection: local
+  roles:
+    - role: openshift-credentials-get
+      vars:
+        cluster: "{{ infra_cluster_name }}"
+  tags:
+    - always
+
+- name: Load cluster configs
+  hosts: localhost:all
+  connection: local
+  roles:
+    - role: ansible-config-load
+      action: cluster-config
+  tags:
+    - always
 
 - name: Get Hyperhift Binary
   hosts: localhost
@@ -47,14 +72,3 @@
     - hypershift/hypershift-cluster-deploy
   tags:
     - hypershift-cluster-deploy
-
-
-- name: Add HTPasswd auth provider
-  hosts: localhost
-  connection: local
-  environment:
-    KUBECONFIG: "{{ cluster_kubeconfig }}"
-  roles:
-    - openshift-auth-provider
-  tags:
-    - openshift-auth-provider

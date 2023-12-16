@@ -1,0 +1,75 @@
+# Run sample
+
+# cd to ansible directory
+# export VARSDIR=`pwd`/vars/hypershift
+# sudo ansible-playbook playbooks/openshift-bm-test.yaml --vault-id @prompt -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
+# sudo ansible-playbook playbooks/openshift-bm-test.yaml --vault-password-file vaultpass -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR -i $VARSDIR/inventory
+
+- name: Load configs
+  hosts: all:localhost
+  connection: local
+  roles:
+    - ansible-config-load
+  tags:
+    - always
+
+- name: Setup Staging Directory
+  hosts: localhost
+  connection: local
+  roles:
+    - staging-dir-setup
+  tags:
+    - staging-dir-setup
+    - pre-deploy
+
+# - name: Read vault secret
+#   hosts: hypervisor
+#   connection: local
+#   become: true
+#   roles:
+#     - install-hashicorp-vault
+#   tags:
+#     - vault
+#     - pre-deploy
+
+- name: Read vault get token
+  hosts: localhost
+  connection: local
+  become: true
+  roles:
+    - hashicorp-vault-get-token
+  tags:
+    - vault-token
+    - pre-deploy
+
+- name: Read vault get  secret
+  hosts: localhost
+  connection: local
+  become: true
+  roles:
+    - hashicorp-vault-get-secret
+  tags:
+    - vault-secret
+    - pre-deploy
+
+
+# - name: Retrieve an approle role ID from Vault via the remote host
+#   community.hashi_vault.vault_read:
+#     url: https://vault:8201
+#     path: auth/approle/role/role-name/role-id
+#   register: approle_id
+
+
+# Run Hypershift installer
+# - name: Test idrac access
+#   hosts: worker
+#   connection: local
+#   roles:
+#     - role: idrac-operations
+#       action: pxe-boot
+
+# - name: Test node ssh test
+#   hosts: worker
+#   connection: local
+#   roles:
+#     - role: node-ssh-test

@@ -3,33 +3,48 @@
 # cd to ansible directory
 
 # export VARSDIR=`pwd`/vars/libvirt
-# sudo ansible-playbook playbooks/openshift-libvirt-cluster-deploy.yaml -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
+# ansible-playbook playbooks/openshift-libvirt-cluster-deploy.yaml -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
 
 #### Options
 # --skip-tags pre-deploy
 # --tags openshift-install-time-operations,openshift-auth-provider
 
+- name: Include a play after another play
+  import_playbook: openshift-libvirt-cluster-destroy.yaml
+
+- name: Clear errors
+  hosts: all:localhost
+  connection: local
+  tasks:
+    - meta: clear_host_errors
+
 - name: Load configs
   hosts: all:localhost
   connection: local
   roles:
-    - ansible-config-load
+    - role: ansible-config-load
+      action: base
   tags:
     - always
 
-
 - name: Setup Staging Directory
-  hosts: localhost
-  connection: local
+  hosts: localhost:hypervisor
   roles:
     - staging-dir-setup
   tags:
-    - staging-dir-setup
-    - pre-deploy
+    - always
+
+- name: Load cluster configs
+  hosts: localhost:worker:control:hypervisor
+  connection: local
+  roles:
+    - role: ansible-config-load
+      action: cluster-config
+  tags:
+    - always
 
 - name: Download Artifacts
   hosts: localhost
-  connection: local
   roles:
     - openshift-download-artifacts
   tags:
@@ -46,15 +61,13 @@
 
 - name: Create OpenShift iginition
   hosts: localhost
-  connection: local
   roles:
     - openshift-iginition-create
   tags:
-    - openshift-iginition
+    - openshift-iginition-create
 
 - name: Upload bootstrap ignition to webserver
   hosts: localhost
-  connection: local
   roles:
     - openshift-iginition-upload-to-webserver
   tags:
@@ -69,8 +82,7 @@
     - openshift-iginition
 
 - name: Setup libvirt VM image
-  hosts: localhost
-  connection: local
+  hosts: hypervisor
   roles:
     - libvirt-setup-vm-image
   tags:
@@ -78,31 +90,31 @@
     - lbvirt-setup
 
 - name: Deploy libvirt Bootstrap VM
-  hosts: bootstrap
-  connection: local
+  hosts: hypervisor
+  vars:
+    nodes: "{{ groups.bootstrap | list }}"
   roles:
     - libvirt-deploy-vms
   tags:
     - libvirt-deploy-vms
-
 
 - name: Deploy libvirt Control VMs
-  hosts: control
-  connection: local
+  hosts: hypervisor
+  vars:
+    nodes: "{{ groups.control | list }}"
   roles:
     - libvirt-deploy-vms
   tags:
     - libvirt-deploy-vms
-
 
 - name: Deploy libvirt Worker VMs
-  hosts: worker
-  connection: local
+  hosts: hypervisor
+  vars:
+    nodes: "{{ groups.worker | list }}"
   roles:
     - libvirt-deploy-vms
   tags:
     - libvirt-deploy-vms
-
 
 - name: OCP install time operations
   hosts: localhost
@@ -114,15 +126,14 @@
   tags:
     - openshift-install-time-operations
 
-
 - name: Remove Bootstrap VM
-  hosts: bootstrap
-  connection: local
+  hosts: hypervisor
+  vars:
+    node: "{{ groups.bootstrap[0] }}"
   roles:
     - libvirt-remove-bootstrap
   tags:
     - libvirt-remove-bootstrap
-
 
 - name: Output kubeadmin password
   hosts: localhost
@@ -131,7 +142,6 @@
     - openshift-show-admin-credentials
   tags:
     - openshift-show-admin-credentials
-   
 
 - name: Add HTPasswd auth provider
   hosts: localhost
@@ -156,7 +166,6 @@
   tags:
     - openshift-clean-storage
 
-
 - name: Install Cluster Storage Provider
   hosts: localhost
   connection: local
@@ -170,8 +179,6 @@
   tags:
     - openshift-storage-install
     - post-install
-
-
 
 - name: Install Nmstate Operator
   hosts: localhost
