@@ -1,10 +1,9 @@
-apiVersion: kubevirt.io/v1alpha3
+apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
   annotations:
-    kubevirt.io/latest-observed-api-version: v1alpha3
-    kubevirt.io/storage-observed-api-version: v1alpha3
-    name.os.template.kubevirt.io/rhel8.3: Red Hat Enterprise Linux 8.0 or higher
+    kubevirt.io/latest-observed-api-version: v1
+    kubevirt.io/storage-observed-api-version: v1
   name: {{ custom_vm_name }}
   namespace: {{ ocp_cluster_name }}
   labels:
@@ -21,12 +20,13 @@ spec:
             - {{ infra_cluster_storage_access_mode }}
           resources:
             requests:
-              storage: 120Gi
+              storage: 30Gi
           storageClassName: {{ infra_cluster_storage_class_name }}
           volumeMode: {{ infra_cluster_storage_volume_mode }}
         source:
           http:
             url: "{{ web_server_http_rhcos_url }}"
+{% if custom_vm_type == 'master' %}    
     - apiVersion: cdi.kubevirt.io/v1alpha1
       kind: DataVolume
       metadata:
@@ -39,19 +39,13 @@ spec:
           resources:
             requests:
               storage: 5Gi
-          storageClassName: {{ infra_cluster_fast_storage_class_name }}
+          storageClassName: {{ infra_cluster_storage_class_name }}
           volumeMode: {{ infra_cluster_storage_volume_mode }}
         source:
-          blank: {}            
+          blank: {}  
+{% endif %}          
   running: true
   template:
-    metadata:
-      labels:
-        kubevirt.io/domain: {{ custom_vm_name }}
-        kubevirt.io/size: large
-        os.template.kubevirt.io/rhel8.3: 'true'
-        vm.kubevirt.io/name: {{ custom_vm_name }}
-        workload.template.kubevirt.io/server: 'true'
     spec:
       domain:
         cpu:
@@ -59,7 +53,6 @@ spec:
           sockets: 1
           threads: 1
         devices:
-          autoattachPodInterface: false
           disks:
             - disk:
                 bus: virtio
@@ -68,9 +61,11 @@ spec:
               disk:
                 bus: virtio
               name: disk-0
+{% if custom_vm_type == 'master' %}    
             - disk:
                 bus: virtio
-              name: disk-1            
+              name: disk-1
+{% endif %}                    
           interfaces:
             - bridge: {}
               macAddress: '{{ custom_mac }}'
@@ -79,7 +74,7 @@ spec:
           networkInterfaceMultiqueue: true
           rng: {}
         machine:
-          type: pc-q35-rhel8.2.0
+          type: pc-q35-rhel9.2.0
         resources:
           requests:
             memory: 16Gi
@@ -98,6 +93,8 @@ spec:
             secretRef:
               name: {{ custom_vm_type }}-ign
           name: cloudinitdisk
+{% if custom_vm_type == 'master' %}
         - dataVolume:
             name: rhcos-{{ custom_vm_name }}-disk-1
           name: disk-1
+{% endif %}          

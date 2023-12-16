@@ -3,14 +3,8 @@
   set_fact:
     vm_name: "{{ node_name }}-{{ ocp_cluster_name }}"
 
-
 - name: Destroy VMS
   command: virsh destroy {{ vm_name }}
-  ignore_errors: yes
-  become: True
-
-- name: Undefine VMS
-  command: virsh undefine {{ vm_name }}
   ignore_errors: yes
   become: True
 

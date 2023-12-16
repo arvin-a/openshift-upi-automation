@@ -10,7 +10,7 @@ spec:
         default: true
         thinPoolConfig:
           name: thin-pool-1
-          overprovisionRatio: 10
+          overprovisionRatio: 20
           sizePercent: 90
         deviceSelector:
           paths:
@@ -18,7 +18,7 @@ spec:
       - name: "{{ data_disks.fast.name }}"
         thinPoolConfig:
           name: thin-pool-2
-          overprovisionRatio: 10
+          overprovisionRatio: 20
           sizePercent: 90
         deviceSelector:
           paths:
