@@ -1,6 +1,9 @@
 ---
+- set_fact:
+    config_dir: "{{ role_path }}/../../../../ocp-cluster-vars/vars/{{ cluster_name }}"
+
 - include_vars:
-    file: "{{ config }}"
+    file: "{{ config_dir }}/main.yaml"
   run_once: true
   when: action == "base"
 
@@ -10,10 +13,10 @@
   run_once: true
   when: action == "base"
 
+- include_tasks: common-config-load.yaml
 
 - include_tasks: infra-config-load.yaml
   when: cluster_role == "infra" and action == "cluster-config"
 
 - include_tasks: tenant-config-load.yaml
   when: cluster_role == "tenant" and action == "cluster-config"
-

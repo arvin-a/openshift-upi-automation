@@ -1,13 +1,13 @@
 platform: "libvirt"
 ocp_cluster_name: "ocp-infra1"
 cluster_role: infra   # values can be infra or tenant
+cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
 staging_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}"
-cluster_kubeconfig: "{{ staging_dir }}/kubeconfig"
-staging_backup_dir: "{{ staging_dir }}/backup"
+staging_backup_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}/backup"
 ocp_install_dir: "{{ staging_dir }}/ocp-install"
 
 # OCP Vars
-ocp_bin_version: "4.13"  # get latest stable release
+ocp_version: "4.13"  # get latest stable release
 ocp_bin_channel: "fast"
 rhcos_bin_qcow_url: "{{ rhcos_bin_release_url }}/{{ libvirt_rhcos_bin_archive_name }}"
 rhcos_bin_archive_name: "{{ libvirt_rhcos_bin_archive_name }}"

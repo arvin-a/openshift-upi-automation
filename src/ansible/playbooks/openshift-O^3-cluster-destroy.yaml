@@ -1,7 +1,8 @@
 # Run sample
 
 # cd to ansible directory
-# sudo ansible-playbook playbooks/openshift-O^3-cluster-destroy.yaml -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
+# export CLUSTER_NAME=ocp-tenant1
+# ansible-playbook playbooks/openshift-O^3-cluster-destroy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
 
 - name: Load configs
   hosts: all:localhost
@@ -38,6 +39,16 @@
       action: cluster-config
   tags:
     - always
+
+- name: Download Artifacts and stage files
+  hosts: localhost
+  vars:
+    destroy: true
+  roles:
+    - openshift-download-artifacts
+  tags:
+    - openshift-download-artifacts
+    - pre-deploy
 
 - name: Destroy O^3 cluster
   hosts: localhost

@@ -51,7 +51,7 @@
   vars:
     patchstr: '[{ "op": "add", "path": "/spec/routeAdmission", "value": {wildcardPolicy: "WildcardsAllowed"}}]'
   shell:
-    cmd: "oc patch ingresscontroller -n openshift-ingress-operator default --type=json -p '{{ patchstr }}'"
+    cmd: "{{ oc_bin }} patch ingresscontroller -n openshift-ingress-operator default --type=json -p '{{ patchstr }}'"
 
 
 - name: Create HyperShift Cluster namespace and pull secret
@@ -65,7 +65,7 @@
 # Create htpasswd secret for hyperhift cluster
 - name: Create htpasswd secret for the cluster
   shell:
-    cmd: "oc create secret generic htpass-secret-{{ ocp_cluster_name }} --from-file=htpasswd={{ role_path }}/files/users.htpasswd -n clusters --dry-run=client -o yaml | oc apply -f -"
+    cmd: "{{ oc_bin }} create secret generic htpass-secret-{{ ocp_cluster_name }} --from-file=htpasswd={{ role_path }}/files/users.htpasswd -n clusters --dry-run=client -o yaml | {{ oc_bin }} apply -f -"
 
 - name: Create HyperShift Cluster using templated yamls
   k8s:
@@ -81,7 +81,7 @@
   vars:
     jsonfilter: '{.status.conditions[?(@.type=="Available")].status}'
   shell:
-    cmd: "oc get --namespace clusters hostedclusters {{ ocp_cluster_name }} -o=jsonpath='{{ jsonfilter }}'"
+    cmd: "{{ oc_bin }} get --namespace clusters hostedclusters {{ ocp_cluster_name }} -o=jsonpath='{{ jsonfilter }}'"
   register: apiserver_available
   until: apiserver_available.stdout  == "True"
   retries: 100
@@ -89,7 +89,7 @@
 
 - name: Save kubeconfig of Hypershift cluster
   shell:
-    cmd: "oc -n {{ infra_cluster_tenant_namespace }} get secret admin-kubeconfig  -o json -o=jsonpath='{.data.kubeconfig}' | base64 -d > {{ cluster_kubeconfig }}"
+    cmd: "{{ oc_bin }} -n {{ infra_cluster_tenant_namespace }} get secret admin-kubeconfig  -o json -o=jsonpath='{.data.kubeconfig}' | base64 -d > {{ cluster_kubeconfig }}"
   register: kubeconfig_data
 
 - include_role:
@@ -101,7 +101,7 @@
 
 - name: Make users cluster admin
   shell: |
-    oc --kubeconfig={{ cluster_kubeconfig }} adm policy add-cluster-role-to-user cluster-admin arvin &> /dev/null
+    {{ oc_bin }} --kubeconfig={{ cluster_kubeconfig }} adm policy add-cluster-role-to-user cluster-admin arvin &> /dev/null
   ignore_errors: true
   
 - include_tasks: create-ingress.yaml
@@ -110,7 +110,7 @@
   vars:
     jsonfilter: '{.status.version.history[0].state}'
   shell:
-    cmd: "oc get --namespace clusters hostedclusters {{ ocp_cluster_name }} -o=jsonpath='{{ jsonfilter }}'"
+    cmd: "{{ oc_bin }} get --namespace clusters hostedclusters {{ ocp_cluster_name }} -o=jsonpath='{{ jsonfilter }}'"
   register: apiserver_available
   until: apiserver_available.stdout  == "Completed"
   retries: 240
@@ -118,5 +118,5 @@
 
 - name: Get console url
   shell:
-    cmd: "oc  --kubeconfig {{ cluster_kubeconfig }} whoami --show-console"
+    cmd: "{{ oc_bin }}  --kubeconfig {{ cluster_kubeconfig }} whoami --show-console"
   register: console_url_result

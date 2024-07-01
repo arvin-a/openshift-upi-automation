@@ -19,7 +19,7 @@
 
 - name: Wait until MCE Operator installation has succeeded
   shell:
-    cmd: oc get csv $(oc get subscriptions.operators.coreos.com multicluster-engine -n multicluster-engine -o=jsonpath='{.status.currentCSV}') -n multicluster-engine -o=jsonpath='{.status.phase}'
+    cmd: "{{ oc_bin }} get csv $({{ oc_bin }} get subscriptions.operators.coreos.com multicluster-engine -n multicluster-engine -o=jsonpath='{.status.currentCSV}') -n multicluster-engine -o=jsonpath='{.status.phase}'"
   register: result
   until: result.stdout == "Succeeded"
   retries: 100
@@ -35,8 +35,10 @@
     timeout: 30
 
 - name: Wait until OpenShift Virtualization hyperconverged cluster installation has succeeded
+  vars:
+    json_path: '{.status.conditions[?(@.type=="Available")].status}'
   shell:
-    cmd: oc get MultiClusterEngine multiclusterengine -n multicluster-engine -o=jsonpath='{.status.conditions[?(@.type=="Available")].status}'
+    cmd: "{{ oc_bin }} get MultiClusterEngine multiclusterengine -n multicluster-engine -o=jsonpath='{{ json_path }}'"
   register: result
   until: result.stdout == "True"
   retries: 100

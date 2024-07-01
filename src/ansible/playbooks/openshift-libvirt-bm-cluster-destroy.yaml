@@ -1,8 +1,18 @@
+##################################################################
+## This playbook is not ready for use                           ##
+##################################################################
+
+
+
 # Run sample
 
 # cd to ansible directory
-# export VARSDIR=`pwd`/vars/libvirt
-# sudo ansible-playbook playbooks/openshift-libvirt-bm-cluster-destroy.yaml -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR --vault-password-file vaultpass
+# export CLUSTER_NAME=libvirt-infra1
+# export CLUSTER_NAME=libvirt-infra1
+# ansible-playbook playbooks/openshift-libvirt-bm-cluster-destroy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME -e cluster_name=$CLUSTER_NAME --vault-password-file vaultpass
+
+# export CLUSTER_NAME=libvirt-infra1
+# ansible-playbook playbooks/openshift-libvirt-bm-cluster-destroy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME -e cluster_name=$CLUSTER_NAME
 
 #### Options
 # --skip-tags pre-deploy

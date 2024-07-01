@@ -4,23 +4,32 @@ cluster_role: tenant   # values can be infra or tenant
 base_domain: arvhomelab.com
 ocp_cluster_name: "ocp-tenant1" 
 
-cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
 staging_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}"
-staging_backup_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}/backup"
+staging_backup_dir: "{{ staging_dir }}/backup"
 ocp_install_dir: "{{ staging_dir }}/ocp-install"
+cluster_kubeconfig: "{{ staging_dir }}/{{ ocp_cluster_name }}-kubeconfig"
 infra_cluster_name: "ocp-infra1"
-infra_cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ infra_cluster_name }}"
+infra_cluster_kubeconfig: "{{ staging_dir }}/{{ infra_cluster_name }}-kubeconfig"
 infra_cluster_bridge_name: "br1"
 infra_cluster_storage_volume_mode: "Block" # If your storage class supports block, its recommended you use that
 infra_cluster_storage_access_mode: "ReadWriteOnce" # If your storage class supports it, ReadWriteMany is recommended
 
 # OCP Vars
-ocp_bin_version: "4.12"
+ocp_version: "4.16"
 ocp_bin_channel: "fast"
 rhcos_bin_qcow_url: "{{ rhcos_bin_release_url }}/{{ kubevirt_rhcos_bin_archive_name }}"
 rhcos_bin_archive_name: "{{ kubevirt_rhcos_bin_archive_name }}"
 rhcos_bin_file_name: "{{ kubevirt_rhcos_bin_file_name }}"
-ocp_network_type: "OVNKubernetes"
+ocp_network_type: "Cilium"  #OVNKubernetes, Calico,Cilium"
+
+## Cilium - Only required if network type is Cilium
+cilium_version: 1.15.1
+cilium_repo_uri: "https://github.com/isovalent/olm-for-cilium"
+
+## Calico - Only required if network type is Calico
+calico_version: 3.26.0
+calico_archive_uri: "https://github.com/projectcalico/calico/releases/download/v{{ calico_version }}/ocp.tgz"
+
 
 ### CONTROL vars
 control_ign: "{{ ocp_install_dir }}/master.ign"

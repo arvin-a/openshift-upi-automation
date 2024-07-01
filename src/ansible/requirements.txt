@@ -5,3 +5,4 @@ ansible-modules-hashivault
 kubernetes >= 28.0
 openshift >= 0.13
 PyYAML >= 6.0
+jmespath

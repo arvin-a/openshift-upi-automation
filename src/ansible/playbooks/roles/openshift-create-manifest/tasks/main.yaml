@@ -38,14 +38,14 @@
   when: platform == "O^3"
 
 
-# - name: Get calico manifests
-#   shell:
-#     chdir: "{{ staging_dir }}/calico"
-#     cmd:  |
-#       "wget {{ calico_archive_uri }}"
-#       "tar xvf ocp.tgz"
-#       "cp ./ocp/* {{ ocp_install_dir }}/manifests/"
-#   when: ocp_network_type == "Calico"
+- name: Get calico manifests
+  shell:
+    chdir: "{{ staging_dir }}/calico"
+    cmd:  |
+      "wget {{ calico_archive_uri }}"
+      "tar xvf ocp.tgz"
+      "cp ./ocp/* {{ ocp_install_dir }}/manifests/"
+  when: ocp_network_type == "Calico"
 
 
 - name: Download Calico archive
@@ -68,3 +68,17 @@
   become: true
   when: ocp_network_type == "Calico"
 
+- name: Get cilium manifests
+  ansible.builtin.git:
+    repo: "{{ cilium_repo_uri }}"
+    dest: "{{ staging_dir }}/cilium"
+    single_branch: yes
+    version: main
+  when: ocp_network_type == "Cilium"
+
+- name: Copy Cilium manifest to openshift manifest dir
+  copy:
+    src: "{{ staging_dir }}/cilium/manifests/cilium.v{{ cilium_version }}/"
+    dest: "{{ ocp_install_dir }}/manifests/"
+    mode: '0666'
+  when: ocp_network_type == "Cilium"

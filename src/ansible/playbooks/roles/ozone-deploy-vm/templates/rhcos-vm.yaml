@@ -4,18 +4,21 @@ metadata:
   annotations:
     kubevirt.io/latest-observed-api-version: v1
     kubevirt.io/storage-observed-api-version: v1
+    ozone.io/coreos-version: {{ coreos_version }}
   name: {{ custom_vm_name }}
   namespace: {{ ocp_cluster_name }}
   labels:
     app: {{ custom_vm_name }}
 spec:
   dataVolumeTemplates:
-    - apiVersion: cdi.kubevirt.io/v1alpha1
-      kind: DataVolume
-      metadata:
+    - metadata:
         name: rhcos-{{ custom_vm_name }}-disk-0
       spec:
-        pvc:
+        source:
+          registry:
+            pullMethod: node
+            url: 'docker://{{ coreos_image_url }}'
+        storage:
           accessModes:
             - {{ infra_cluster_storage_access_mode }}
           resources:
@@ -23,14 +26,8 @@ spec:
               storage: 30Gi
           storageClassName: {{ infra_cluster_storage_class_name }}
           volumeMode: {{ infra_cluster_storage_volume_mode }}
-        source:
-          http:
-            url: "{{ web_server_http_rhcos_url }}"
 {% if custom_vm_type == 'master' %}    
-    - apiVersion: cdi.kubevirt.io/v1alpha1
-      kind: DataVolume
-      metadata:
-        creationTimestamp: null
+    - metadata:
         name: rhcos-{{ custom_vm_name }}-disk-1
       spec:
         pvc:
@@ -56,11 +53,10 @@ spec:
           disks:
             - disk:
                 bus: virtio
-              name: cloudinitdisk
-            - bootOrder: 1
-              disk:
+              name: rhcos
+            - disk:
                 bus: virtio
-              name: disk-0
+              name: cloudinitvolume
 {% if custom_vm_type == 'master' %}    
             - disk:
                 bus: virtio
@@ -88,11 +84,11 @@ spec:
       volumes:
         - dataVolume:
             name: rhcos-{{ custom_vm_name }}-disk-0
-          name: disk-0
+          name: rhcos
         - cloudInitConfigDrive:
             secretRef:
               name: {{ custom_vm_type }}-ign
-          name: cloudinitdisk
+          name: cloudinitvolume
 {% if custom_vm_type == 'master' %}
         - dataVolume:
             name: rhcos-{{ custom_vm_name }}-disk-1

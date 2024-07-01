@@ -3,12 +3,12 @@
 
 - name: Create htpasswd secret
   shell:
-    cmd: "oc create secret generic htpass-secret --from-file=htpasswd={{ role_path }}/files/users.htpasswd -n openshift-config"
+    cmd: "{{ oc_bin }} create secret generic htpass-secret --from-file=htpasswd={{ role_path }}/files/users.htpasswd -n openshift-config"
 
 - name: Create HTPasswd oauth provider
   shell:
-    cmd: "oc apply -f {{ role_path }}/files/htpasswd-oauth.yaml"
+    cmd: "{{ oc_bin }} apply -f {{ role_path }}/files/htpasswd-oauth.yaml"
 
 - name: Make users cluster admin
   shell: |
-    oc adm policy add-cluster-role-to-user cluster-admin arvin &> /dev/null
+    {{ oc_bin }} adm policy add-cluster-role-to-user cluster-admin arvin &> /dev/null

@@ -14,7 +14,7 @@
 
 - name: Wait until nmstate Operator installation has succeeded
   shell:
-    cmd: oc get csv $(oc get subscriptions.operators.coreos.com kubernetes-nmstate-operator -n openshift-nmstate -o=jsonpath='{.status.currentCSV}') -n openshift-nmstate -o=jsonpath='{.status.phase}'
+    cmd: "{{ oc_bin }} get csv $({{ oc_bin }} get subscriptions.operators.coreos.com kubernetes-nmstate-operator -n openshift-nmstate -o=jsonpath='{.status.currentCSV}') -n openshift-nmstate -o=jsonpath='{.status.phase}'"
   register: result
   until: result.stdout == "Succeeded"
   retries: 100

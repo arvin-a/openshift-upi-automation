@@ -1,4 +1,6 @@
-# Run sample
+##################################################################
+## This playbook is not ready for use                           ##
+##################################################################
 
 # cd to ansible directory
 # export VARSDIR=`pwd`/vars/hypershift

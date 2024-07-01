@@ -1,27 +1,24 @@
 platform: "hypershift"
-cluster_type: kubevirt
-cluster_role: tenant   # values can be infra or tenant
-ocp_version: "4.13"
+cluster_type: none
+ocp_version: "4.11"
+ocp_bin_channel: "fast"
 hypershift_image: "hypershift-cli:latest"
-hypershift_operator_image: quay.io/hypershift/hypershift-operator:4.13
-# hypershift_cluster_version: "4.12.5"
-hypershift_cli_path: "{{ staging_dir }}/hypershift"
+hypershift_operator_image: quay.io/hypershift/hypershift-operator:4.12
+hypershift_cluster_version: "4.11.18"
 infra_cluster_name: "ocp-infra1"
 infra_cluster_base_domain: "arvhomelab.com"
 infra_cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ infra_cluster_name }}"
 infra_cluster_tenant_namespace: "clusters-{{ ocp_cluster_name }}"
+infra_cluster_storage_class_name: "odf-storagecluster-ceph-rbd"
+infra_cluster_fast_storage_class_name: "odf-storagecluster-ceph-rbd-fast"
 
 ## Hypershift cluster vars
-ocp_cluster_name: "ocp-hyper1"
-base_domain: "apps.{{ infra_cluster_name }}.{{ infra_cluster_base_domain }}"
-hypershift_ingress_domain: "apps.{{ ocp_cluster_name }}.{{ base_domain }}"
-
 hypershift_installer_args:
-  node-pool-replicas: "2"
-  cores: "6"
-  memory: "16Gi"
-  # release-image: "quay.io/openshift-release-dev/ocp-release:{{ hypershift_cluster_version }}-x86_64"
-  service-publishing-strategy: "NodePort"
+  node-pool-replicas: "0"
+  release-image: "quay.io/openshift-release-dev/ocp-release:{{ hypershift_cluster_version }}-x86_64"
+    
+ocp_cluster_name: "ocp-hyper-bm1"
+base_domain: "apps.{{ infra_cluster_name }}.{{ infra_cluster_base_domain }}"
 
 cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
 staging_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}"
@@ -29,9 +26,13 @@ staging_backup_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}/backup"
 ocp_install_dir: "{{ staging_dir }}/ocp-install"
 
 # OCP Vars
-ocp_bin_version: "{{ ocp_version }}"
-ocp_bin_channel: "fast"
 rhcos_bin_qcow_url: "{{ rhcos_bin_release_url }}/{{ kubevirt_rhcos_bin_archive_name }}"
 rhcos_bin_archive_name: "{{ kubevirt_rhcos_bin_archive_name }}"
 rhcos_bin_file_name: "{{ kubevirt_rhcos_bin_file_name }}"
 ocp_network_type: "OpenShiftSDN"
+
+
+# Kubevirt CSI Driver vars
+kubevirt_csi_service_kubeconfig: "kubevirt-csi-service-kubeconfig"
+kubevirt_csi_infra_cluster_sc: "{{ infra_cluster_storage_class_name }}"
+

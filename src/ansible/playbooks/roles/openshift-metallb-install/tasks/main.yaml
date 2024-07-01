@@ -19,7 +19,7 @@
 
 - name: Wait until Metallb Operator installation has succeeded
   shell:
-    cmd: oc get csv $(oc get subscriptions.operators.coreos.com metallb-operator -n metallb-system -o=jsonpath='{.status.currentCSV}') -o=jsonpath='{.status.phase}'
+    cmd: "{{ oc_bin }} get csv $({{ oc_bin }} get subscriptions.operators.coreos.com metallb-operator -n metallb-system -o=jsonpath='{.status.currentCSV}') -o=jsonpath='{.status.phase}'"
   register: result
   until: result.stdout == "Succeeded"
   retries: 100
@@ -37,8 +37,10 @@
 
 
 - name: Wait until Metallb instance is available
+  vars:
+    json_path: '{.status.conditions[?(@.type=="Available")].status}'
   shell:
-    cmd: oc get metallb -n metallb-system metallb -o=jsonpath='{.status.conditions[?(@.type=="Available")].status}'
+    cmd: "{{ oc_bin }} get metallb -n metallb-system metallb -o=jsonpath='{{ json_path }}'"
   register: result
   until: result.stdout == "True"
   retries: 100

@@ -2,17 +2,19 @@
 
 - name: Delete O^3 VMs
   shell:
-    cmd: "oc delete vm --all -n {{ ocp_cluster_name }}"
+    cmd: "{{ oc_bin }} delete vm --all -n {{ ocp_cluster_name }}"
 
 - name: Wait until virt launcher pods are teminated
   shell:
-    cmd: "oc delete pod --all --wait=true -n {{ ocp_cluster_name }}"
+    cmd: "{{ oc_bin }} delete pod --all --wait=true -n {{ ocp_cluster_name }}"
 
-- name: "Delete remanining DVs"
+- name: Delete remanining DVs
   shell:
-    cmd: "oc delete dv --all -n {{ ocp_cluster_name }}"
+    cmd: "{{ oc_bin }} delete dv --all -n {{ ocp_cluster_name }}"
 
-- name: "Delete Cluster Namespace"
-  shell:
-    cmd: "oc delete ns {{ ocp_cluster_name }}"
-  ignore_errors: true
+- name: Delete Cluster Namespace
+  k8s:
+    name: "{{ ocp_cluster_name }}"
+    api_version: v1
+    kind: Namespace
+    state: absent

@@ -1,0 +1,3 @@
+[worker]
+r730-1.arvhomelab.com node_type=bm idrac='r730-1-idrac.arvhomelab.com' disk_target=/dev/sda1 nic=eno1
+r730-2.arvhomelab.com node_type=bm idrac='r730-2-idrac.arvhomelab.com' disk_target=/dev/sda1 nic=eno1

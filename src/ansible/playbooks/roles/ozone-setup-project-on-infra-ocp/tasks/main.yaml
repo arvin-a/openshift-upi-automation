@@ -20,14 +20,14 @@
 
 - name: Create secrets from Ignition files
   shell:
-    cmd: "oc create secret generic {{ item }}-ign --from-file=userdata={{ ocp_install_dir }}/{{ item }}.ign -n {{ ocp_cluster_name }} --dry-run=client -o yaml | oc apply -f -"
+    cmd: "{{ oc_bin }} create secret generic {{ item }}-ign --from-file=userdata={{ ocp_install_dir }}/{{ item }}.ign -n {{ ocp_cluster_name }} --dry-run=client -o yaml | {{ oc_bin }} apply -f -"
   loop:
     - master
     - worker
 
 - name: Create bootstrap secrets from Ignition file
   shell:
-    cmd: "oc create secret generic bootstrap-ign --from-file=userdata={{ ocp_install_dir }}/bootstrap-pointer.ign -n {{ ocp_cluster_name }} --dry-run=client -o yaml | oc apply -f -"
+    cmd: "{{ oc_bin }} create secret generic bootstrap-ign --from-file=userdata={{ ocp_install_dir }}/bootstrap-pointer.ign -n {{ ocp_cluster_name }} --dry-run=client -o yaml | {{ oc_bin }} apply -f -"
 
 
 - name: Add user ca configmap to cluster namespace

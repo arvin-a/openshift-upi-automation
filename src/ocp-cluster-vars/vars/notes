@@ -1,0 +1,32 @@
+Hypershift Binary
+
+Use Hypershift CLI by creating the container
+clone repo
+build the dockerfile naming it hypershift-cli:latest
+
+
+
+
+Get live ISO
+https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.11/4.11.9/rhcos-live.x86_64.iso
+
+
+
+ oc login --token="eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhZDUyMjdhMy1iY2ZkLTRjZjAtYTdiNi0zOTk4MzVhMDg1NjYifQ.eyJpYXQiOjE2ODY1MTI0MDIsImp0aSI6ImVkYTExYmI3LTM0MDAtNGQzNS1iM2JlLTUyMTgxNzRjMjQ1ZSIsImlzcyI6Imh0dHBzOi8vc3NvLnJlZGhhdC5jb20vYXV0aC9yZWFsbXMvcmVkaGF0LWV4dGVybmFsIiwiYXVkIjoiaHR0cHM6Ly9zc28ucmVkaGF0LmNvbS9hdXRoL3JlYWxtcy9yZWRoYXQtZXh0ZXJuYWwiLCJzdWIiOiJmOjUyOGQ3NmZmLWY3MDgtNDNlZC04Y2Q1LWZlMTZmNGZlMGNlNjpyaG4tZ3BzLWFhbWlyaWFuIiwidHlwIjoiT2ZmbGluZSIsImF6cCI6ImNsb3VkLXNlcnZpY2VzIiwibm9uY2UiOiIxOTgzZTQ3Mi0yNWJjLTQyZmEtOGYxMi1kNDhhZDZkZDQ3MjIiLCJzZXNzaW9uX3N0YXRlIjoiZTIyZDliZTUtMDUxMS00OWYwLWFmNTgtNGZjZDE4MmE4MjAwIiwic2NvcGUiOiJvcGVuaWQgYXBpLmlhbS5zZXJ2aWNlX2FjY291bnRzIGFwaS5pYW0ub3JnYW5pemF0aW9uIG9mZmxpbmVfYWNjZXNzIiwic2lkIjoiZTIyZDliZTUtMDUxMS00OWYwLWFmNTgtNGZjZDE4MmE4MjAwIn0._0qk11hv9e_fyHO06U5hRA1l2QKFWXTtWIF2rr_sSJU" --server=https://api.ci.l2s4.p1.openshiftapps.com:6443
+
+ $ oc login --token=<skip> --server=https://api.ci.l2s4.p1.openshiftapps.com:6443
+Logged into "https://api.ci.l2s4.p1.openshiftapps.com:6443" as "ibodunov" using the token provided.
+$ oc registry login
+info: Using registry public hostname registry.ci.openshift.org
+Saved credentials for registry.ci.openshift.org
+$ cat ~/.docker/config.json 
+{
+    "auths": {
+        "registry.ci.openshift.org": {
+            "auth": "<skip>"
+        }
+    }
+$ oc image info quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:29d53195c7fb3ae5747748646d52ec5f4b424e63336aae2a53bbbfbca564a7f5
+error: unable to read image quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:29d53195c7fb3ae5747748646d52ec5f4b424e63336aae2a53bbbfbca564a7f5: unauthorized: access to the requested resource is not authorized
+
+
