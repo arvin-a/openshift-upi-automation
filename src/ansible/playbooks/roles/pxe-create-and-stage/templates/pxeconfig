@@ -1,0 +1,6 @@
+set default=0
+set timeout=2
+menuentry "PXE Boot RHCOS for OCP {{ ocp_version }}" {
+    linuxefi (http,192.168.3.2)/{{ ocp_cluster_name }}/{{ bm_live_kernel }} ignition.firstboot nameserver=192.168.3.2 nomodeset rd.neednet=1  ramdisk_size=3276800 ignition.platform.id=metal rd.debug coreos.inst.install_dev=/dev/sda coreos.liverootfs_url=http://192.168.3.2/{{ ocp_cluster_name }}/{{ bm_live_rootfs }} coreos.inst.ignition_url=http://192.168.3.2/{{ ocp_cluster_name }}/{{ node_role }}.ign
+    initrdefi (http,192.168.3.2)/{{ ocp_cluster_name }}/{{ bm_live_initramfs }}
+}

@@ -9,8 +9,8 @@
   vars: 
     worker_host_count: "{{ groups['worker'] | length }}" 
   shell: |
-    oc get csr -o name | xargs oc adm certificate approve &> /dev/null
-    oc get nodes | grep worker | wc -l
+    {{ oc_bin }} get csr -o name | xargs {{ oc_bin }} adm certificate approve &> /dev/null
+    {{ oc_bin }} get nodes | grep worker | wc -l
   register: result
   until: result.stdout == worker_host_count
   retries: 100
@@ -25,4 +25,4 @@
 # One last csr approve attempt in case there are any CSRs left over
 - name: Approve certs part 2
   shell: |
-    oc get csr -o name | xargs oc adm certificate approve &> /dev/null
+    {{ oc_bin }} get csr -o name | xargs {{ oc_bin }} adm certificate approve &> /dev/null

@@ -1,107 +1,89 @@
 # Run sample
 
 # cd to ansible directory
-
-# export VARSDIR=`pwd`/vars/libvirt
-# sudo ansible-playbook playbooks/openshift-libvirt-bm-cluster-deploy.yaml -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR --vault-password-file vaultpass
+# export CLUSTER_NAME=libvirt-infra1.1
+# ansible-playbook playbooks/openshift-libvirt-bm-cluster-deploy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
 
 #### Options
 # --skip-tags pre-deploy
 # --tags openshift-install-time-operations,openshift-auth-provider
 
 
+
 - name: Load configs
   hosts: all:localhost
   connection: local
   roles:
-    - ansible-config-load
+    - role: ansible-config-load
+      action: base
   tags:
     - always
 
-- name: Setup Staging Directory
-  hosts: localhost
-  connection: local
-  roles:
-    - staging-dir-setup
+# - name: Load additional inventory items
+#   hosts: localhost
+#   roles:
+#     - ansible-additional-inventory
+#   tags:
+#     - always
+
+# - name: Setup Staging Directory
+#   hosts: localhost:hypervisor
+#   roles:
+#     - staging-dir-setup
+#   tags:
+#     - always
+
+# - name: Load cluster configs
+#   hosts: localhost:all
+#   connection: local
+#   roles:
+#     - role: ansible-config-load
+#       action: cluster-config
+#   tags:
+#     - always
+
+# - name: Download and stage Artifacts
+#   hosts: localhost
+#   roles:
+#     - openshift-download-artifacts
+#   tags:
+#     - openshift-download-artifacts
+#     - pre-deploy
+
+
+
+# - name: Create OpenShift manifest
+#   hosts: localhost
+#   connection: local
+#   roles:
+#     - openshift-create-manifest
+#   tags:
+#     - openshift-create-manifest
+
+
+# - name: Create OpenShift iginition
+#   hosts: localhost
+#   connection: local
+#   roles:
+#     - openshift-iginition-create
+#   tags:
+#     - openshift-iginition
+
+# - name: Upload ignitions to webserver
+#   hosts: localhost
+#   roles:
+#     - openshift-iginition-upload-to-webserver
+#   tags:
+#     - openshift-iginition
+
+- name: Create and stage PXE configuration
+  hosts: webserver
+  roles: 
+    - role: pxe-create-and-stage
+      when: platform == "libvirt_bm"
   tags:
-    - staging-dir-setup
+    - pxe-create-and-stage
     - pre-deploy
-
-- name: Download Artifacts
-  hosts: localhost
-  connection: local
-  roles:
-    - openshift-download-artifacts
-  tags:
-    - openshift-download-artifacts
-    - pre-deploy
-
-- name: Create OpenShift manifest
-  hosts: localhost
-  connection: local
-  roles:
-    - openshift-create-manifest
-  tags:
-    - openshift-create-manifest
-
-
-- name: Create OpenShift iginition
-  hosts: localhost
-  connection: local
-  roles:
-    - openshift-iginition-create
-  tags:
-    - openshift-iginition
-
-- name: Upload ignitions to webserver
-  hosts: localhost
-  connection: local
-  roles:
-    - openshift-iginition-upload-to-webserver
-  tags:
-    - openshift-iginition
-    
-- name: Overwrite bootstrap ignition with ignition pointer
-  hosts: localhost
-  connection: local
-  roles:
-    - openshift-iginition-update
-  tags:
-    - openshift-iginition
-    
-- name: Setup libvirt VM image
-  hosts: localhost
-  connection: local
-  roles:
-    - libvirt-setup-vm-image
-  tags:
-    - libvirt-setup-vm-image
-    - lbvirt-setup
-
-- name: Deploy libvirt Bootstrap VM
-  hosts: bootstrap
-  connection: local
-  roles:
-    - libvirt-deploy-vms
-  tags:
-    - libvirt-deploy-vms
-
-- name: Deploy libvirt Control VMs
-  hosts: control
-  connection: local
-  roles:
-    - libvirt-deploy-vms
-  tags:
-    - libvirt-deploy-vms
-
-- name: Deploy libvirt Worker VMs
-  hosts: worker
-  connection: local
-  roles:
-    - role: libvirt-deploy-vms
-      when: node_type is not defined  
-  tags:
-    - libvirt-deploy-vms
 
 - name: Deploy bare metal workers
   hosts: worker
@@ -109,104 +91,148 @@
   roles:
     - role: idrac-operations
       action: pxe-boot
-      when:
-        - node_type is defined
-        - node_type == "bm"
-
-- name: OCP install time operations
-  hosts: localhost
-  connection: local
-  environment:
-    KUBECONFIG: "{{ cluster_kubeconfig }}"
-  roles:
-    - openshift-install-time-operations
-  tags:
-    - openshift-install-time-operations
+      when: platform == "libvirt_bm"
 
 
-- name: Remove Bootstrap VM
-  hosts: bootstrap
-  connection: local
-  roles:
-    - libvirt-remove-bootstrap
-  tags:
-    - libvirt-remove-bootstrap
 
-- name: Output kubeadmin password
-  hosts: localhost
-  connection: local
-  roles:
-    - openshift-show-admin-credentials
-  tags:
-    - openshift-show-admin-credentials
+# - name: Overwrite bootstrap ignition with ignition pointer
+#   hosts: localhost
+#   connection: local
+#   roles:
+#     - openshift-iginition-update
+#   tags:
+#     - openshift-iginition
+    
+# - name: Setup libvirt VM image
+#   hosts: localhost
+#   connection: local
+#   roles:
+#     - libvirt-setup-vm-image
+#   tags:
+#     - libvirt-setup-vm-image
+#     - lbvirt-setup
+
+# - name: Deploy libvirt Bootstrap VM
+#   hosts: bootstrap
+#   connection: local
+#   roles:
+#     - libvirt-deploy-vms
+#   tags:
+#     - libvirt-deploy-vms
+
+# - name: Deploy libvirt Control VMs
+#   hosts: control
+#   connection: local
+#   roles:
+#     - libvirt-deploy-vms
+#   tags:
+#     - libvirt-deploy-vms
+
+# - name: Deploy libvirt Worker VMs
+#   hosts: worker
+#   connection: local
+#   roles:
+#     - role: libvirt-deploy-vms
+#       when: node_type is not defined  
+#   tags:
+#     - libvirt-deploy-vms
+
+
+
+# - name: OCP install time operations
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - openshift-install-time-operations
+#   tags:
+#     - openshift-install-time-operations
+
+
+# - name: Remove Bootstrap VM
+#   hosts: bootstrap
+#   connection: local
+#   roles:
+#     - libvirt-remove-bootstrap
+#   tags:
+#     - libvirt-remove-bootstrap
+
+# - name: Output kubeadmin password
+#   hosts: localhost
+#   connection: local
+#   roles:
+#     - openshift-show-admin-credentials
+#   tags:
+#     - openshift-show-admin-credentials
    
 
-- name: Add HTPasswd auth provider
-  hosts: localhost
-  connection: local
-  environment:
-    KUBECONFIG: "{{ cluster_kubeconfig }}"
-  roles:
-    - openshift-auth-provider
-  tags:
-    - openshift-auth-provider
+# - name: Add HTPasswd auth provider
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - openshift-auth-provider
+#   tags:
+#     - openshift-auth-provider
 
 
-- name: Install ODF
-  hosts: localhost
-  connection: local
-  environment:
-    KUBECONFIG: "{{ cluster_kubeconfig }}"
-  roles:
-    - role: openshift-odf-install
-      when: storage_provider == "odf"
-  tags:
-    - openshift-odf-install
-    - post-install
+# - name: Install ODF
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - role: openshift-odf-install
+#       when: storage_provider == "odf"
+#   tags:
+#     - openshift-odf-install
+#     - post-install
 
 
-- name: Install Nmstate Operator
-  hosts: localhost
-  connection: local
-  environment:
-    KUBECONFIG: "{{ cluster_kubeconfig }}"
-  roles:
-    - openshift-nmstate-install
-  tags:
-    - openshift-nmstate-install
-    - post-install
+# - name: Install Nmstate Operator
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - openshift-nmstate-install
+#   tags:
+#     - openshift-nmstate-install
+#     - post-install
 
 
-- name: Install OpenShift Virtualization
-  hosts: localhost
-  connection: local
-  environment:
-    KUBECONFIG: "{{ cluster_kubeconfig }}"
-  roles:
-    - role: openshift-virt-install
-      when: ocp_virt_install == True
-  tags:
-    - openshift-virt-install
-    - post-install
+# - name: Install OpenShift Virtualization
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - role: openshift-virt-install
+#       when: ocp_virt_install == True
+#   tags:
+#     - openshift-virt-install
+#     - post-install
 
-- name: Create network bridge
-  hosts: localhost
-  connection: local
-  environment:
-    KUBECONFIG: "{{ cluster_kubeconfig }}"
-  roles:
-    - openshift-create-bridge
-  tags:
-    - openshift-create-bridge
-    - post-install
+# - name: Create network bridge
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - openshift-create-bridge
+#   tags:
+#     - openshift-create-bridge
+#     - post-install
 
-- name: Metallb install and configure
-  hosts: localhost
-  connection: local
-  environment:
-    KUBECONFIG: "{{ cluster_kubeconfig }}"
-  roles:
-    - openshift-metallb-install
-  tags:
-    - openshift-metallb-install
-    - post-install
+# - name: Metallb install and configure
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - openshift-metallb-install
+#   tags:
+#     - openshift-metallb-install
+#     - post-install

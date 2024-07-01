@@ -10,6 +10,9 @@
   retries: 5
   delay: 20
 
+- debug:
+    var: cluster_metadata
+    
 - set_fact:
     infra_cluster_storage_class_name: "{{ cluster_metadata.resources[0].data['standard-sc'] }}"
     infra_cluster_fast_storage_class_name: "{{ cluster_metadata.resources[0].data['fast-sc'] }}"

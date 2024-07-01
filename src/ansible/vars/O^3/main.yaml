@@ -1,4 +1,0 @@
----
-configs:
-- "{{ playbook_dir }}/../vars/common.yaml"
-- "{{ playbook_dir }}/../vars/O^3/vars.yaml"

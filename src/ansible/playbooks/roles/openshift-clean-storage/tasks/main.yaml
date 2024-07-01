@@ -1,7 +1,7 @@
 ---
 - name: Zap none OS disks
   shell: |
-    oc debug node/{{ custom_vm_name }} -- chroot /host sgdisk --zap-all --clear {{ item }}
+    {{ oc_bin }} debug node/{{ custom_vm_name }} -- chroot /host sgdisk --zap-all --clear {{ item }}
   loop:
     - "{{ data_disks.standard.disk_path }}"
     - "{{ data_disks.fast.disk_path }}"
@@ -11,7 +11,7 @@
 
 - name: Wipe none OS disks
   shell: |
-    oc debug node/{{ custom_vm_name }} -- chroot /host wipefs -a {{ item }}
+    {{ oc_bin }} debug node/{{ custom_vm_name }} -- chroot /host wipefs -a {{ item }}
   loop:
     - "{{ data_disks.standard.disk_path }}"
     - "{{ data_disks.fast.disk_path }}"
@@ -21,7 +21,7 @@
 
 - name: Update device partition table
   shell: |
-    oc debug node/{{ custom_vm_name }} -- chroot /host kpartx -f -v {{ item }}
+    {{ oc_bin }} debug node/{{ custom_vm_name }} -- chroot /host kpartx -f -v {{ item }}
   loop:
     - "{{ data_disks.standard.disk_path }}"
     - "{{ data_disks.fast.disk_path }}"

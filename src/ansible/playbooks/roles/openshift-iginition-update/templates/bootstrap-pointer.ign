@@ -3,7 +3,7 @@
         "config": {
             "merge": [
                 {
-                    "source": "{{ web_server.http_base_url }}/{{ ocp_cluster_name }}/bootstrap.ign"
+                    "source": "{{ web_server_http_cluster_url }}/bootstrap.ign"
                 }
             ]
         },

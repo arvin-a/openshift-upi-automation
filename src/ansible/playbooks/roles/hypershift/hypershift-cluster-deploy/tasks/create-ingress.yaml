@@ -3,7 +3,7 @@
   vars:
     jsonpath: '{.spec.ports[?(@.port==443)].nodePort}'
   shell:
-    cmd: oc --kubeconfig {{ cluster_kubeconfig }} get services -n openshift-ingress router-nodeport-default -o=jsonpath='{{ jsonpath }}'
+    cmd: "{{ oc_bin }} --kubeconfig {{ cluster_kubeconfig }} get services -n openshift-ingress router-nodeport-default -o=jsonpath='{{ jsonpath }}'"
   register: ingress_nodeport_cmd
   until: ingress_nodeport_cmd.rc == 0
   retries: 120

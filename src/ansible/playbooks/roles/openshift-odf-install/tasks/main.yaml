@@ -2,12 +2,12 @@
 
 - name: Label Worker Nodes
   shell: |
-    oc label node worker1 cluster.ocs.openshift.io/openshift-storage='' --overwrite
-    oc label node worker1 topology.rook.io/rack=1 --overwrite
-    oc label node worker2 cluster.ocs.openshift.io/openshift-storage='' --overwrite
-    oc label node worker2 topology.rook.io/rack=2 --overwrite
-    oc label node worker3 cluster.ocs.openshift.io/openshift-storage='' --overwrite
-    oc label node worker3 topology.rook.io/rack=3 --overwrite
+    {{ oc_bin }} label node worker1 cluster.ocs.openshift.io/openshift-storage='' --overwrite
+    {{ oc_bin }} label node worker1 topology.rook.io/rack=1 --overwrite
+    {{ oc_bin }} label node worker2 cluster.ocs.openshift.io/openshift-storage='' --overwrite
+    {{ oc_bin }} label node worker2 topology.rook.io/rack=2 --overwrite
+    {{ oc_bin }} label node worker3 cluster.ocs.openshift.io/openshift-storage='' --overwrite
+    {{ oc_bin }} label node worker3 topology.rook.io/rack=3 --overwrite
 
 - name: Create Local Storage Namespace
   k8s:
@@ -26,7 +26,7 @@
 
 - name: Wait until Local Storage CSV has succeeded
   shell:
-    cmd: oc get csv $(oc get csv -n openshift-local-storage -o custom-columns=NAME:.metadata.name | grep local-storage) -n openshift-local-storage -o=jsonpath='{.status.phase}'
+    cmd: "{{ oc_bin }} get csv $({{ oc_bin }} get csv -n openshift-local-storage -o custom-columns=NAME:.metadata.name | grep local-storage) -n openshift-local-storage -o=jsonpath='{.status.phase}'"
   register: result
   until: result.stdout == "Succeeded"
   retries: 100
@@ -44,7 +44,7 @@
 
 - name: Wait until Local Storage PVs are available
   shell:
-    cmd: oc get pv | grep local-pv | wc -l
+    cmd: "{{ oc_bin }} get pv | grep local-pv | wc -l"
   register: result
   until: result.stdout == "4"
   retries: 100
@@ -73,7 +73,7 @@
 
 - name: Wait until ODF CSV has succeeded before continueing
   shell:
-    cmd: oc get csv $(oc get subscriptions odf-operator -o=jsonpath='{.status.currentCSV}' -n openshift-storage) -n openshift-storage -o=jsonpath='{.status.phase}'
+    cmd: "{{ oc_bin }} get csv $({{ oc_bin }} get subscriptions odf-operator -o=jsonpath='{.status.currentCSV}' -n openshift-storage) -n openshift-storage -o=jsonpath='{.status.phase}'"
   register: result
   until: result.stdout == "Succeeded"
   retries: 100
@@ -88,7 +88,7 @@
 
 - name: Wait until ODF Cluster is ready
   shell:
-    cmd: oc get StorageCluster odf-storagecluster -n openshift-storage -o=jsonpath='{.status.phase}'
+    cmd: "{{ oc_bin }} get StorageCluster odf-storagecluster -n openshift-storage -o=jsonpath='{.status.phase}'"
   register: result
   until: result.stdout == "Ready"
   retries: 100
@@ -105,7 +105,7 @@
     - 10-storage-class-fast.yaml
 
 - name: Wait until CephBlockPools are ready
-  shell: oc get cephblockpool -A -o=jsonpath='{.items[*].status.phase}'
+  shell: "{{ oc_bin }} get cephblockpool -A -o=jsonpath='{.items[*].status.phase}'"
   register: result
   until: result.stdout == "Ready Ready"
   retries: 100
@@ -113,8 +113,8 @@
 
 - name: Set CephFS as the default storage class
   shell: |
-   oc patch storageclass odf-storagecluster-ceph-rbd -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class": "true"}}}'
+   {{ oc_bin }} patch storageclass odf-storagecluster-ceph-rbd -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class": "true"}}}'
  
 - name: Enable ODF web interface
   shell: |
-   oc patch console.operator cluster -n openshift-storage --type json -p '[{"op": "add", "path": "/spec/plugins", "value": ["odf-console"]}]'
+   {{ oc_bin }} patch console.operator cluster -n openshift-storage --type json -p '[{"op": "add", "path": "/spec/plugins", "value": ["odf-console"]}]'

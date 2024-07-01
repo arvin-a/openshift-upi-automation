@@ -1,0 +1,12 @@
+- name: Process PXE template and upload to DDI server
+  vars:
+    node_role:  "{{ hostvars[item].node_role }}"
+  template:
+    src: pxeconfig
+    dest: "{{ bm_pxe_server_directory }}/grub.cfg-01-{{ hostvars[item].mac_address | replace(':','-') }}"
+    mode: '0644'
+  become: true
+  when:  
+    - hostvars[item].node_type is defined
+    - hostvars[item].node_type == 'bm'
+  loop: "{{ hostvars | list }}"

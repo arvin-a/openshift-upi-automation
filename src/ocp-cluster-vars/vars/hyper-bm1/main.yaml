@@ -1,0 +1,5 @@
+---
+configs:
+- "{{ config_dir }}/../common.yaml"
+- "{{ config_dir }}/../credentials.yaml"
+- "{{ config_dir }}/vars.yaml"

@@ -1,8 +1,8 @@
 # Run sample
 
 # cd to ansible directory
-# export VARSDIR=`pwd`/vars/libvirt
-# sudo ansible-playbook playbooks/openshift-libvirt-cluster-destroy.yaml -i $VARSDIR/inventory -e config=$VARSDIR/main.yaml -e config_dir=$VARSDIR
+# export CLUSTER_NAME=libvirt-infra1
+# ansible-playbook playbooks/openshift-libvirt-cluster-destroy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
 
 #### Options
 # --skip-tags pre-deploy

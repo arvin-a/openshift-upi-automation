@@ -20,12 +20,11 @@
     src: "{{ artifact_download_dir }}/{{ ocp_bin_client_archive_name }}"
     dest: "{{ artifact_download_dir }}"
 
-- name: Copy OC CLI to /usr/bin
+- name: Copy OC CLI to staging directory
   copy:
     src: "{{ artifact_download_dir }}/oc"
-    dest: /usr/bin
+    dest: "{{ oc_bin }}"
     mode: '0755'
-  become: true
 
 
 
@@ -34,11 +33,13 @@
   get_url:
     url: "{{ ocp_bin_installer_url }}"
     dest: "{{ artifact_download_dir }}"
+  when: destroy is not defined or destroy == false
 
 - name: Extract OCP Installer archive
   unarchive:
     src: "{{ artifact_download_dir }}/{{ ocp_bin_installer_archive_name }}"
     dest: "{{ staging_dir }}"
+  when: destroy is not defined or destroy == false
 
 
 #### Get RHCOS Image
@@ -46,34 +47,18 @@
   get_url:
     url: "{{ rhcos_bin_qcow_url }}"
     dest: "{{ staging_dir }}"
-  when: platform != "bm"
+  when: 
+    - platform == "libvirt" or platform == "libvirt_bm"
+    - destroy is not defined or destroy == false
 
-# using gunzip since unarchive doesn't seem to be able to handle .gz
+## using gunzip since unarchive doesn't seem to be able to handle .gz
 - name: Unzip RHCOS archive
   shell:
     chdir: "{{ staging_dir }}"
     cmd: "gunzip  {{ staging_dir }}/{{ rhcos_bin_archive_name }}"
-  when: platform != "bm"
-
-- name: Create folders on webserver
-  file:
-    path: "{{ item }}"
-    state: directory
-    recurse: yes
-  delegate_to: "{{ web_server.name }}"
-  loop:
-    - "{{ web_server_files_bin_path }}"
-    - "{{ web_server_files_cluster_path }}"
-  when: platform != "bm"
-  become: true
-
-- name: Transfer file to Web Server
-  copy:
-    src: "{{ staging_dir }}/{{ rhcos_bin_file_name }}"
-    dest: "{{ web_server_files_bin_path }}/{{ rhcos_bin_file_name }}"
-  delegate_to: "{{ web_server.name }}"
-  when: platform == "O^3"
-  become: true
+  when: 
+    - platform == "libvirt" or platform == "libvirt_bm"
+    - destroy is not defined or destroy == false
 
 - name: Copy QEMU file to hypervisor host
   copy:
@@ -81,5 +66,59 @@
     dest: "{{ base_qcow }}"
     mode: '0644'
   delegate_to: "{{ groups.hypervisor[0] }}"
-  when: platform == "libvirt"
+  when: 
+    - platform == "libvirt" or platform == "libvirt_bm"
+    - destroy is not defined or destroy == false
   become: true
+
+
+## Bare Metal PXE artifacts download and stage
+
+- name: Download RHCOS file for bare metal PXE installation
+  get_url:
+    url: "{{ rhcos_bin_release_url }}/{{ item }}"
+    dest: "{{ staging_dir }}"
+  when: 
+    - platform == "libvirt_bm"
+    - destroy is not defined or destroy == false
+  loop:
+    - "{{ bm_live_kernel }}"
+    - "{{ bm_live_initramfs }}"
+    - "{{ bm_live_rootfs }}"
+
+- name: Delete folder on webserver
+  delegate_to: "{{ groups['webserver'][0] }}"
+  become: yes
+  file:
+    state: absent
+    path: "{{ web_server_files_cluster_path }}"
+  when: 
+    - platform == "libvirt_bm"
+    - destroy is not defined or destroy == false
+
+- name: Create folder on webserver
+  delegate_to: "{{ groups['webserver'][0] }}"
+  become: yes
+  file:
+    state: directory
+    path: "{{ web_server_files_cluster_path }}"
+  when: 
+    - platform == "libvirt_bm"
+    - destroy is not defined or destroy == false
+
+
+- name: Copy RHCOS artifacts for bare metal to webserver
+  delegate_to: "{{ groups['webserver'][0] }}"
+  become: yes
+  copy:
+    src: "{{ staging_dir }}/{{ item }}"
+    dest: "{{ web_server_files_cluster_path }}"
+    mode: '0644'
+  loop:
+    - "{{ bm_live_kernel }}"
+    - "{{ bm_live_initramfs }}"
+    - "{{ bm_live_rootfs }}"
+  become: true
+  when: 
+    - platform == "libvirt_bm"
+    - destroy is not defined or destroy == false

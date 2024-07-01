@@ -1,0 +1,18 @@
+[hypervisor]
+t640.arvhomelab.com
+
+[webserver]
+infra-ddi.arvhomelab.com
+
+[bootstrap]
+bootstrap.ocp-infra1.arvhomelab.com node_role='bootstrap' custom_vm_name='bootstrap' mac_address='02:00:00:16:94:d4'
+
+[control]
+control1.ocp-infra1.arvhomelab.com node_role='master' custom_vm_name='control1' mac_address='02:00:00:be:30:19'
+control2.ocp-infra1.arvhomelab.com node_role='master' custom_vm_name='control2' mac_address='02:00:00:3d:5f:2b'
+control3.ocp-infra1.arvhomelab.com node_role='master' custom_vm_name='control3' mac_address='02:00:00:03:ff:8f'
+
+[worker]
+worker1.ocp-infra1.arvhomelab.com node_role='worker' custom_vm_name='worker1' mac_address='02:00:00:a1:13:f3' mac_address2='02:00:00:b8:11:df' data_storage=True data_disk_path='/storage/p4600-2.1' fast_data_disk_path_on_host='/dev/nvme0n1' fast_data_disk_path='/dev/sdc'
+worker2.ocp-infra1.arvhomelab.com node_role='worker' custom_vm_name='worker2' mac_address='02:00:00:94:e8:8e' mac_address2='02:00:00:83:af:ca' data_storage=True data_disk_path='/storage/p4600-2.2' fast_data_disk_path_on_host='/dev/nvme1n1' fast_data_disk_path='/dev/sdc'
+worker3.ocp-infra1.arvhomelab.com node_role='worker' custom_vm_name='worker3' mac_address='02:00:00:11:51:f5' mac_address2='02:00:00:06:a0:24'

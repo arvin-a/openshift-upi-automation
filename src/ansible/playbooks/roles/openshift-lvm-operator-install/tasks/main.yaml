@@ -19,7 +19,7 @@
 
 - name: Wait until LVM Operator installation has succeeded
   shell:
-    cmd: oc get csv $(oc get subscriptions.operators.coreos.com lvms-operator -n openshift-storage -o=jsonpath='{.status.currentCSV}') -n openshift-storage -o=jsonpath='{.status.phase}'
+    cmd: "{{ oc_bin }} get csv $({{ oc_bin }} get subscriptions.operators.coreos.com lvms-operator -n openshift-storage -o=jsonpath='{.status.currentCSV}') -n openshift-storage -o=jsonpath='{.status.phase}'"
   register: result
   until: result.stdout == "Succeeded"
   retries: 100
@@ -42,7 +42,7 @@
 
 - name: Wait until LVMCluster is ready
   shell:
-    cmd: oc get LVMCluster -n openshift-storage lvmcluster -o=jsonpath='{.status.state}'
+    cmd: "{{ oc_bin }} get LVMCluster -n openshift-storage lvmcluster -o=jsonpath='{.status.state}'"
   register: result
   until: result.stdout == "Ready"
   retries: 100

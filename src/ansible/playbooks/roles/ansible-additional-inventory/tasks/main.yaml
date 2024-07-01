@@ -1,5 +1,8 @@
-- name: Add webserver inventory item
-  ansible.builtin.add_host:
-    name: '{{ web_server.name }}'
-    groups: "{{ web_server.groups }}"
+# - name: Add webserver inventory item
+#   add_host:
+#     name: '{{ web_server.name }}'
+#     groups: "{{ web_server.groups }}"
+#     web_server_path: "{{ web_server.files_root_path }}"
+
+- set_fact:
     web_server_path: "{{ web_server.files_root_path }}"

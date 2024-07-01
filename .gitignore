@@ -2,7 +2,7 @@ ocp-install
 openshift-install
 *qcow2*
 **/temp
-**/vaultpass
+**/vault-password-file
 .ansible
 *.arv
 update-bastion.sh

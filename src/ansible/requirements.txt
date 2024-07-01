@@ -1,7 +1,9 @@
-ansible-core==2.14.11
+ansible-core>=2.17
 ansible
 hvac
 ansible-modules-hashivault
 kubernetes >= 28.0
 openshift >= 0.13
 PyYAML >= 6.0
+jmespath
+omsdk

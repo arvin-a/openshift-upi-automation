@@ -1,15 +1,10 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  # labels:
-  #   installer.name: multiclusterhub
-  #   installer.namespace: open-cluster-management
-  #   multiclusterhubs.operator.open-cluster-management.io/managed-by: "true"
-  #   operators.coreos.com/multicluster-engine.multicluster-engine: ""
   name: multicluster-engine
   namespace: multicluster-engine
 spec:
-  channel: stable-2.4
+  channel: "{{ mce_channel }}"
   installPlanApproval: Automatic
   name: multicluster-engine
   source: redhat-operators

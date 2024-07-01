@@ -1,0 +1,17 @@
+---
+version: 3
+
+images:
+  base_image:
+    name: quay.io/ansible/awx-ee:latest
+
+dependencies:
+  galaxy: requirements.yml
+  python: requirements.txt
+  # ansible_core:
+  #     package_pip: ansible-core==2.14.11
+
+
+additional_build_steps:
+  prepend_galaxy:
+    - COPY _build/ansible.cfg ~/.ansible.cfg

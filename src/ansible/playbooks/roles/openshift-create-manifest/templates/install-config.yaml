@@ -1,5 +1,19 @@
 apiVersion: v1
 baseDomain: {{ base_domain }}
+capabilities:
+  # baselineCapabilitySet: None
+  # additionalEnabledCapabilities: 
+  # - MachineAPI
+  # - marketplace
+  # - OperatorLifecycleManager
+  # - openshift-samples
+  # - Console
+  # - Storage
+  # - CSISnapshot
+  # - NodeTuning
+  # - Build
+  # - DeploymentConfig
+  # - Ingress
 compute:
 - hyperthreading: Enabled
   name: worker
@@ -21,5 +35,5 @@ platform:
   none: {}
 additionalTrustBundle: |
 {{ additional_trust_bundle | indent(width=2, first=true) }}
-pullSecret: '{{ pull_secret }}'
+pullSecret: '{{ pull_secret | trim  }}'
 sshKey: '{{ rhcos_ssh_pub_key }}'
