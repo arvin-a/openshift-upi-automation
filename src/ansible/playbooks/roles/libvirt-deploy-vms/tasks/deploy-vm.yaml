@@ -10,7 +10,7 @@
     type: "{{ bootstrap_type }}"
     vm_pool_dir: "{{ cluster_vms_storage_base_dir }}/{{ vm_name }}"
     ignition_src: "{{ bootstrap_ign }}"
-  when: node.custom_vm_type == bootstrap_type
+  when: node.node_role == bootstrap_type
 
 - name: Setup vars for Control Plane VMs
   set_fact:
@@ -19,7 +19,7 @@
     type: "{{ control_type }}"
     vm_pool_dir: "{{ cluster_vms_storage_base_dir }}/{{ vm_name }}"
     ignition_src: "{{ control_ign }}"
-  when: node.custom_vm_type == control_type
+  when: node.node_role == control_type
 
 - name: Setup vars for Worker VMs
   set_fact:
@@ -28,7 +28,7 @@
     type: "{{ worker_type }}"
     vm_pool_dir: "{{ cluster_vms_storage_base_dir }}/{{ vm_name }}"
     ignition_src: "{{ worker_ign }}"
-  when: node.custom_vm_type == worker_type
+  when: node.node_role == worker_type
 
 # Create base directory for cluster vm pools
 - name: Create Pool directory
@@ -52,7 +52,7 @@
   shell:
     cmd: "virsh pool-create-as --name {{ vm_name }}-data --type dir --target {{ node.data_disk_path }}"
   when: 
-    - node.custom_vm_type == worker_type
+    - node.node_role == worker_type
     - node.data_storage is defined
   become: yes
 
@@ -86,11 +86,11 @@
         --ram {{ memory }} --cpu host --vcpus {{ cpu }} \
         --disk {{ vm_pool_dir }}/{{ rhcos_bin_file_name }},format=qcow2,bus=virtio \
         --os-type linux --os-variant rhel8.2 \
-        --network bridge={{ libvirt_bridge_name }},mac={{ node.custom_mac }} \
+        --network bridge={{ libvirt_bridge_name }},mac={{ node.mac_address }} \
         --noreboot --autostart
         --graphics vnc,listen=0.0.0.0 --noautoconsole \
         --qemu-commandline='-fw_cfg name=opt/com.coreos/config,file={{ vm_pool_dir }}/{{ type }}.ign'"
-  when: node.custom_vm_type == control_type or node.custom_vm_type == bootstrap_type
+  when: node.node_role == control_type or node.node_role == bootstrap_type
   become: yes
 
 
@@ -102,13 +102,13 @@
         --disk pool='{{ vm_name }}-data',size={{ data_disks.standard.size }},format=raw,bus=virtio \
         --disk path='{{ node.fast_data_disk_path_on_host }}',device=disk \
         --os-type linux --os-variant rhel8.2 \
-        --network bridge={{ libvirt_bridge_name }},mac={{ node.custom_mac }} \
-        --network bridge={{ libvirt_bridge_name }},mac={{ node.custom_mac2 }} \
+        --network bridge={{ libvirt_bridge_name }},mac={{ node.mac_address }} \
+        --network bridge={{ libvirt_bridge_name }},mac={{ node.mac_address2 }} \
         --noreboot --autostart
         --graphics vnc,listen=0.0.0.0 --noautoconsole \
         --qemu-commandline='-fw_cfg name=opt/com.coreos/config,file={{ vm_pool_dir }}/{{ type }}.ign'"
   when: 
-    - node.custom_vm_type == worker_type
+    - node.node_role == worker_type
     - node.data_storage is defined
   become: yes
 
@@ -119,13 +119,13 @@
         --ram {{ memory }} --cpu host --vcpus {{ cpu }} \
         --disk {{ vm_pool_dir }}/{{ rhcos_bin_file_name }},format=qcow2,bus=virtio \
         --os-type linux --os-variant rhel8.2 \
-        --network bridge={{ libvirt_bridge_name }},mac={{ node.custom_mac }} \
-        --network bridge={{ libvirt_bridge_name }},mac={{ node.custom_mac2 }} \
+        --network bridge={{ libvirt_bridge_name }},mac={{ node.mac_address }} \
+        --network bridge={{ libvirt_bridge_name }},mac={{ node.mac_address2 }} \
         --noreboot --autostart \
         --graphics vnc,listen=0.0.0.0 --noautoconsole \
         --qemu-commandline='-fw_cfg name=opt/com.coreos/config,file={{ vm_pool_dir }}/{{ type }}.ign'"
   when: 
-    - node.custom_vm_type == worker_type
+    - node.node_role == worker_type
     - node.data_storage is not defined
   become: yes
 

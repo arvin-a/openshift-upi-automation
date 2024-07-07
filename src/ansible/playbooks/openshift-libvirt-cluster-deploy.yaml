@@ -224,16 +224,16 @@
     - openshift-metallb-install
     - post-install
 
-- name: Multi Cluster Engine install and configure
-  hosts: localhost
-  connection: local
-  environment:
-    KUBECONFIG: "{{ cluster_kubeconfig }}"
-  roles:
-    - openshift-mce-install
-  tags:
-    - openshift-mce-install
-    - post-install
+# - name: Multi Cluster Engine install and configure
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - openshift-mce-install
+#   tags:
+#     - openshift-mce-install
+#     - post-install
 
 - name: Cluster metadata set
   hosts: localhost

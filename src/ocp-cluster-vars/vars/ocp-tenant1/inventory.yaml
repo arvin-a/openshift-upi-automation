@@ -1,33 +1,33 @@
 bootstrap:
   hosts:
     bootstrap.ocp-tenant1.arvhomelab.com:
-      custom_vm_type: bootstrap
+      node_role: bootstrap
       custom_vm_name: bootstrap
-      custom_mac: '02:00:00:43:7a:2c'
+      mac_address: '02:00:00:43:7a:2c'
 
 control:
   hosts:
     control1.ocp-tenant1.arvhomelab.com:
-      custom_vm_type: master
+      node_role: master
       custom_vm_name: control1
-      custom_mac: '02:00:00:4a:1e:bc'
+      mac_address: '02:00:00:4a:1e:bc'
     control2.ocp-tenant1.arvhomelab.com:
-      custom_vm_type: master
+      node_role: master
       custom_vm_name: control2
-      custom_mac: '02:00:00:ab:cb:4f'
+      mac_address: '02:00:00:ab:cb:4f'
     control3.ocp-tenant1.arvhomelab.com:
-      custom_vm_type: master
+      node_role: master
       custom_vm_name: control3
-      custom_mac: '02:00:00:0c:d6:48'
+      mac_address: '02:00:00:0c:d6:48'
 
 worker:
   hosts:
     worker1.ocp-tenant1.arvhomelab.com:
-      custom_vm_type: worker
+      node_role: worker
       custom_vm_name: worker1
-      custom_mac: '02:00:00:d7:97:5f'
+      mac_address: '02:00:00:d7:97:5f'
     worker2.ocp-tenant1.arvhomelab.com:
-      custom_vm_type: worker
+      node_role: worker
       custom_vm_name: worker2
-      custom_mac: '02:00:00:f1:5c:17'
+      mac_address: '02:00:00:f1:5c:17'
 

@@ -34,7 +34,7 @@
   wait_for:
     timeout: 30
 
-- name: Wait until OpenShift Virtualization hyperconverged cluster installation has succeeded
+- name: Wait until MultiClusterEngine multiclusterengine installation has succeeded
   vars:
     json_path: '{.status.conditions[?(@.type=="Available")].status}'
   shell:
@@ -42,4 +42,4 @@
   register: result
   until: result.stdout == "True"
   retries: 100
-  delay: 5
+  delay: 10

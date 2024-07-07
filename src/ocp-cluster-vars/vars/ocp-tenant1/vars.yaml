@@ -15,20 +15,22 @@ infra_cluster_storage_volume_mode: "Block" # If your storage class supports bloc
 infra_cluster_storage_access_mode: "ReadWriteOnce" # If your storage class supports it, ReadWriteMany is recommended
 
 # OCP Vars
-ocp_version: "4.16"
+ocp_version: "4.17"
 ocp_bin_channel: "fast"
 rhcos_bin_qcow_url: "{{ rhcos_bin_release_url }}/{{ kubevirt_rhcos_bin_archive_name }}"
 rhcos_bin_archive_name: "{{ kubevirt_rhcos_bin_archive_name }}"
 rhcos_bin_file_name: "{{ kubevirt_rhcos_bin_file_name }}"
-ocp_network_type: "Cilium"  #OVNKubernetes, Calico,Cilium"
+ocp_network_type: "OVNKubernetes"  #OVNKubernetes, Calico,Cilium"
 
 ## Cilium - Only required if network type is Cilium
 cilium_version: 1.15.1
 cilium_repo_uri: "https://github.com/isovalent/olm-for-cilium"
 
 ## Calico - Only required if network type is Calico
-calico_version: 3.26.0
+calico_version: 3.28.2
 calico_archive_uri: "https://github.com/projectcalico/calico/releases/download/v{{ calico_version }}/ocp.tgz"
+calico_ebpf_installation_manifest_url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ calico_version }}/manifests/custom-resources.yaml"
+# calico_dataplane: eBPF # eBPF or kubeproxy
 
 
 ### CONTROL vars

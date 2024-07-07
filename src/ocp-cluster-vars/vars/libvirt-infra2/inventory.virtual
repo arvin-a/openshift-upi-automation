@@ -1,13 +1,13 @@
 [bootstrap]
-bootstrap.ocp-infra2.arvhomelab.com custom_vm_type='bootstrap' custom_vm_name='bootstrap' custom_mac='02:00:00:6a:f9:a7'
+bootstrap.ocp-infra2.arvhomelab.com node_role='bootstrap' custom_vm_name='bootstrap' mac_address='02:00:00:6a:f9:a7'
 
 [control]
-control1.ocp-infra2.arvhomelab.com custom_vm_type='master' custom_vm_name='control1' custom_mac='02:00:00:45:3d:3a'
-control2.ocp-infra2.arvhomelab.com custom_vm_type='master' custom_vm_name='control2' custom_mac='02:00:00:ff:a5:14'
-control3.ocp-infra2.arvhomelab.com custom_vm_type='master' custom_vm_name='control3' custom_mac='02:00:00:d3:b0:0f'
+control1.ocp-infra2.arvhomelab.com node_role='master' custom_vm_name='control1' mac_address='02:00:00:45:3d:3a'
+control2.ocp-infra2.arvhomelab.com node_role='master' custom_vm_name='control2' mac_address='02:00:00:ff:a5:14'
+control3.ocp-infra2.arvhomelab.com node_role='master' custom_vm_name='control3' mac_address='02:00:00:d3:b0:0f'
 
 [worker]
-worker1.ocp-infra2.arvhomelab.com custom_vm_type='worker' custom_vm_name='worker1' custom_mac='02:00:00:3c:2c:10' odf_disk_path='/storage/p4600-2.1'
-worker2.ocp-infra2.arvhomelab.com custom_vm_type='worker' custom_vm_name='worker2' custom_mac='02:00:00:b7:ac:db' odf_disk_path='/storage/p4600-2.2'
-worker3.ocp-infra2.arvhomelab.com custom_vm_type='worker' custom_vm_name='worker3' custom_mac='02:00:00:b4:18:48'
+worker1.ocp-infra2.arvhomelab.com node_role='worker' custom_vm_name='worker1' mac_address='02:00:00:3c:2c:10' odf_disk_path='/storage/p4600-2.1'
+worker2.ocp-infra2.arvhomelab.com node_role='worker' custom_vm_name='worker2' mac_address='02:00:00:b7:ac:db' odf_disk_path='/storage/p4600-2.2'
+worker3.ocp-infra2.arvhomelab.com node_role='worker' custom_vm_name='worker3' mac_address='02:00:00:b4:18:48'
 

@@ -1,12 +1,12 @@
 [bootstrap]
-bootstrap.ocp-infra2.arvhomelab.com custom_vm_type='bootstrap' custom_vm_name='bootstrap' custom_mac='02:00:00:6a:f9:a7'
+bootstrap.ocp-infra2.arvhomelab.com node_role='bootstrap' custom_vm_name='bootstrap' mac_address='02:00:00:6a:f9:a7'
 
 [control]
-control1.ocp-infra2.arvhomelab.com custom_vm_type='master' custom_vm_name='control1' custom_mac='02:00:00:45:3d:3a'
-control2.ocp-infra2.arvhomelab.com custom_vm_type='master' custom_vm_name='control2' custom_mac='02:00:00:ff:a5:14'
-control3.ocp-infra2.arvhomelab.com custom_vm_type='master' custom_vm_name='control3' custom_mac='02:00:00:d3:b0:0f'
+control1.ocp-infra2.arvhomelab.com node_role='master' custom_vm_name='control1' mac_address='02:00:00:45:3d:3a'
+control2.ocp-infra2.arvhomelab.com node_role='master' custom_vm_name='control2' mac_address='02:00:00:ff:a5:14'
+control3.ocp-infra2.arvhomelab.com node_role='master' custom_vm_name='control3' mac_address='02:00:00:d3:b0:0f'
 
 [worker]
-r730-1.ocp-infra2.arvhomelab.com custom_vm_name='worker1' custom_mac='24:6E:96:0F:8E:40' node_type='bm' idrac='r730-1-idrac.arvhomelab.com' disk_target=/dev/sda1 nic=eno1
-r730-2.ocp-infra2.arvhomelab.com custom_vm_name='worker2' custom_mac='24:6E:96:1F:6E:38' node_type='bm' idrac='r730-2-idrac.arvhomelab.com' disk_target=/dev/sda1 nic=eno1
+r730-1.ocp-infra2.arvhomelab.com custom_vm_name='worker1' mac_address='24:6E:96:0F:8E:40' node_type='bm' idrac='r730-1-idrac.arvhomelab.com' disk_target=/dev/sda1 nic=eno1
+r730-2.ocp-infra2.arvhomelab.com custom_vm_name='worker2' mac_address='24:6E:96:1F:6E:38' node_type='bm' idrac='r730-2-idrac.arvhomelab.com' disk_target=/dev/sda1 nic=eno1
 

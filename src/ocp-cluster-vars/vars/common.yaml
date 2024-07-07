@@ -9,7 +9,6 @@ ocp_bin_client_url: "{{ ocp_bin_release_url }}/{{ ocp_bin_client_archive_name }}
 ocp_bin_installer_url: "{{ ocp_bin_release_url }}/{{ ocp_bin_installer_archive_name }}"
 oc_bin: "{{ staging_base_dir }}/oc"
 
-
 # RHCOS images base URLs.
 rhcos_bin_version: "latest"
 rhcos_bin_base_url: "https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos"
@@ -22,6 +21,12 @@ kubevirt_rhcos_bin_file_name: "rhcos-qemu.x86_64.qcow2"
 ## RHCOS image to be used for KVM 
 libvirt_rhcos_bin_archive_name: "rhcos-qemu.x86_64.qcow2.gz"
 libvirt_rhcos_bin_file_name: "rhcos-qemu.x86_64.qcow2"
+
+## Bare metal PXE RHCOS artifacts
+bm_live_kernel: "rhcos-live-kernel-x86_64"
+bm_live_initramfs: "rhcos-live-initramfs.x86_64.img"
+bm_live_rootfs: "rhcos-live-rootfs.x86_64.img"
+bm_pxe_server_directory: "/var/lib/tftpboot/efi"
 
 # OCP install directory
 ocp_install_dir: "{{ staging_dir }}/ocp-install"

@@ -1,16 +1,57 @@
 # https://github.com/dell/dellemc-openmanage-ansible-modules/blob/collections/docs/modules/idrac_boot.rst
+
+- set_fact:
+    idrac_user: "root"
+    idrac_password: "$B"
+
+- name: Delete all jobs on idrac
+  # delegate_to: localhost
+  dellemc.openmanage.idrac_lifecycle_controller_jobs:
+    idrac_ip: "{{ idrac }}"
+    idrac_user: "{{ idrac_user }}"
+    idrac_password: "{{ idrac_password }}"
+    validate_certs: false
+
 - name: Configure the boot source override mode as pxe.
   dellemc.openmanage.idrac_boot:
     idrac_ip: "{{ idrac }}"
     idrac_user: "{{ idrac_user }}"
     idrac_password: "{{ idrac_password }}"
     validate_certs: false
-    boot_source_override_mode: legacy
+    boot_source_override_mode: uefi
     boot_source_override_target: pxe
     boot_source_override_enabled: once
-    reset_type: "force_restart"
+    reset_type: "none"
+    job_wait_timeout: 30
+    job_wait: false
   register: one_time_boot_operation
 
 - debug:
-    msg: "{{ one_time_boot_operation }}"
+    msg: "{{ one_time_boot_operation.msg }}"
 
+
+- name: Performing power reset operation
+  dellemc.openmanage.redfish_powerstate:
+    baseuri: "{{ idrac }}"
+    username: "{{ idrac_user }}"
+    password: "{{ idrac_password }}"
+    validate_certs: false
+    reset_type: "ForceRestart"
+  register: force_restart_command
+
+- debug:
+    msg: "{{ force_restart_command.msg }}"
+
+- name: Performing power on operation if device is off
+  dellemc.openmanage.redfish_powerstate:
+    baseuri: "{{ idrac }}"
+    username: "{{ idrac_user }}"
+    password: "{{ idrac_password }}"
+    validate_certs: false
+    reset_type: "On"
+  register: power_on_command
+  when: '"off" in force_restart_command.msg'
+
+- debug:
+    msg: "{{ power_on_command.msg }}"
+  when: '"off" in force_restart_command.msg'

@@ -2,18 +2,19 @@ apiVersion: v1
 baseDomain: {{ base_domain }}
 capabilities:
   baselineCapabilitySet: None
-  additionalEnabledCapabilities: 
+  additionalEnabledCapabilities:
   - MachineAPI
   - marketplace
-  - OperatorLifecycleManager
   - openshift-samples
   - Console
   - Storage
   - CSISnapshot
   - NodeTuning
   - Build
-  - DeploymentConfig
+{% if ocp_version is version('4.14', '>') %}
   - Ingress
+  - OperatorLifecycleManager
+{% endif %}
 compute:
 - hyperthreading: Enabled
   name: worker

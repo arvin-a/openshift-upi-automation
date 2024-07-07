@@ -1,0 +1,17 @@
+# This section includes base Calico installation configuration.
+apiVersion: operator.tigera.io/v1
+kind: Installation
+metadata:
+  name: default
+spec:
+   # Added calicoNetwork section with linuxDataplane field
+  calicoNetwork:
+    linuxDataplane: BPF
+  hostPorts: Enabled
+  ipPools:
+    - blockSize: 26
+      cidr: 10.128.0.0/14
+      encapsulation: VXLANCrossSubnet
+      natOutgoing: Enabled
+      nodeSelector: all()
+  variant: Calico

@@ -16,7 +16,11 @@
 - include_tasks: common-config-load.yaml
 
 - include_tasks: infra-config-load.yaml
-  when: cluster_role == "infra" and action == "cluster-config"
+  when: 
+    - cluster_role == "infra"
+    - action == "cluster-config"
 
 - include_tasks: tenant-config-load.yaml
-  when: cluster_role == "tenant" and action == "cluster-config"
+  when:
+    - cluster_role == "tenant"
+    - action == "cluster-config"

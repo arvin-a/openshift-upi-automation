@@ -1,25 +1,27 @@
-platform: "libvirt"
+platform: "libvirt_bm"
 ocp_cluster_name: "ocp-infra1"
 cluster_role: infra   # values can be infra or tenant
-cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
 staging_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}"
 staging_backup_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}/backup"
 ocp_install_dir: "{{ staging_dir }}/ocp-install"
+cluster_kubeconfig: "{{ staging_dir }}/{{ ocp_cluster_name }}-kubeconfig"
 
 # OCP Vars
-ocp_version: "4.13"  # get latest stable release
-ocp_bin_channel: "fast"
+ocp_version: "4.16"
+ocp_bin_channel: "fast" # fast or stable
 rhcos_bin_qcow_url: "{{ rhcos_bin_release_url }}/{{ libvirt_rhcos_bin_archive_name }}"
 rhcos_bin_archive_name: "{{ libvirt_rhcos_bin_archive_name }}"
 rhcos_bin_file_name: "{{ libvirt_rhcos_bin_file_name }}"
-ocp_network_type: "OVNKubernetes"
+ocp_network_type: "OVNKubernetes"  #OVNKubernetes , Calico,Cilium"
 
-# Libvirt vars
-cluster_vms_storage_base_dir: "/storage/p4600-1/kvm/{{ ocp_cluster_name }}"
-base_qcow: "{{ staging_dir }}/{{ rhcos_bin_file_name }}"
-resized_base_qcow_disk_size: "100G"
-resized_base_qcow: "{{ staging_dir }}/resized_{{ rhcos_bin_file_name }}"
-libvirt_bridge_name: "br0"
+## Cilium - Only required if network type is Cilium
+cilium_version: 1.15.1
+cilium_repo_uri: "https://github.com/isovalent/olm-for-cilium"
+
+## Calico - Only required if network type is Calico
+calico_version: 3.26.0
+calico_archive_uri: "https://github.com/projectcalico/calico/releases/download/v{{ calico_version }}/ocp.tgz"
+
 
 ### CONTROL vars
 control_ign: "{{ ocp_install_dir }}/master.ign"
@@ -40,7 +42,7 @@ base_domain: arvhomelab.com
 
 ### Storage Vars
 
-storage_provider: lvm  # Options are lvm or odf
+storage_provider: odf  # Options are lvm or odf
 
 data_disks:
   standard:
@@ -55,10 +57,14 @@ data_disks:
     size: "260" # Size in Gi
 
 ### ODF Install vars (If storage_provider is odf)
-odf_version: "4.13"
+odf_version: "4.16"
 odf_node_disk_size: "690" # Size in Gi
 odf_node_fast_disk_size: "260" # Size in Gi
 
 
 ### OpenShift Virtualization Vars
 ocp_virt_install: True # Set to True to install OCP Virtualization
+
+
+## Multi Cluster Engine (MCE) vars
+mce_channel: stable-2.5 
