@@ -7,12 +7,12 @@ ocp_install_dir: "{{ staging_dir }}/ocp-install"
 cluster_kubeconfig: "{{ staging_dir }}/{{ ocp_cluster_name }}-kubeconfig"
 
 # OCP Vars
-ocp_version: "4.16"  # get latest stable release
-ocp_bin_channel: "stable"
+ocp_version: "4.15"  # get latest stable release
+ocp_bin_channel: "latest"
 rhcos_bin_qcow_url: "{{ rhcos_bin_release_url }}/{{ libvirt_rhcos_bin_archive_name }}"
 rhcos_bin_archive_name: "{{ libvirt_rhcos_bin_archive_name }}"
 rhcos_bin_file_name: "{{ libvirt_rhcos_bin_file_name }}"
-ocp_network_type: "Cilium"  # , Calico,Cilium"
+ocp_network_type: "OVNKubernetes"  #OVNKubernetes , Calico,Cilium"
 
 ## Cilium - Only required if network type is Cilium
 cilium_version: 1.15.1

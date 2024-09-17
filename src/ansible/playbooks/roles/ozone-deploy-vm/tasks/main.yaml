@@ -1,7 +1,7 @@
 ---
 - name: Set ignition file
   set_fact:
-    ignition_file: "{{ ocp_install_dir }}/{% if custom_vm_type == 'master' %}master.ign{% elif custom_vm_type == 'worker' %}worker.ign{% else %}bootstrap-pointer.ign{% endif %}"
+    ignition_file: "{{ ocp_install_dir }}/{% if node_role == 'master' %}master.ign{% elif node_role == 'worker' %}worker.ign{% else %}bootstrap-pointer.ign{% endif %}"
 
 - debug:
     msg:

@@ -26,7 +26,7 @@ spec:
               storage: 30Gi
           storageClassName: {{ infra_cluster_storage_class_name }}
           volumeMode: {{ infra_cluster_storage_volume_mode }}
-{% if custom_vm_type == 'master' %}    
+{% if node_role == 'master' %}    
     - metadata:
         name: rhcos-{{ custom_vm_name }}-disk-1
       spec:
@@ -57,14 +57,14 @@ spec:
             - disk:
                 bus: virtio
               name: cloudinitvolume
-{% if custom_vm_type == 'master' %}    
+{% if node_role == 'master' %}    
             - disk:
                 bus: virtio
               name: disk-1
 {% endif %}                    
           interfaces:
             - bridge: {}
-              macAddress: '{{ custom_mac }}'
+              macAddress: '{{ mac_address }}'
               model: virtio
               name: nic-0
           networkInterfaceMultiqueue: true
@@ -87,9 +87,9 @@ spec:
           name: rhcos
         - cloudInitConfigDrive:
             secretRef:
-              name: {{ custom_vm_type }}-ign
+              name: {{ node_role }}-ign
           name: cloudinitvolume
-{% if custom_vm_type == 'master' %}
+{% if node_role == 'master' %}
         - dataVolume:
             name: rhcos-{{ custom_vm_name }}-disk-1
           name: disk-1

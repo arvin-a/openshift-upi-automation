@@ -14,3 +14,4 @@ control3.ocp-infra1.arvhomelab.com node_type='kvm' node_role='master' custom_vm_
 
 [worker]
 r730-1.arvhomelab.com node_type='bm'  node_role='worker' idrac='r730-1-idrac.arvhomelab.com' disk_target=/dev/sda1 nic=eno1 mac_address='24:6e:96:0f:8e:40'
+r730-2.arvhomelab.com node_type='bm' node_role='worker' idrac='r730-2-idrac.arvhomelab.com' disk_target=/dev/sda1 nic=eno1 mac_address='24:6e:96:1f:6e:38'
