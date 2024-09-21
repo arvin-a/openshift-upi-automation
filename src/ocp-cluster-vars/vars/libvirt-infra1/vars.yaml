@@ -19,7 +19,7 @@ cilium_version: 1.15.1
 cilium_repo_uri: "https://github.com/isovalent/olm-for-cilium"
 
 ## Calico - Only required if network type is Calico
-calico_version: 3.26.0
+calico_version: 3.28.2
 calico_archive_uri: "https://github.com/projectcalico/calico/releases/download/v{{ calico_version }}/ocp.tgz"
 
 
@@ -41,7 +41,7 @@ worker_ign: "{{ ocp_install_dir }}/worker.ign"
 worker_cpu: "30"
 worker_memory: "122880"
 worker_type: "worker"
-worker_bridge_interface: enp2s0
+worker_bridge_interface: enp1s0 # use enp2s0 for older OCP
 
 
 ## Base domain for the cluster
