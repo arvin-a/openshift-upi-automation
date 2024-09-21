@@ -42,4 +42,4 @@
   register: result
   until: result.stdout == "True"
   retries: 100
-  delay: 5
+  delay: 10
