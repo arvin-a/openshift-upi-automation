@@ -41,7 +41,7 @@ worker_ign: "{{ ocp_install_dir }}/worker.ign"
 worker_cpu: "30"
 worker_memory: "122880"
 worker_type: "worker"
-worker_bridge_interface: enp1s0 # use enp2s0 for older OCP
+worker_bridge_interface: enp2s0 
 
 
 ## Base domain for the cluster

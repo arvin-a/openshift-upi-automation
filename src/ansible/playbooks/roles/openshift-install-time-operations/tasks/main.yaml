@@ -4,6 +4,21 @@
   shell:
     cmd: "{{ staging_dir }}/openshift-install wait-for bootstrap-complete --dir {{ ocp_install_dir }}"
 
+# - name: Disable kube-proxy
+#   kubernetes.core.k8s_json_patch:
+#     kind: networks
+#     name: cluster
+#     patch:
+#       - op: add
+#         path: /spec/deployKubeProxy
+#         value: false  
+#   when: 
+#    - ocp_network_type == "Calico"
+#    - calico_dataplane is defined and calico_dataplane == "eBPF"
+#   register: patch_result
+#   until: patch_result.rc == 0
+#   retries: 10
+#   delay: 15
 
 - name: Approve certs
   vars: 
@@ -16,11 +31,9 @@
   retries: 100
   delay: 15
 
-
 - name: Wait for installation completion
   shell:
     cmd: "{{ staging_dir }}/openshift-install wait-for install-complete --dir {{ ocp_install_dir }}"
-
 
 # One last csr approve attempt in case there are any CSRs left over
 - name: Approve certs part 2

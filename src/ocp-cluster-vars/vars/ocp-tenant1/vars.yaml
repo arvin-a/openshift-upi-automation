@@ -29,6 +29,8 @@ cilium_repo_uri: "https://github.com/isovalent/olm-for-cilium"
 ## Calico - Only required if network type is Calico
 calico_version: 3.28.2
 calico_archive_uri: "https://github.com/projectcalico/calico/releases/download/v{{ calico_version }}/ocp.tgz"
+calico_ebpf_installation_manifest_url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ calico_version }}/manifests/custom-resources.yaml"
+# calico_dataplane: eBPF # eBPF or kubeproxy
 
 
 ### CONTROL vars
