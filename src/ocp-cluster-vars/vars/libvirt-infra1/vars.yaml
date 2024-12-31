@@ -1,10 +1,10 @@
 platform: "libvirt"
 ocp_cluster_name: "ocp-infra1"
 cluster_role: infra   # values can be infra or tenant
-staging_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}"
-staging_backup_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}/backup"
-ocp_install_dir: "{{ staging_dir }}/ocp-install"
-cluster_kubeconfig: "{{ staging_dir }}/{{ ocp_cluster_name }}-kubeconfig"
+# staging_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}"
+# staging_backup_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}/backup"
+# ocp_install_dir: "{{ staging_dir }}/ocp-install"
+# cluster_kubeconfig: "{{ staging_dir }}/{{ ocp_cluster_name }}-kubeconfig"
 
 # OCP Vars
 ocp_version: "4.16"  # get latest stable release
@@ -24,11 +24,11 @@ calico_archive_uri: "https://github.com/projectcalico/calico/releases/download/v
 
 
 # Libvirt vars
-cluster_vms_storage_base_dir: "/storage/p4600-1/kvm/{{ ocp_cluster_name }}"
-base_qcow: "{{ staging_dir }}/{{ rhcos_bin_file_name }}"
+cluster_vms_storage_base_dir: "/storage/p4600-1/kvm/clusters/{{ ocp_cluster_name }}"
+# base_qcow: "{{ staging_dir }}/{{ rhcos_bin_file_name }}"
 resized_base_qcow_disk_size: "100G"
-resized_base_qcow: "{{ staging_dir }}/resized_{{ rhcos_bin_file_name }}"
-libvirt_bridge_name: "br0"
+# resized_base_qcow: "{{ staging_dir }}/resized_{{ rhcos_bin_file_name }}"
+libvirt_bridge_name: "br"
 
 ### CONTROL vars
 control_ign: "{{ ocp_install_dir }}/master.ign"

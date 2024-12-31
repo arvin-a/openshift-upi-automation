@@ -1,5 +1,0 @@
-- name: Clean host storage
-  include_tasks: clean-storage.yaml
-  vars:
-    node: "{{ hostvars[item] }}"
-  loop: "{{ groups.worker | list }}"

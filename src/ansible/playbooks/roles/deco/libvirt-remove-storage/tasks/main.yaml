@@ -1,0 +1,13 @@
+--- 
+- name: Destroy storage pools
+  shell: |
+    virsh pool-destroy {{ ocp_cluster_name }}
+    virsh pool-undefine {{ ocp_cluster_name }}
+  ignore_errors: True
+  become: True
+
+- name: Remove storage directories
+  shell: |
+    rm -rf {{ cluster_vms_storage_base_dir }} &> /dev/null
+  become: True
+

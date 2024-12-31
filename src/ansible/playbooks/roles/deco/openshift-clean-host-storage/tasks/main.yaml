@@ -1,0 +1,21 @@
+---
+- name: Zap data disk on host
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  shell: |
+    sgdisk --zap-all --clear {{ fast_data_disk_path }}
+  throttle: 1
+  become: True
+
+- name: Wipe data disk on host
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  shell: |
+    wipefs -a {{ fast_data_disk_path }}
+  throttle: 1
+  become: True
+
+- name: Update device partition table
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  shell: |
+    kpartx -f -v {{ fast_data_disk_path }}
+  throttle: 1
+  become: True

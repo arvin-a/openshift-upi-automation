@@ -1,0 +1,14 @@
+--- 
+- name: Destroy VMS
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  shell: |
+    virsh destroy {{ inventory_hostname }}
+  ignore_errors: True
+  become: True
+
+- name: Undefine VMS
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  shell: |
+    virsh undefine {{ inventory_hostname }}
+  ignore_errors: True
+  become: True

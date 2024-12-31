@@ -1,5 +1,10 @@
 ### DO NOT ALTER THE VALUES IN THIS SECTION ################################################
 
+cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
+staging_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}"
+staging_backup_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}/backup"
+ocp_install_dir: "{{ staging_dir }}/ocp-install"
+
 # OCP installer and client download URls.
 ocp_bin_base_url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp"
 ocp_bin_release_url: "{{ ocp_bin_base_url }}/{{ ocp_bin_channel }}-{{ ocp_version }}"

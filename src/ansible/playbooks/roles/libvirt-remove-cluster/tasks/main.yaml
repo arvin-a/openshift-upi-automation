@@ -1,5 +1,0 @@
-- name: Remove VM and clean up root storage directorories
-  include_tasks: remove-vms.yaml
-  vars:
-    node_name: "{{ hostvars[item].custom_vm_name }}"
-  loop: "{{ groups.bootstrap + groups.control + groups.worker + groups.bootstrap | list }}"

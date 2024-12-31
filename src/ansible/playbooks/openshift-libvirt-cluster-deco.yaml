@@ -2,7 +2,7 @@
 
 # cd to ansible directory
 # export CLUSTER_NAME=libvirt-infra1
-# ansible-playbook playbooks/openshift-libvirt-cluster-destroy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
+# ansible-playbook playbooks/openshift-libvirt-cluster-deco.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
 
 #### Options
 # --skip-tags pre-deploy
@@ -13,7 +13,7 @@
   hosts: all:localhost
   connection: local
   roles:
-    - role: ansible-config-load
+    - role: common/ansible-config-load
       action: base
   tags:
     - always
@@ -22,7 +22,7 @@
   hosts: localhost:hypervisor
   connection: local
   roles:
-    - staging-dir-setup
+    - common/staging-dir-setup
   tags:
     - always
 
@@ -30,22 +30,31 @@
   hosts: localhost:worker:control:hypervisor:bootstrap
   connection: local
   roles:
-    - role: ansible-config-load
+    - role: common/ansible-config-load
       action: cluster-config
   tags:
     - always
 
-- name: Remove libvirt Cluster VMs
-  hosts: hypervisor
+- name: Remove libvirt VMs
+  hosts: control:worker
+  gather_facts: False
   roles:
-    - libvirt-remove-cluster
+    - deco/libvirt-remove-vms
   tags:
-    - libvirt-remove-cluster
+    - libvirt-remove-vms
 
-- name: Clean Host Storage
+- name: Remove VM base storage
   hosts: hypervisor
   roles:
-    - libvirt-clean-host-storage
+    - deco/libvirt-remove-storage
+  tags:
+    - libvirt-remove-storage
+
+- name: Remove additional VM storage and clean disks
+  hosts: worker
+  gather_facts: False
+  roles:
+    - deco/libvirt-clean-host-storage
   tags:
     - libvirt-clean-host-storage
 

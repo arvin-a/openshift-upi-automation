@@ -1,5 +1,0 @@
-- name: Clean host storage
-  include_tasks: clean-fast-storage.yaml
-  vars:
-    data_disk: "{{ hostvars[item].fast_data_disk_path_on_host }}"
-  loop: "{{ groups.worker | list }}"

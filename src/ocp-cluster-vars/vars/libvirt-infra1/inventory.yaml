@@ -1,0 +1,74 @@
+hypervisor:
+  hosts:
+    t640.arvhomelab.com:
+      ansible_python_interpreter: '/usr/bin/python3'
+
+webserver:
+  hosts:
+    infra-ddi.arvhomelab.com:
+
+control:
+  hosts:
+    control1.ocp-infra1.arvhomelab.com:
+      nic1:
+        mac_address: '02:00:00:be:30:19'
+        vlan: '7'
+    control2.ocp-infra1.arvhomelab.com:
+      nic1:
+        mac_address: '02:00:00:3d:5f:2b'
+        vlan: '7'
+    control3.ocp-infra1.arvhomelab.com:
+      nic1:
+        mac_address: '02:00:00:03:ff:8f'
+        vlan: '7'
+  vars:
+    node_role: 'master'
+    nic: 'enp1s0'
+
+worker:
+  hosts:
+    worker1.ocp-infra1.arvhomelab.com:
+      nic1:
+        mac_address: '02:00:00:a1:13:f3'
+        vlan: '7'
+      nic2:
+        mac_address: '02:00:00:b8:11:df'
+        vlan: '8'
+      data_disk_path: '/storage/p4600-2.1'
+      fast_data_disk_path: '/dev/nvme0n1'
+    worker2.ocp-infra1.arvhomelab.com:
+      nic1:
+        mac_address: '02:00:00:94:e8:8e'
+        vlan: '7'
+      nic2:
+        mac_address: '02:00:00:83:af:ca'
+        vlan: '8'
+      data_disk_path: '/storage/p4600-2.2'
+      fast_data_disk_path: '/dev/nvme1n1'
+    worker3.ocp-infra1.arvhomelab.com:
+      nic1:
+        mac_address: '02:00:00:11:51:f5'
+        vlan: '7'
+      nic2:
+        mac_address: '02:00:00:06:a0:24'
+        vlan: '8'
+  vars:
+    node_role: 'worker'
+    nic: 'enp1s0'
+
+
+
+# worker:
+#   r730-1.ocp-infra2.arvhomelab.com:
+#     custom_vm_name: 'r730-1.ocp-infra2.arvhomelab.com'
+#     custom_mac: '24:6E:96:0F:8E:40'
+#     idrac: 'r730-1-idrac.arvhomelab.com'
+#   r730-2.ocp-infra2.arvhomelab.com:
+#     custom_vm_name: 'r730-2.ocp-infra2.arvhomelab.com'
+#     custom_mac: '24:6E:96:1F:6E:38' 
+#     idrac: 'r730-2-idrac.arvhomelab.com'
+#   vars:
+#     node_type: 'bm'
+#     nic: 'eno1'
+#     disk_target: '/dev/disk/by-path/pci-0000:02:00.0-scsi-0:2:0:0'
+#     custom_vm_type: 'worker'
