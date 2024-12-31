@@ -1,4 +1,9 @@
 ### DO NOT ALTER THE VALUES IN THIS SECTION ################################################
+# Base directory for staging. This is where all the OCP binaries will be downloaded to
+staging_base_dir: /var/tmp/ansible
+staging_temp_dir: "{{ staging_base_dir }}/tmp"
+binary_archive_base_dir: "{{ staging_base_dir }}/bin"
+ocp_binaries_archive_base_dir: "{{ binary_archive_base_dir }}/ocp"
 
 cluster_kubeconfig: "{{ kubeconfig_dir }}/{{ ocp_cluster_name }}"
 staging_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}"
@@ -42,8 +47,7 @@ bootstrap_type: "bootstrap"
 
 ############################################################################################
 
-# Base directory for staging. This is where all the OCP binaries will be downloaded to
-staging_base_dir: /var/tmp/ansible
+
 
 # kubeconfig folder, location of your kubeconfig files for your infra and tenant cluster
 kubeconfig_src_path: "{{ ocp_install_dir }}/auth/kubeconfig"

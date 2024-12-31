@@ -1,0 +1,14 @@
+apiVersion: v1beta1
+kind: AgentConfig
+metadata:
+  name: {{ ocp_cluster_name }}
+rendezvousIP: {{ rendezvous_ip }}
+hosts:
+{% for node in groups['ocp_nodes'] %}
+  - hostname: {{ node }}
+    role:  {{ hostvars[node].node_role }}
+    interfaces:
+      - name: {{ hostvars[node].nic }}
+        macAddress: {{ hostvars[node].nic1.mac_address }}
+{% endfor %}
+  

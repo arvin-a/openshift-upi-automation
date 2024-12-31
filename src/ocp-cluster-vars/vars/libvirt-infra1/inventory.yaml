@@ -56,7 +56,10 @@ worker:
     node_role: 'worker'
     nic: 'enp1s0'
 
-
+ocp_nodes:
+  children:
+    control:
+    worker:
 
 # worker:
 #   r730-1.ocp-infra2.arvhomelab.com:

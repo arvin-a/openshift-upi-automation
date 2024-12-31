@@ -1,0 +1,102 @@
+---
+- name: "Get the current {{ ocp_bin_channel }} version of OCP {{ ocp_version }}"
+  shell: |
+    curl -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ ocp_bin_channel }}-{{ ocp_version }}/release.txt | grep -i "Name: " | awk '{print $2}'
+  register: ocp_version_query
+
+- set_fact:
+    ocp_selected_version: "{{ ocp_version_query.stdout }}"
+
+- debug:
+    msg:
+      - "{{ ocp_selected_version }}"
+      - "{{ staging_temp_dir }}"
+      - "{{ binary_archive_base_dir }}"
+      - "{{ ocp_binaries_archive_base_dir }}"
+
+- name: "Create OCP {{ ocp_selected_version }} artifact directory"
+  file:
+    state: directory
+    path: "{{ ocp_binaries_archive_base_dir }}/{{ ocp_selected_version }}"
+
+- name: "Check if oc binary exist for OCP {{ ocp_selected_version }}"
+  stat:
+    path: "{{ ocp_binaries_archive_base_dir }}/{{ ocp_selected_version }}/oc"
+  register: oc_bin_stat_result
+
+- name: "Check if openshift-install binary exist for OCP {{ ocp_selected_version }}"
+  stat:
+    path: "{{ ocp_binaries_archive_base_dir }}/{{ ocp_selected_version }}/openshift-install"
+  register: ocp_install_bin_stat_result
+
+# If oc and openshift-install binaries are not present in archive directory, then download the binaries
+- name: "Download oc binary for OCP {{ ocp_selected_version }}"
+  get_url:
+    url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ ocp_selected_version }}/openshift-client-linux.tar.gz"
+    dest: "{{ staging_temp_dir }}/openshift-client-linux.tar.gz"
+  when: not oc_bin_stat_result.stat.exists
+
+- name: Extract oc tar.gz file to archive location
+  unarchive:
+    src: "{{ staging_temp_dir }}/openshift-client-linux.tar.gz"
+    dest: "{{ ocp_binaries_archive_base_dir }}/{{ ocp_selected_version }}"
+  when: not oc_bin_stat_result.stat.exists
+
+- name: "Download openshift-install binary for OCP {{ ocp_selected_version }}"
+  get_url:
+    url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ ocp_selected_version }}/openshift-install-linux.tar.gz"
+    dest: "{{ staging_temp_dir }}/openshift-install-linux.tar.gz"
+  when: not ocp_install_bin_stat_result.stat.exists
+
+- name: Extract openshift-install tar.gz file to archive location
+  unarchive:
+    src: "{{ staging_temp_dir }}/openshift-install-linux.tar.gz"
+    dest: "{{ ocp_binaries_archive_base_dir }}/{{ ocp_selected_version }}"
+  when: not ocp_install_bin_stat_result.stat.exists
+###
+
+- name: Copy oc and openshift-install binaries to staging location
+  copy:
+    src: "{{ item }}"
+    dest: "{{ staging_dir }}"
+    mode: '0544'
+  loop:
+    - "{{ ocp_binaries_archive_base_dir }}/{{ ocp_selected_version }}/oc"
+    - "{{ ocp_binaries_archive_base_dir }}/{{ ocp_selected_version }}/openshift-install"
+
+
+# - name: Delete folder on webserver
+#   delegate_to: "{{ groups['webserver'][0] }}"
+#   become: yes
+#   file:
+#     state: absent
+#     path: "{{ web_server_files_cluster_path }}"
+#   when: 
+#     - platform == "libvirt_bm"
+#     - destroy is not defined or destroy == false
+
+# - name: Create folder on webserver
+#   delegate_to: "{{ groups['webserver'][0] }}"
+#   become: yes
+#   file:
+#     state: directory
+#     path: "{{ web_server_files_cluster_path }}"
+#   when: 
+#     - platform == "libvirt_bm"
+#     - destroy is not defined or destroy == false
+
+# - name: Copy RHCOS artifacts for bare metal to webserver
+#   delegate_to: "{{ groups['webserver'][0] }}"
+#   become: yes
+#   copy:
+#     src: "{{ staging_dir }}/{{ item }}"
+#     dest: "{{ web_server_files_cluster_path }}"
+#     mode: '0644'
+#   loop:
+#     - "{{ bm_live_kernel }}"
+#     - "{{ bm_live_initramfs }}"
+#     - "{{ bm_live_rootfs }}"
+#   become: true
+#   when: 
+#     - platform == "libvirt_bm"
+#     - destroy is not defined or destroy == false
