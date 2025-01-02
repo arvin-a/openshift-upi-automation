@@ -4,11 +4,11 @@
 
 # cd to ansible directory
 
-# export CLUSTER_NAME=libvirt-infra1
-# ansible-playbook playbooks/openshift-libvirt-bm-cluster-destroy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME -e cluster_name=$CLUSTER_NAME --vault-password-file vaultpass
+# export CLUSTER_NAME=kvm-infra1
+# ansible-playbook playbooks/openshift-kvm-bm-cluster-destroy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME -e cluster_name=$CLUSTER_NAME --vault-password-file vaultpass
 
-# export CLUSTER_NAME=libvirt-infra1
-# ansible-playbook playbooks/openshift-libvirt-bm-cluster-destroy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME -e cluster_name=$CLUSTER_NAME
+# export CLUSTER_NAME=kvm-infra1
+# ansible-playbook playbooks/openshift-kvm-bm-cluster-destroy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME -e cluster_name=$CLUSTER_NAME
 
 #### Options
 # --skip-tags pre-deploy

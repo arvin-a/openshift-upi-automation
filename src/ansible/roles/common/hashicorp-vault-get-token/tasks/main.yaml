@@ -1,0 +1,11 @@
+---
+- name: Get new user token from Vault
+  community.hashi_vault.vault_login:
+    url: "{{ vault_url }}"
+    auth_method: approle
+    secret_id: "{{ vault_secret_id }}"
+    role_id: "{{ vault_role_id }}"
+  register: vault_login
+
+- set_fact:
+    vault_user_token: "{{ vault_login.login.auth.client_token }}"

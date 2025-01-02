@@ -1,0 +1,34 @@
+---
+- name: Remove staging folder if exists
+  file:
+    state: absent
+    path: "{{ item }}"
+  loop:
+    - "{{ staging_temp_dir }}"
+    - "{{ staging_dir }}"
+  ignore_errors: True
+
+- name: Create staging folder
+  file:
+    state: directory
+    path: "{{ item }}"
+  loop:
+    - "{{ staging_temp_dir }}"
+    - "{{ staging_dir }}"
+    - "{{ binary_archive_base_dir }}"
+    - "{{ ocp_binaries_archive_base_dir }}"
+
+- name: Remove staging folder on kvm Hypervisor host
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  file:
+    state: absent
+    path: "{{ staging_dir }}"
+  ignore_errors: True
+  when: platform == "kvm"
+
+- name: Create staging folder kvm Hypervisor host
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  file:
+    state: directory
+    path: "{{ staging_dir }}"
+  when: platform == "kvm"

@@ -1,0 +1,16 @@
+---
+- name: Get Vault Token
+  include_role:
+    name: common/hashicorp-vault-get-token
+
+- name: Get cluster secrets from Vault
+  include_role:
+    name: common/hashicorp-vault-read-secret
+  vars: 
+    secret_path: "{{ cluster_common_vault_secret_path }}"
+
+- name: Set cluster secret vars
+  set_fact:
+    rhcos_ssh_pub_key: "{{ vault_payload[rhcos_ssh_pub_key_vault_key] }}"
+    additional_trust_bundle: "{{ vault_payload[additional_trust_bundle_vault_key] }}"
+    pull_secret: '{{ vault_payload[pull_secret_vault_key] | b64decode | string }}'

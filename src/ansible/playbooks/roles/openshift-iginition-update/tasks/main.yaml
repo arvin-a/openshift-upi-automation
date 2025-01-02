@@ -1,5 +1,0 @@
----
-- name: copy bootstrap pointer ign to ocp install folder
-  template: 
-    src: bootstrap-pointer.ign
-    dest: "{{ bootstrap_ign }}"
