@@ -3,12 +3,12 @@
   environment:
     PATH: "{{ staging_dir }}:{{ lookup('env', 'PATH') }}"
   shell: |
-    {{ staging_dir }}/openshift-install agent create image --dir {{ ocp_install_dir }}
+    {{ openshift_install_bin }} agent create image --dir {{ ocp_install_dir }}
 
 - include_role:
     name: deploy/openshift-credentials-store
   vars: 
-    path: "{{ ocp_cluster_name }}"
+    path: "{{ ocp_cluster_fqdn }}"
     data: 
       kubeconfig: "{{ lookup('file', kubeconfig_src_path) | b64encode }}"
       kubeadmin-password: "{{ lookup('file', kubeadmin_password_src_path) | b64encode }}"

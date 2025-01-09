@@ -1,8 +1,8 @@
 --- 
 - name: Destroy storage pools
   shell: |
-    virsh pool-destroy {{ ocp_cluster_name }}
-    virsh pool-undefine {{ ocp_cluster_name }}
+    virsh pool-destroy {{ ocp_cluster_fqdn }}
+    virsh pool-undefine {{ ocp_cluster_fqdn }}
   ignore_errors: True
   become: True
 

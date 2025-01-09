@@ -39,7 +39,7 @@
 
 - name: Create OCP manifests
   shell: |
-    {{ staging_dir }}/openshift-install agent create cluster-manifests --dir {{ ocp_install_dir }}
+    {{ openshift_install_bin }} agent create cluster-manifests --dir {{ ocp_install_dir }}
 
 # # Separate partition for ETCD for better performance
 # - name: Process machine config for disk partitioning

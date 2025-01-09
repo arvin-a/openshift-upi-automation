@@ -1,13 +1,9 @@
 ---
-
 - name: Label Worker Nodes
   shell: |
-    {{ oc_bin }} label node worker1 cluster.ocs.openshift.io/openshift-storage='' --overwrite
-    {{ oc_bin }} label node worker1 topology.rook.io/rack=1 --overwrite
-    {{ oc_bin }} label node worker2 cluster.ocs.openshift.io/openshift-storage='' --overwrite
-    {{ oc_bin }} label node worker2 topology.rook.io/rack=2 --overwrite
-    {{ oc_bin }} label node worker3 cluster.ocs.openshift.io/openshift-storage='' --overwrite
-    {{ oc_bin }} label node worker3 topology.rook.io/rack=3 --overwrite
+    {{ oc_bin }} label node {{ item }} cluster.ocs.openshift.io/openshift-storage='' --overwrite
+    {{ oc_bin }} label node {{ item }} topology.rook.io/rack={{ groups['worker'].index(item) | int +1 }} --overwrite
+  loop: "{{ groups['worker'] }}"
 
 - name: Create Local Storage Namespace
   k8s:

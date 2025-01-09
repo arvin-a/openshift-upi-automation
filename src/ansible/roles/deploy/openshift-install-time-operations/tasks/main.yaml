@@ -1,0 +1,54 @@
+---
+- name: Wait for bootstrap completion
+  shell: |
+    {{ staging_dir }}/openshift-install agent wait-for bootstrap-complete --dir {{ ocp_install_dir }}
+  register: bootstrap_complete
+
+- debug:
+    var: bootstrap_complete
+
+- name: Wite bootstrap logs to file
+  copy:
+    content: "{{ bootstrap_complete.stdout }}"
+    dest: "{{ staging_dir }}/bootstrap.log"
+
+- name: Wait for install completion
+  shell: |
+    {{ staging_dir }}/openshift-install agent wait-for install-complete --dir {{ ocp_install_dir }}
+  register: install_complete
+
+- name: Wite install logs to file
+  copy:
+    content: "{{ install_complete.stdout }}"
+    dest: "{{ staging_dir }}/install.log"
+
+
+- name: Get kubeadmin password
+  shell:
+    cmd: "cat {{ ocp_install_dir }}/auth/kubeadmin-password"
+  register: kubeadmin_pass
+
+- name: Show kubeadmin password
+  debug: 
+    msg: 
+      - "---------- Credentials ----------"
+      - "kubeadmin"
+      - "{{ kubeadmin_pass.stdout }}"
+      - "---------------------------------"  
+
+
+# - name: Disable kube-proxy
+#   kubernetes.core.k8s_json_patch:
+#     kind: networks
+#     name: cluster
+#     patch:
+#       - op: add
+#         path: /spec/deployKubeProxy
+#         value: false  
+#   when: 
+#    - ocp_network_type == "Calico"
+#    - calico_dataplane is defined and calico_dataplane == "eBPF"
+#   register: patch_result
+#   until: patch_result.rc == 0
+#   retries: 10
+#   delay: 15

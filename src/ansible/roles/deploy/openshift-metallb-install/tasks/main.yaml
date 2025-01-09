@@ -25,7 +25,6 @@
   retries: 100
   delay: 5
 
-
 - name: Create Metallb instance
   k8s:
     state: present

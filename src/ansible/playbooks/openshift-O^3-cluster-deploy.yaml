@@ -41,7 +41,7 @@
   roles:
     - role: openshift-credentials-get
       vars:
-        cluster: "{{ infra_cluster_name }}"
+        cluster: "{{ infra_cluster_name }}"  #### <- will need to change to infra cluster FQDN
   tags:
     - always
 

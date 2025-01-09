@@ -8,7 +8,7 @@ ocp_binaries_archive_base_dir: "{{ binary_archive_base_dir }}/ocp"
 staging_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}"
 staging_backup_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}/backup"
 ocp_install_dir: "{{ staging_dir }}/ocp-install"
-cluster_kubeconfig: "{{ staging_dir }}/{{ ocp_cluster_name }}_kubeconfig"
+cluster_kubeconfig: "{{ staging_dir }}/{{ ocp_cluster_name }}-kubeconfig"
 
 # OCP installer and client download URls.
 ocp_bin_base_url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp"
@@ -17,7 +17,8 @@ ocp_bin_client_archive_name: "openshift-client-linux.tar.gz"
 ocp_bin_installer_archive_name: "openshift-install-linux.tar.gz"
 ocp_bin_client_url: "{{ ocp_bin_release_url }}/{{ ocp_bin_client_archive_name }}"
 ocp_bin_installer_url: "{{ ocp_bin_release_url }}/{{ ocp_bin_installer_archive_name }}"
-oc_bin: "{{ staging_base_dir }}/oc"
+oc_bin: "{{ staging_dir }}/oc"
+openshift_install_bin: "{{ staging_dir }}/openshift-install"
 
 # RHCOS images base URLs.
 rhcos_bin_version: "latest"
@@ -29,7 +30,8 @@ ocp_install_dir: "{{ staging_dir }}/ocp-install"
 
 
 ############################################################################################
-
+## Hypervisor variables
+agent_iso_file_path: "{{ staging_dir }}/agent.x86_64.iso"
 
 
 # kubeconfig folder, location of your kubeconfig files for your infra and tenant cluster
@@ -55,5 +57,8 @@ vault_url: "http://vault.arvhomelab.com:8200"
 
 cluster_common_vault_secret_path: ahl-common
 rhcos_ssh_pub_key_vault_key: rhcos_ssh_pub_key
+rhcos_ssh_private_key_vault_key: rhcos_ssh_private_key
 additional_trust_bundle_vault_key: additional_trust_bundle
 pull_secret_vault_key: pull_secret
+
+rhcos_ssh_private_key_file: "{{ staging_dir }}/rhcos-ssh-pk"

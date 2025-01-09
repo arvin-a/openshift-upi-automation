@@ -2,7 +2,7 @@
 
 # cd to ansible directory
 # export CLUSTER_NAME=infra1
-# ansible-playbook playbooks/openshift-kvm-cluster-deploy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
+# ansible-playbook playbooks/openshift-kvm-cluster-deploy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
 
 #### Options
 # --skip-tags pre-deploy
@@ -71,111 +71,102 @@
 
 - name: Deploy KVM VMs
   hosts: control:worker
+  gather_facts: False
   roles:
     - deploy/kvm-deploy-vms
   tags:
     - kvm-deploy-vms
   
-# - name: OCP install time operations
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - openshift-install-time-operations
-#   tags:
-#     - openshift-install-time-operations
+- name: OCP install time operations
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - deploy/openshift-install-time-operations
+  tags:
+    - openshift-install-time-operations
 
+- name: Add HTPasswd auth provider
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - deploy/openshift-auth-provider
+  tags:
+    - openshift-auth-provider
 
-# - name: Output kubeadmin password
-#   hosts: localhost
-#   connection: local
-#   roles:
-#     - openshift-show-admin-credentials
-#   tags:
-#     - openshift-show-admin-credentials
+- name: Clean data disks on worker nodes
+  hosts: worker
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: deploy/openshift-clean-storage
+      when: disks is defined
+  tags:
+    - openshift-clean-storage
 
-# - name: Add HTPasswd auth provider
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - openshift-auth-provider
-#   tags:
-#     - openshift-auth-provider
+- name: Install Cluster Storage Provider
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: deploy/openshift-odf-install
+      when: storage_provider == "odf"
+    - role: deploy/openshift-lvm-operator-install
+      when: storage_provider == "lvm"
+  tags:
+    - openshift-storage-install
+    - post-install
 
-# - name: Clean data disks
-#   hosts: worker
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - role: openshift-clean-storage
-#       when:
-#         - data_storage is defined
-#         - data_storage == True
-#   tags:
-#     - openshift-clean-storage
+- name: Install Nmstate Operator
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - deploy/openshift-nmstate-install
+  tags:
+    - openshift-nmstate-install
+    - post-install
 
-# - name: Install Cluster Storage Provider
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - role: openshift-odf-install
-#       when: storage_provider == "odf"
-#     - role: openshift-lvm-operator-install
-#       when: storage_provider == "lvm"
-#   tags:
-#     - openshift-storage-install
-#     - post-install
+- name: Install OpenShift Virtualization
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: deploy/openshift-virt-olm-install
+      when: ocp_virt_install == True
+  tags:
+    - openshift-virt-install
+    - post-install
 
-# - name: Install Nmstate Operator
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - openshift-nmstate-install
-#   tags:
-#     - openshift-nmstate-install
-#     - post-install
+- name: Create network bridge
+  hosts: worker
+  gather_facts: False
+  # connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - deploy/openshift-create-bridge
+  tags:
+    - openshift-create-bridge
+    - post-install
 
-# - name: Install OpenShift Virtualization
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - role: openshift-virt-install
-#       when: ocp_virt_install == True
-#   tags:
-#     - openshift-virt-install
-#     - post-install
-
-# - name: Create network bridge
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - openshift-create-bridge
-#   tags:
-#     - openshift-create-bridge
-#     - post-install
-
-# - name: Metallb install and configure
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - openshift-metallb-install
-#   tags:
-#     - openshift-metallb-install
-#     - post-install
+- name: Metallb install and configure
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - deploy/openshift-metallb-install
+  tags:
+    - openshift-metallb-install
+    - post-install
 
 # - name: Multi Cluster Engine install and configure
 #   hosts: localhost
@@ -188,13 +179,13 @@
 #     - openshift-mce-install
 #     - post-install
 
-# - name: Cluster metadata set
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - openshift-cluster-metadata-set
-#   tags:
-#     - openshift-cluster-metadata-set
-#     - post-install
+- name: Cluster metadata set
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - deploy/openshift-cluster-metadata-set
+  tags:
+    - openshift-cluster-metadata-set
+    - post-install

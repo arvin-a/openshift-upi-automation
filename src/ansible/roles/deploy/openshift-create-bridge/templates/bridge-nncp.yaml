@@ -1,14 +1,14 @@
 apiVersion: nmstate.io/v1alpha1
 kind: NodeNetworkConfigurationPolicy
 metadata:
-  name: br1
+  name: {{ inventory_hostname }}-br
 spec:
   nodeSelector: 
-    node-role.kubernetes.io/worker: ""
+    kubernetes.io/hostname: {{ inventory_hostname }}
   desiredState:
     interfaces:
-      - name: br1
-        description: Linux bridge using enp1s0 device
+      - name: {{ bridge_interface_name }}
+        description: Linux bridge using {{ secondary_nic }} device
         type: linux-bridge
         state: up
         ipv4:
@@ -19,4 +19,4 @@ spec:
             stp:
               enabled: false
           port:
-            - name: {{ worker_bridge_interface }}
+            - name: {{ secondary_nic }}

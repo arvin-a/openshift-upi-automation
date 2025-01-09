@@ -1,6 +1,0 @@
----
-
-- name: Apply Node Network Configuration Policy yaml
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'bridge-nncp.yaml') }}"

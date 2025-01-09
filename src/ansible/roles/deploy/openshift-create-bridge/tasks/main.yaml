@@ -1,0 +1,21 @@
+---
+- name: Get secondary interface name to create bridge device
+  vars:
+    ansible_ssh_private_key_file: "{{ rhcos_ssh_private_key_file }}"
+    ansible_python_interpreter: /usr/libexec/platform-python
+  shell: |
+    nmcli d | egrep -i 'ethernet' | grep -i connected | grep -iv 'ovs' | awk '{ print $1 }'
+  remote_user: core
+  register: secondary_interface_query
+  until: secondary_interface_query.rc == 0
+  retries: 2
+  delay: 5
+
+- name: Apply Node Network Configuration Policy yaml
+  delegate_to: localhost
+  vars:
+    secondary_nic: "{{ secondary_interface_query.stdout }}"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'bridge-nncp.yaml') }}"
+    

@@ -9,43 +9,61 @@ webserver:
 
 control:
   hosts:
-    control1.ocp-infra1.arvhomelab.com:
+    control1.infra1.k8s.arvhomelab.com:
       nic1:
         mac_address: '02:00:00:be:30:19'
         vlan: '7'
-    control2.ocp-infra1.arvhomelab.com:
+    control2.infra1.k8s.arvhomelab.com:
       nic1:
         mac_address: '02:00:00:3d:5f:2b'
         vlan: '7'
-    control3.ocp-infra1.arvhomelab.com:
+    control3.infra1.k8s.arvhomelab.com:
       nic1:
         mac_address: '02:00:00:03:ff:8f'
         vlan: '7'
   vars:
     node_role: 'master'
-    nic: 'enp1s0'
+    cpu: '4'
+    memory: '16'
+    rhcos_os_disk_size: '100G'
+    nic1_name: 'enp1s0'
 
 worker:
   hosts:
-    worker1.ocp-infra1.arvhomelab.com:
+    worker1.infra1.k8s.arvhomelab.com:
+      type: 'kvm'
       nic1:
         mac_address: '02:00:00:a1:13:f3'
         vlan: '7'
       nic2:
         mac_address: '02:00:00:b8:11:df'
         vlan: '8'
-      data_disk_path: '/storage/p4600-2.1'
-      fast_data_disk_path: '/dev/nvme0n1'
-    worker2.ocp-infra1.arvhomelab.com:
+      disks:
+        - type: standard
+          disk_path: '/dev/disk/by-path/virtio-pci-0000:05:00.0'
+          path_on_hv_host: '/storage/p4600-2.1'
+          size: '690G'
+        - type: fast
+          disk_path: '/dev/disk/by-path/virtio-pci-0000:06:00.0'
+          path_on_hv_host: '/dev/nvme0n1'
+    worker2.infra1.k8s.arvhomelab.com:
+      type: 'kvm'
       nic1:
         mac_address: '02:00:00:94:e8:8e'
         vlan: '7'
       nic2:
         mac_address: '02:00:00:83:af:ca'
         vlan: '8'
-      data_disk_path: '/storage/p4600-2.2'
-      fast_data_disk_path: '/dev/nvme1n1'
-    worker3.ocp-infra1.arvhomelab.com:
+      disks:
+        - type: standard
+          disk_path: '/dev/disk/by-path/virtio-pci-0000:05:00.0'
+          path_on_hv_host: '/storage/p4600-2.2'
+          size: '690G'
+        - type: fast
+          disk_path: '/dev/disk/by-path/virtio-pci-0000:06:00.0'
+          path_on_hv_host: '/dev/nvme1n1'
+    worker3.infra1.k8s.arvhomelab.com:
+      type: 'kvm'
       nic1:
         mac_address: '02:00:00:11:51:f5'
         vlan: '7'
@@ -54,12 +72,17 @@ worker:
         vlan: '8'
   vars:
     node_role: 'worker'
-    nic: 'enp1s0'
+    cpu: '30'
+    memory: '128'
+    rhcos_os_disk_size: '100G'
+    nic1_name: 'enp1s0'
+    nic2_name: 'enp2s0'
 
 ocp_nodes:
   children:
     control:
     worker:
+
 
 # worker:
 #   r730-1.ocp-infra2.arvhomelab.com:

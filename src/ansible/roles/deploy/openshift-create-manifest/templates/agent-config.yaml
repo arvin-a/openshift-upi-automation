@@ -8,7 +8,7 @@ hosts:
   - hostname: {{ node }}
     role:  {{ hostvars[node].node_role }}
     interfaces:
-      - name: {{ hostvars[node].nic }}
+      - name: {{ hostvars[node].nic1_name }}
         macAddress: {{ hostvars[node].nic1.mac_address }}
 {% endfor %}
   
