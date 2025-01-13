@@ -1,6 +1,9 @@
 ---
 - name: Zap, wipe and update partion table for data disks
-  remote_user: core 
+  vars:
+    ansible_ssh_private_key_file: "{{ rhcos_ssh_private_key_file }}"
+    ansible_python_interpreter: /usr/libexec/platform-python
+  remote_user: core
   become: True
   shell: |
     sgdisk --zap-all --clear /dev/disk/by-path/virtio-pci-0000:{{ disk.bus }}:00.0;
