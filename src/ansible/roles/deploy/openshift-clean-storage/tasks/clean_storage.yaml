@@ -1,0 +1,8 @@
+---
+- name: Zap, wipe and update partion table for data disks
+  remote_user: core 
+  become: True
+  shell: |
+    sgdisk --zap-all --clear /dev/disk/by-path/virtio-pci-0000:{{ disk.bus }}:00.0;
+    wipefs -a /dev/disk/by-path/virtio-pci-0000:{{ disk.bus }}:00.0;
+    kpartx -f -v /dev/disk/by-path/virtio-pci-0000:{{ disk.bus }}:00.0;

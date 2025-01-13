@@ -99,7 +99,7 @@
 
 - name: Clean data disks on worker nodes
   hosts: worker
-  connection: local
+  gather_facts: False
   environment:
     KUBECONFIG: "{{ cluster_kubeconfig }}"
   roles:

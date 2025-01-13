@@ -3,6 +3,9 @@
   shell: |
     {{ staging_dir }}/openshift-install agent wait-for bootstrap-complete --dir {{ ocp_install_dir }}
   register: bootstrap_complete
+  retries: 5
+  delay: 60
+  until: bootstrap_complete.rc == 0
 
 - debug:
     var: bootstrap_complete
@@ -16,12 +19,14 @@
   shell: |
     {{ staging_dir }}/openshift-install agent wait-for install-complete --dir {{ ocp_install_dir }}
   register: install_complete
+  retries: 5
+  delay: 60
+  until: install_complete.rc == 0
 
 - name: Wite install logs to file
   copy:
     content: "{{ install_complete.stdout }}"
     dest: "{{ staging_dir }}/install.log"
-
 
 - name: Get kubeadmin password
   shell:
@@ -35,7 +40,6 @@
       - "kubeadmin"
       - "{{ kubeadmin_pass.stdout }}"
       - "---------------------------------"  
-
 
 # - name: Disable kube-proxy
 #   kubernetes.core.k8s_json_patch:

@@ -19,28 +19,19 @@
   become: True
   run_once: True
 
-# ## Create a second storage pool if vm is worker
-- name: Create Storage Pool for data drive for worker VMs
-  delegate_to: "{{ groups.hypervisor[0] }}"
-  shell: | 
-    virsh pool-define-as --name {{ inventory_hostname }}-data --type dir --target {{ data_disk_path }}
-    virsh pool-autostart {{ inventory_hostname }}-data
-    virsh pool-start {{ inventory_hostname }}-data
-  when: data_disk_path is defined
-  become: True
-
 - name: Create qcow image for host os drive
   delegate_to: "{{ groups.hypervisor[0] }}"
   shell: | 
     qemu-img create -f qcow2 {{ cluster_vms_storage_base_dir }}/{{ inventory_hostname }}.qcow2 {{ rhcos_os_disk_size }}
   become: True
 
-- name: Create RAW image for additional data disk drive
-  delegate_to: "{{ groups.hypervisor[0] }}"
-  shell: | 
-    qemu-img create -f raw {{ data_disk.path_on_hv_host }}/{{ inventory_hostname }}.img {{ data_disk.size }}
-  when: data_disk is defined
-  become: True
+# ## Create a second storage pool if vm is worker
+- name: Create additional storage on HV host
+  include_tasks: create-storage-on-hv-host.yaml
+  vars:
+    disk: "{{ item }}"
+  loop: "{{ disks | list }}"
+  when: disks is defined
 
 - name: "Process KVM VM XML spec for {{ inventory_hostname }} "
   delegate_to: "{{ groups.hypervisor[0] }}"

@@ -1,36 +1,7 @@
 ---
-- name: Destroy storage pools
-  delegate_to: "{{ groups.hypervisor[0] }}"
-  shell: |
-    virsh pool-destroy {{ inventory_hostname }}-data
-    virsh pool-undefine {{ inventory_hostname }}-data
-  ignore_errors: True
-  become: True
-  when: data_disk_path is defined
-
-- name: Check to see if disk path is valid
-  delegate_to: "{{ groups.hypervisor[0] }}"
-  ansible.builtin.stat:
-    path: "{{ data_disk_path }}"
-  register: valid_path_retval
-  become: True
-  when: data_disk_path is defined
-
-- name: Remove data storage directories
-  delegate_to: "{{ groups.hypervisor[0] }}"
-  shell: |
-    rm -rf {{ data_disk_path }}/* &> /dev/null
-  when: 
-    - data_disk_path is defined
-    - valid_path_retval.stat.isdir is defined and valid_path_retval.stat.isdir
-  become: True
-
-- name: Zap raw disks for cluster storage
-  delegate_to: "{{ groups.hypervisor[0] }}"
-  shell: |
-    sgdisk --zap-all --clear {{ fast_data_disk_path }}
-    wipefs -a {{ fast_data_disk_path }}
-    kpartx -f -v {{ fast_data_disk_path }}
-  become: True
-  when: 
-    - fast_data_disk_path is defined
+- name: Clean data drive storage on hypervisor
+  include_tasks: clean_storage.yaml
+  vars:
+    disk: "{{ item }}"
+  loop: "{{ disks | list }}"
+  when: disks is defined

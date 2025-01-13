@@ -1,21 +1,7 @@
 ---
-- name: Zap Hypervisor Data disks
-  shell: |
-    {{ oc_bin }} debug node/{{ inventory_hostname }} -- chroot /host sgdisk --zap-all --clear {{ item.disk_path }}
+- name: Clean data drive storage on hypervisor
+  include_tasks: clean_storage.yaml
+  vars:
+    disk: "{{ item }}"
   loop: "{{ disks | list }}"
-  throttle: 1
-  delegate_to: "{{ groups.hypervisor[0] }}"
-
-- name: Wipe none OS disks
-  shell: |
-    {{ oc_bin }} debug node/{{ inventory_hostname }} -- chroot /host wipefs -a {{ item.disk_path }}
-  loop: "{{ disks }}"
-  throttle: 1
-  delegate_to: "{{ groups.hypervisor[0] }}"
-
-- name: Update device partition table
-  shell: |
-    {{ oc_bin }} debug node/{{ inventory_hostname }} -- chroot /host kpartx -f -v {{ item.disk_path }}
-  loop: "{{ disks }}"
-  throttle: 1
-  delegate_to: "{{ groups.hypervisor[0] }}"
+  when: disks is defined

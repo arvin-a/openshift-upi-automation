@@ -1,0 +1,25 @@
+---
+
+- name: Check if pool exists
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  shell: | 
+    virsh pool-list | grep '{{ inventory_hostname }}-data'
+  register: pool_query
+  become: True
+  ignore_errors: True
+
+- name: Create Storage Pool for data drive for worker VMs
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  shell: | 
+    virsh pool-define-as --name {{ inventory_hostname }}-data --type dir --target {{ disk.path_on_hv_host }}
+    virsh pool-autostart {{ inventory_hostname }}-data
+    virsh pool-start {{ inventory_hostname }}-data
+  when: disk.type == "file" and pool_query.rc != 0
+  become: True
+
+- name: Create RAW image for additional data disk drive
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  shell: | 
+    qemu-img create -f raw {{ disk.path_on_hv_host }}/{{ inventory_hostname }}.img {{ disk.size }}
+  when: disk.type == "file"
+  become: True

@@ -59,17 +59,6 @@
     - kvm-clean-host-storage
 
 
-########### REMOVE ROLE
-# - name: Clean data disks
-#   hosts: hypervisor
-#   connection: local
-#   roles:
-#     - role: openshift-clean-host-storage
-#       when:
-#         - data_storage is defined
-#         - data_storage == True
-#   tags:
-#     - openshift-clean-host-storage
 
 # - name: Remove cluster kubeconfig
 #   hosts: localhost

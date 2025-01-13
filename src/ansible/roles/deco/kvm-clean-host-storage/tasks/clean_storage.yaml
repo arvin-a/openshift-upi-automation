@@ -1,0 +1,35 @@
+
+- name: Destroy storage pools
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  shell: |
+    virsh pool-destroy {{ inventory_hostname }}-data
+    virsh pool-undefine {{ inventory_hostname }}-data
+  ignore_errors: True
+  become: True
+  run_once: True
+  when: disk.type == "file"
+
+- name: Check to see if disk path is valid
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  ansible.builtin.stat:
+    path: "{{ disk.path_on_hv_host }}"
+  register: valid_path_retval
+  become: True
+  when: disk.type == 'file'
+
+- name: Remove data storage directories
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  shell: |
+    rm -rf {{ disk.path_on_hv_host }}/* &> /dev/null
+  become: True
+  when: valid_path_retval.stat.isdir is defined and valid_path_retval.stat.isdir
+
+- name: Zap raw disks for cluster storage
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  shell: |
+    sgdisk --zap-all --clear {{ disk.path_on_hv_host }}
+    wipefs -a {{ disk.path_on_hv_host }}
+    kpartx -f -v {{ disk.path_on_hv_host }}
+  become: True
+  when: disk.type == 'block'
+  

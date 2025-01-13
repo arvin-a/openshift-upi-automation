@@ -32,6 +32,9 @@ worker:
   hosts:
     worker1.infra1.k8s.arvhomelab.com:
       type: 'kvm'
+      cpu: '90'
+      memory: '384'
+      rhcos_os_disk_size: '120G'
       nic1:
         mac_address: '02:00:00:a1:13:f3'
         vlan: '7'
@@ -76,9 +79,7 @@ worker:
         vlan: '8'
   vars:
     node_role: 'worker'
-    cpu: '30'
-    memory: '128'
-    rhcos_os_disk_size: '100G'
+
 
 ocp_nodes:
   children:

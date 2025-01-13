@@ -38,19 +38,24 @@
       <target dev='vda' bus='virtio'/>
       <address type='pci' domain='0x0000' bus='0x04' slot='0x00' function='0x0'/>
     </disk>
-{% if data_disk is defined %}
+{% if disks is defined %}
+  {% for disk in disks %}
+    {% if disk.type == 'file' %}
     <disk type='file' device='disk'>
       <driver name='qemu' type='raw'/>
-      <source file='{{ data_disk.path_on_hv_host }}/{{ inventory_hostname }}.img'/>
+      <source file='{{ disk.path_on_hv_host }}/{{ inventory_hostname }}.img'/>
       <target dev='vdb' bus='virtio'/>
-      <address type='pci' domain='0x0000' bus='0x05' slot='0x00' function='0x0'/>
+      <address type='pci' domain='0x0000' bus='0x{{ disk.bus }}' slot='0x00' function='0x0'/>
     </disk>
+    {% elif disk.type == 'block' %}
     <disk type='block' device='disk'>
       <driver name='qemu' type='raw' cache='none' io='native'/>
-      <source dev='{{ fast_data_disk.path_on_hv_host }}'/>
+      <source dev='{{ disk.path_on_hv_host }}'/>
       <target dev='vdc' bus='virtio'/>
-      <address type='pci' domain='0x0000' bus='0x06' slot='0x00' function='0x0'/>
+      <address type='pci' domain='0x0000' bus='0x{{ disk.bus }}' slot='0x00' function='0x0'/>
     </disk>
+    {% endif %}
+  {% endfor %}
 {% endif %}
     <disk type='file' device='cdrom'>
       <driver name='qemu' type='raw'/>

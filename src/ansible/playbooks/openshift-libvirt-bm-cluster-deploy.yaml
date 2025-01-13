@@ -15,28 +15,36 @@
 # --tags openshift-install-time-operations,openshift-auth-provider
 
 
+
 - name: Load configs
   hosts: all:localhost
   connection: local
   roles:
-    - ansible-config-load
+    - role: common/ansible-config-load
+      action: base
   tags:
     - always
 
 - name: Setup Staging Directory
-  hosts: localhost
+  hosts: localhost:hypervisor
+  roles:
+    - common/staging-dir-setup
+  tags:
+    - always
+
+- name: Load cluster configs
+  hosts: localhost:worker:control:hypervisor
   connection: local
   roles:
-    - staging-dir-setup
+    - role: common/ansible-config-load
+      action: cluster-config
   tags:
-    - staging-dir-setup
-    - pre-deploy
+    - always
 
 - name: Download Artifacts
   hosts: localhost
-  connection: local
   roles:
-    - openshift-download-artifacts
+    - deploy/openshift-download-artifacts
   tags:
     - openshift-download-artifacts
     - pre-deploy
@@ -45,68 +53,24 @@
   hosts: localhost
   connection: local
   roles:
-    - openshift-create-manifest
+    - deploy/openshift-create-manifest
   tags:
     - openshift-create-manifest
-
 
 - name: Create OpenShift iginition
   hosts: localhost
-  connection: local
   roles:
-    - openshift-iginition-create
+    - deploy/openshift-agent-iso-create-and-stage
   tags:
-    - openshift-iginition
+    - openshift-agent-iso-create-and-stage
 
-- name: Upload ignitions to webserver
-  hosts: localhost
-  connection: local
-  roles:
-    - openshift-iginition-upload-to-webserver
-  tags:
-    - openshift-iginition
-    
-- name: Overwrite bootstrap ignition with ignition pointer
-  hosts: localhost
-  connection: local
-  roles:
-    - openshift-iginition-update
-  tags:
-    - openshift-iginition
-    
-- name: Setup libvirt VM image
-  hosts: localhost
-  connection: local
-  roles:
-    - libvirt-setup-vm-image
-  tags:
-    - libvirt-setup-vm-image
-    - lbvirt-setup
-
-- name: Deploy libvirt Bootstrap VM
-  hosts: bootstrap
-  connection: local
-  roles:
-    - libvirt-deploy-vms
-  tags:
-    - libvirt-deploy-vms
-
-- name: Deploy libvirt Control VMs
+- name: Deploy KVM VMs
   hosts: control
-  connection: local
+  gather_facts: False
   roles:
-    - libvirt-deploy-vms
+    - deploy/kvm-deploy-vms
   tags:
-    - libvirt-deploy-vms
-
-- name: Deploy libvirt Worker VMs
-  hosts: worker
-  connection: local
-  roles:
-    - role: libvirt-deploy-vms
-      when: node_type is not defined  
-  tags:
-    - libvirt-deploy-vms
+    - kvm-deploy-vms
 
 - name: Deploy bare metal workers
   hosts: worker

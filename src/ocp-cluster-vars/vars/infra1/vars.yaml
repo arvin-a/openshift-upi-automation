@@ -31,18 +31,6 @@ libvirt_bridge_name: "br" # base name for the bridge. the vlan number will be ap
 ### Storage Vars
 storage_provider: odf  # Options are lvm or odf
 
-# data_disks:
-#   standard:
-#     name: standard
-#     disk_path: "/dev/vdb"
-#     lvm_sc_name: "lvm-standard"
-#     size: "690" # Size in Gi
-#   fast:
-#     name: fast
-#     disk_path: "/dev/vdc"
-#     lvm_sc_name: "lvm-fast"
-#     size: "260" # Size in Gi
-
 ### ODF Install vars (If storage_provider is odf)
 odf_version: "4.16"
 odf_node_disk_size: "690" # Size in Gi
