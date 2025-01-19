@@ -5,6 +5,7 @@
     virsh destroy {{ inventory_hostname }}
   ignore_errors: True
   become: True
+  when: type == "kvm"
 
 - name: Undefine VMS
   delegate_to: "{{ groups.hypervisor[0] }}"
@@ -12,3 +13,4 @@
     virsh undefine {{ inventory_hostname }}
   ignore_errors: True
   become: True
+  when: type == "kvm"

@@ -1,11 +1,12 @@
 ---
-- name: Zap, wipe and update partion table for data disks
+- name: "Zap, wipe and update partion table for {{ inventory_hostname }} -> {{ disk }}"
   vars:
     ansible_ssh_private_key_file: "{{ rhcos_ssh_private_key_file }}"
     ansible_python_interpreter: /usr/libexec/platform-python
   remote_user: core
   become: True
   shell: |
-    sgdisk --zap-all --clear /dev/disk/by-path/virtio-pci-0000:{{ disk.bus }}:00.0;
-    wipefs -a /dev/disk/by-path/virtio-pci-0000:{{ disk.bus }}:00.0;
-    kpartx -f -v /dev/disk/by-path/virtio-pci-0000:{{ disk.bus }}:00.0;
+    sgdisk --zap-all --clear {{ disk }};
+    wipefs -a {{ disk }};
+    kpartx -f -v {{ disk }};
+    rm -rf /mnt/local-storage/*;

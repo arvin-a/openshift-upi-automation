@@ -10,7 +10,6 @@
     state: present
     definition: "{{ lookup('template', '01-local-storage-ns.yaml') }}"
 
-
 - name: Create Local Storage Operator Group and Subscription
   k8s:
     state: present
@@ -18,7 +17,6 @@
   with_items:
     - 02-local-storage-og.yaml
     - 03-local-storage-sub.yaml
-
 
 - name: Wait until Local Storage CSV has succeeded
   shell:
@@ -28,7 +26,6 @@
   retries: 100
   delay: 5
 
-
 - name: Create Local Storage Volumes
   k8s:
     state: present
@@ -37,15 +34,13 @@
     - 04-local-storage-lv.yaml
     - 04-local-storage-lv-fast.yaml
 
-
 - name: Wait until Local Storage PVs are available
   shell:
     cmd: "{{ oc_bin }} get pv | grep local-pv | wc -l"
   register: result
-  until: result.stdout == "4"
+  until: result.stdout | int > 3
   retries: 100
   delay: 10
-
 
 - name: Create ODF Namespace
   k8s:

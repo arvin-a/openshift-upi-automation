@@ -20,19 +20,12 @@ ocp_bin_installer_url: "{{ ocp_bin_release_url }}/{{ ocp_bin_installer_archive_n
 oc_bin: "{{ staging_dir }}/oc"
 openshift_install_bin: "{{ staging_dir }}/openshift-install"
 
-# RHCOS images base URLs.
-rhcos_bin_version: "latest"
-rhcos_bin_base_url: "https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos"
-rhcos_bin_release_url: "{{ rhcos_bin_base_url }}/{{ ocp_version }}/{{ rhcos_bin_version }}"
 
-# OCP install directory
-ocp_install_dir: "{{ staging_dir }}/ocp-install"
-
-
+# Agent installer ISO vars
 ############################################################################################
 ## Hypervisor variables
-agent_iso_file_path: "{{ staging_dir }}/agent.x86_64.iso"
-
+agent_iso_file_name: "agent.x86_64.iso"
+agent_iso_file_path: "{{ staging_dir }}/{{ agent_iso_file_name }}"
 
 # kubeconfig folder, location of your kubeconfig files for your infra and tenant cluster
 kubeconfig_src_path: "{{ ocp_install_dir }}/auth/kubeconfig"
@@ -41,14 +34,14 @@ kubeadmin_password_src_path: "{{ ocp_install_dir }}/auth/kubeadmin-password"
 
 # Web Server
 web_server:
-  name: infra-ddi.arvhomelab.com
-  groups: webserver
-  files_root_path: /var/www/html  
-  http_base_url: "http://infra-ddi.arvhomelab.com"
+  files_root_path: "/var/www/html/{{ ocp_cluster_fqdn }}"
+  http_base_url: "http://infra-ddi.arvhomelab.com/{{ ocp_cluster_fqdn }}"
+  python_interpreter: "/usr/bin/python"
 
 web_server_files_bin_path: "{{ web_server.files_root_path }}/bin/{{ ocp_version }}"
 web_server_files_cluster_path: "{{ web_server.files_root_path }}/{{ ocp_cluster_name }}"
 web_server_http_rhcos_url: "{{ web_server.http_base_url }}/bin/{{ ocp_version }}/{{ kubevirt_rhcos_bin_file_name }}"
+agent_iso_http_url: 
 
 
 ### Secrets stored in Hashi Vault
@@ -56,6 +49,8 @@ vault_url: "http://vault.arvhomelab.com:8200"
 
 
 cluster_common_vault_secret_path: ahl-common
+idrac_admin_password_vault_key: idrac_admin_password
+idrac_admin_user_vault_key: idrac_admin_user
 rhcos_ssh_pub_key_vault_key: rhcos_ssh_pub_key
 rhcos_ssh_private_key_vault_key: rhcos_ssh_private_key
 additional_trust_bundle_vault_key: additional_trust_bundle

@@ -6,20 +6,60 @@ metadata:
 spec:
   storage:
     deviceClasses:
-      - name: "{{ data_disks.standard.name }}"
+      - name: "{{ lvms.standard.name }}"
         default: true
         thinPoolConfig:
-          name: thin-pool-1
+          name: {{ lvms.fast.name }}-thin-pool
           overprovisionRatio: 20
           sizePercent: 90
+        nodeSelector:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - values:
+                {% for node in groups['worker'] %}
+                  {% for disk in node.disks %}
+                    {% if disk.speed == 'standard' %}
+                    - "{{ inventory_hostname }}"
+                    {% endif %}
+                  {% endfor %}          
+                {% endfor %}   
+                  key: kubernetes.io/hostname
+                  operator: In        
         deviceSelector:
-          paths:
-          - "{{ data_disks.standard.disk_path }}"
-      - name: "{{ data_disks.fast.name }}"
+          forceWipeDevicesAndDestroyAllData: True
+          optionalPaths :
+          {% for node in groups['worker'] %}
+            {% for disk in node.disks %}
+              {% if disk.speed == 'standard' %}
+            - "{{ disk.path }}"
+              {% endif %}
+            {% endfor %}          
+          {% endfor %}          
+      - name: "{{ lvms.fast.name }}"
         thinPoolConfig:
-          name: thin-pool-2
+          name: {{ lvms.fast.name }}-thin-pool
           overprovisionRatio: 20
           sizePercent: 90
+        nodeSelector:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - values:
+                {% for node in groups['worker'] %}
+                  {% for disk in node.disks %}
+                    {% if disk.speed == 'fast' %}
+                    - "{{ inventory_hostname }}"
+                    {% endif %}
+                  {% endfor %}          
+                {% endfor %}   
+                  key: kubernetes.io/hostname
+                  operator: In  
         deviceSelector:
-          paths:
-          - "{{ data_disks.fast.disk_path }}"
+          forceWipeDevicesAndDestroyAllData: True
+          optionalPaths :
+          {% for node in groups['worker'] %}
+            {% for disk in node.disks %}
+              {% if disk.speed == 'fast' %}
+            - "{{ disk.path }}"
+              {% endif %}
+            {% endfor %}          
+          {% endfor %} 

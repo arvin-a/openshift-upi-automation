@@ -7,6 +7,8 @@
     - "{{ staging_temp_dir }}"
     - "{{ staging_dir }}"
   ignore_errors: True
+  when: inventory_hostname in groups.hypervisor or
+        inventory_hostname == 'localhost'
 
 - name: Create staging folder
   file:
@@ -17,18 +19,44 @@
     - "{{ staging_dir }}"
     - "{{ binary_archive_base_dir }}"
     - "{{ ocp_binaries_archive_base_dir }}"
+  when: inventory_hostname in groups.hypervisor or
+        inventory_hostname == 'localhost'
 
-- name: Remove staging folder on kvm Hypervisor host
-  delegate_to: "{{ groups.hypervisor[0] }}"
+
+- name: Remove Webserver cluster files root path
   file:
     state: absent
-    path: "{{ staging_dir }}"
+    path: "{{ web_server.files_root_path }}"
+  become: True
   ignore_errors: True
-  when: platform == "kvm"
+  when: inventory_hostname in groups.webserver
 
-- name: Create staging folder kvm Hypervisor host
-  delegate_to: "{{ groups.hypervisor[0] }}"
+- name: Create Webserver cluster files root path
   file:
     state: directory
-    path: "{{ staging_dir }}"
-  when: platform == "kvm"
+    path: "{{ web_server.files_root_path }}"
+    mode: '0655'
+  become: True
+  # ignore_errors: True
+  when: inventory_hostname in groups.webserver
+
+
+# - name: Remove staging folder on kvm Hypervisor host
+#   delegate_to: "{{ groups.hypervisor[0] }}"
+#   file:
+#     state: absent
+#     path: "{{ staging_dir }}"
+#   ignore_errors: True
+#   when:
+#     - platform == "kvm"
+#     - platform == "kvm_bm"
+
+# - name: Create staging folder kvm Hypervisor host
+#   delegate_to: "{{ groups.hypervisor[0] }}"
+#   file:
+#     state: directory
+#     path: "{{ staging_dir }}"
+#   when:
+#     - platform == "kvm"
+#     - platform == "kvm_bm"
+

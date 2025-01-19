@@ -11,6 +11,8 @@
 
 - name: Set cluster secret vars
   set_fact:
+    idrac_admin_user: "{{ vault_payload[idrac_admin_user_vault_key] }}"
+    idrac_admin_password: "{{ vault_payload[idrac_admin_password_vault_key] }}"
     rhcos_ssh_private_key: "{{ vault_payload[rhcos_ssh_private_key_vault_key] }}"
     rhcos_ssh_pub_key: "{{ vault_payload[rhcos_ssh_pub_key_vault_key] }}"
     additional_trust_bundle: "{{ vault_payload[additional_trust_bundle_vault_key] }}"
@@ -21,3 +23,4 @@
     content: "{{ rhcos_ssh_private_key }}"
     dest: "{{ rhcos_ssh_private_key_file }}"
     mode: 0600
+  run_once: True

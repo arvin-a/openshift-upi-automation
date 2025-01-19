@@ -1,0 +1,93 @@
+---
+- name: Delete all jobs on idrac
+  dellemc.openmanage.idrac_lifecycle_controller_jobs:
+    idrac_ip: "{{ lookup('community.general.dig', 'idrac-{{ inventory_hostname }}') }}"
+    idrac_user: "{{ idrac_admin_user }}"
+    idrac_password: "{{ idrac_admin_password }}"
+    validate_certs: False
+  ignore_errors: True
+
+
+- name: Eject Virtual CD drive
+  include_tasks: eject-virtual-cd.yaml
+
+- name: pause for 10 seconds
+  pause:
+    seconds: 10
+
+- name: Mount Agent ISO
+  dellemc.openmanage.idrac_virtual_media:
+    idrac_ip: "{{ lookup('community.general.dig', 'idrac-{{ inventory_hostname }}') }}"
+    idrac_user: "{{ idrac_admin_user }}"
+    idrac_password: "{{ idrac_admin_password }}"
+    validate_certs: False
+    force: True
+    virtual_media:
+      - insert: true
+        image: "{{ web_server.http_base_url }}/{{ agent_iso_file_name }}"
+        media_type: "CD"
+  ignore_errors: True
+  register: mount_iso_operation
+
+- name: Mount ISO Result
+  debug:
+    var: mount_iso_operation
+    # msg: "{{ mount_iso_operation.msg }}"
+
+- name: pause for 10 seconds
+  pause:
+    seconds: 10
+
+- name: Configure the boot source override to boot from CD
+  dellemc.openmanage.idrac_boot:
+    idrac_ip: "{{ lookup('community.general.dig', 'idrac-{{ inventory_hostname }}') }}"
+    idrac_user: "{{ idrac_admin_user }}"
+    idrac_password: "{{ idrac_admin_password }}"
+    validate_certs: False
+    boot_source_override_mode: uefi
+    boot_source_override_target: uefi_target
+    uefi_target_boot_source_override: "{{ virtual_media_uefi_path }}"
+    boot_source_override_enabled: once
+    reset_type: "force_restart"
+    job_wait_timeout: 600
+    job_wait: True
+  ignore_errors: True
+  register: one_time_boot_operation
+  until: '"Successfully" in one_time_boot_operation.msg '
+  retries: 1
+  delay: 30
+
+- name: One time boot from CD operation result
+  debug:
+    var: one_time_boot_operation
+    # msg: "{{ one_time_boot_operation.msg }}"
+
+# - name: pause for 10 seconds
+#   pause:
+#     seconds: 10
+
+# - name: Performing power reset operation
+#   dellemc.openmanage.redfish_powerstate:
+#     baseuri: "{{ lookup('community.general.dig', 'idrac-{{ inventory_hostname }}') }}"
+#     username: "{{ idrac_admin_user }}"
+#     password: "{{ idrac_admin_password }}"
+#     validate_certs: false
+#     reset_type: "ForceRestart"
+#   register: force_restart_command
+
+# - debug:
+#     msg: "{{ force_restart_command.msg }}"
+
+- name: Performing power on operation if device is off
+  dellemc.openmanage.redfish_powerstate:
+    baseuri: "{{ lookup('community.general.dig', 'idrac-{{ inventory_hostname }}') }}"
+    username: "{{ idrac_admin_user }}"
+    password: "{{ idrac_admin_password }}"
+    validate_certs: false
+    reset_type: "On"
+  register: power_on_command
+  when: '"off" in one_time_boot_operation.msg'
+
+- debug:
+    msg: "{{ power_on_command.msg }}"
+  when: '"off" in one_time_boot_operation.msg'

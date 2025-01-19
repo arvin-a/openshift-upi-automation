@@ -1,7 +1,6 @@
 ---
-- name: Clean data drive storage on hypervisor
+- name: "Clean data drive storage on worker node {{ inventory_hostname }}"
   include_tasks: clean_storage.yaml
   vars:
-    disk: "{{ item }}"
+    disk: "{% if type=='kvm' %}/dev/disk/by-path/virtio-pci-0000:{{ item.bus }}:00.0{% elif type=='bm'%}{{ item.path }}{% endif %}"
   loop: "{{ disks | list }}"
-  when: disks is defined

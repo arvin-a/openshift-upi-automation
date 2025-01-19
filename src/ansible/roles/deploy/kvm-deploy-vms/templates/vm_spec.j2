@@ -44,14 +44,14 @@
     <disk type='file' device='disk'>
       <driver name='qemu' type='raw'/>
       <source file='{{ disk.path_on_hv_host }}/{{ inventory_hostname }}.img'/>
-      <target dev='vdb' bus='virtio'/>
+      <target dev='{{ disk.target_dev }}' bus='virtio'/>
       <address type='pci' domain='0x0000' bus='0x{{ disk.bus }}' slot='0x00' function='0x0'/>
     </disk>
     {% elif disk.type == 'block' %}
     <disk type='block' device='disk'>
       <driver name='qemu' type='raw' cache='none' io='native'/>
       <source dev='{{ disk.path_on_hv_host }}'/>
-      <target dev='vdc' bus='virtio'/>
+      <target dev='{{ disk.target_dev }}' bus='virtio'/>
       <address type='pci' domain='0x0000' bus='0x{{ disk.bus }}' slot='0x00' function='0x0'/>
     </disk>
     {% endif %}

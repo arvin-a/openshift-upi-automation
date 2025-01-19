@@ -31,7 +31,7 @@ spec:
   monDataDirHostPath: /var/lib/rook
   storageDeviceSets:
   - name: odf-deviceset
-    count: 1   # <-- modify count to desired value
+    count: 1
     deviceType: "ssd"
     deviceClass: "dc-standard"
     dataPVCTemplate:
@@ -40,8 +40,8 @@ spec:
         - ReadWriteOnce
         resources:
           requests:
-            storage: "690Gi"
-        storageClassName: localblock
+            storage: {{ odf_standard.min_size }}
+        storageClassName: {{ odf_standard.local_storage_class }}
         volumeMode: Block
     placement:
       nodeAffinity:
@@ -59,7 +59,7 @@ spec:
       requests:
         cpu: "2"
         memory: "5Gi"
-  - count: 1   # <-- modify count to desired value
+  - count: 1
     deviceType: "ssd"
     deviceClass: "dc-fast"
     dataPVCTemplate:
@@ -68,8 +68,8 @@ spec:
         - ReadWriteOnce
         resources:
           requests:
-            storage: "260Gi"
-        storageClassName: localblock-fast
+            storage: {{ odf_fast.min_size }}
+        storageClassName: {{ odf_fast.local_storage_class }}
         volumeMode: Block
     name: odf-deviceset-fast
     placement:

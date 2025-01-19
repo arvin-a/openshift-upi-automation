@@ -1,2 +1,0 @@
-- include_tasks: pxe-boot-server.yaml
-  when: action == 'pxe-boot'

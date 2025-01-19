@@ -25,3 +25,24 @@
     src: "{{ ocp_install_dir }}/agent.x86_64.iso"
     dest: "{{ staging_dir }}/agent.x86_64.iso"
     mode: "0660"
+  when: platform == "kvm" or  
+        platform == "kvm_bm"
+
+- name: Copy agent ISO to hypervisor host
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  copy:
+    src: "{{ ocp_install_dir }}/agent.x86_64.iso"
+    dest: "{{ staging_dir }}/agent.x86_64.iso"
+    mode: "0660"
+  when: platform == "kvm" or  
+        platform == "kvm_bm"
+
+- name: Copy agent ISO to Webserver host
+  delegate_to: "{{ groups.webserver[0] }}"
+  become: True
+  copy:
+    src: "{{ ocp_install_dir }}/agent.x86_64.iso"
+    dest: "{{ web_server.files_root_path }}/agent.x86_64.iso"
+    mode: "0666"
+  when: platform == "kvm_bm"
+    

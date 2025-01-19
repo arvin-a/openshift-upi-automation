@@ -1,26 +1,31 @@
 ---
-- set_fact:
+- name: Setting configuration directory for vars
+  set_fact:
     config_dir: "{{ role_path }}/../../../../ocp-cluster-vars/vars/{{ cluster_name }}"
 
-- include_vars:
+- name: "Including variables from {{ config_dir }}/main.yaml"
+  include_vars:
     file: "{{ config_dir }}/main.yaml"
-  run_once: true
   when: action == "base"
 
-- include_vars:
+- name: "Including variables from configs list in {{ config_dir }}/main.yaml"
+  include_vars:
     file: "{{ item }}"
   loop: "{{ configs }}"
-  run_once: true
   when: action == "base"
 
-- include_tasks: common-config-load.yaml
+- name: Loading common configuration
+  include_tasks: common-config-load.yaml
+  when: action == "base"
 
-- include_tasks: infra-config-load.yaml
+- name: Loading Infra cluster cluster configuration
+  include_tasks: infra-config-load.yaml
   when: 
     - cluster_role == "infra"
     - action == "cluster-config"
 
-- include_tasks: tenant-config-load.yaml
+- name: Loading Tenant cluster cluster configuration
+  include_tasks: tenant-config-load.yaml
   when:
     - cluster_role == "tenant"
     - action == "cluster-config"

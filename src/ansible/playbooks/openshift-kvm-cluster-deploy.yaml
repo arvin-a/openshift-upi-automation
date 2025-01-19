@@ -8,7 +8,7 @@
 # --skip-tags pre-deploy
 # --tags openshift-install-time-operations,openshift-auth-provider
 
-- name: Include a play after another play
+- name: Run cluster deco before doing a deploy
   import_playbook: openshift-kvm-cluster-deco.yaml
   tags:
     - pre-install-deco
@@ -31,14 +31,14 @@
     - always
 
 - name: Setup Staging Directory
-  hosts: localhost:hypervisor
+  hosts: localhost:hypervisor:webserver
   roles:
     - common/staging-dir-setup
   tags:
     - always
 
 - name: Load cluster configs
-  hosts: localhost:worker:control:hypervisor
+  hosts: all:localhost
   connection: local
   roles:
     - role: common/ansible-config-load

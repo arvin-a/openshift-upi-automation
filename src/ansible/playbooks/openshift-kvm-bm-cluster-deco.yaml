@@ -1,13 +1,16 @@
+##################################################################
+## This playbook is not ready for use                           ##
+##################################################################
+
 # Run sample
 
 # cd to ansible directory
-# export CLUSTER_NAME=infra1
-# ansible-playbook playbooks/openshift-kvm-cluster-deco.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
+# export CLUSTER_NAME=infra1.1
+# ansible-playbook playbooks/openshift-kvm-vm-cluster-deco.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
 
 #### Options
 # --skip-tags pre-deploy
 # --tags openshift-install-time-operations,openshift-auth-provider
-
 
 - name: Load configs
   hosts: all:localhost
@@ -39,7 +42,8 @@
   hosts: control:worker
   gather_facts: False
   roles:
-    - deco/kvm-remove-vms
+    - role: deco/kvm-remove-vms
+      when: type == "kvm"
   tags:
     - kvm-remove-vms
 
@@ -54,6 +58,9 @@
   hosts: worker
   gather_facts: False
   roles:
-    - deco/kvm-clean-host-storage
+    - role: deco/kvm-clean-host-storage
+      when: type == "kvm"
   tags:
     - kvm-clean-host-storage
+
+### placeholder for are metal deco steps (shutdown)

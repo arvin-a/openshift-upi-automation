@@ -4,4 +4,4 @@
   vars:
     disk: "{{ item }}"
   loop: "{{ disks | list }}"
-  when: disks is defined
+  when: type == "kvm" and disks is defined

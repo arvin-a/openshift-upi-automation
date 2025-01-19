@@ -1,0 +1,8 @@
+---
+- name: Mount Agent ISO and reboot node from Virtual CD drive
+  include_tasks: mount-agent-iso.yaml
+  when: action == 'mount-agent-iso'
+
+- name: Eject Virtual CD drive
+  include_tasks: eject-virtual-cd.yaml
+  when: action == 'eject-cd'

@@ -1,0 +1,9 @@
+- name: Eject Virtual CD Drive
+  dellemc.openmanage.idrac_virtual_media:
+    idrac_ip: "{{ lookup('community.general.dig', 'idrac-{{ inventory_hostname }}') }}"
+    idrac_user: "{{ idrac_admin_user }}"
+    idrac_password: "{{ idrac_admin_password }}"
+    validate_certs: False
+    force: True
+    virtual_media:
+      - insert: false

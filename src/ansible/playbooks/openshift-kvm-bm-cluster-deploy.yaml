@@ -2,19 +2,28 @@
 ## This playbook is not ready for use                           ##
 ##################################################################
 
+# Run sample
+
 # cd to ansible directory
-
-# export CLUSTER_NAME=kvm-infra1
-# ansible-playbook playbooks/openshift-kvm-bm-cluster-destroy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME -e cluster_name=$CLUSTER_NAME --vault-password-file vaultpass
-
-# export CLUSTER_NAME=kvm-infra1
-# ansible-playbook playbooks/openshift-kvm-bm-cluster-destroy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME -e cluster_name=$CLUSTER_NAME
+# export CLUSTER_NAME=infra1.1
+# ansible-playbook playbooks/openshift-kvm-bm-cluster-deploy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
 
 #### Options
 # --skip-tags pre-deploy
 # --tags openshift-install-time-operations,openshift-auth-provider
 
+- name: Run cluster deco before doing a deploy
+  import_playbook: openshift-kvm-bm-cluster-deco.yaml
+  tags:
+    - pre-install-deco
 
+- name: Clear errors
+  hosts: all:localhost
+  connection: local
+  tasks:
+    - meta: clear_host_errors
+  tags:
+    - always
 
 - name: Load configs
   hosts: all:localhost
@@ -26,14 +35,15 @@
     - always
 
 - name: Setup Staging Directory
-  hosts: localhost:hypervisor
+  hosts: localhost:hypervisor:webserver
+  gather_facts: False
   roles:
     - common/staging-dir-setup
   tags:
     - always
 
 - name: Load cluster configs
-  hosts: localhost:worker:control:hypervisor
+  hosts: all:localhost
   connection: local
   roles:
     - role: common/ansible-config-load
@@ -43,6 +53,7 @@
 
 - name: Download Artifacts
   hosts: localhost
+  connection: local
   roles:
     - deploy/openshift-download-artifacts
   tags:
@@ -65,22 +76,23 @@
     - openshift-agent-iso-create-and-stage
 
 - name: Deploy KVM VMs
-  hosts: control
+  hosts: control:worker
   gather_facts: False
   roles:
-    - deploy/kvm-deploy-vms
+    - role: deploy/kvm-deploy-vms
+      when: type == "kvm"
   tags:
     - kvm-deploy-vms
 
 - name: Deploy bare metal workers
   hosts: worker
-  connection: local
+  connection: local 
   roles:
-    - role: idrac-operations
-      action: pxe-boot
-      when:
-        - node_type is defined
-        - node_type == "bm"
+    - role: common/idrac-operations
+      action: mount-agent-iso
+      when: type == "bm"
+  tags:
+    - bm-deploy
 
 - name: OCP install time operations
   hosts: localhost
@@ -88,27 +100,19 @@
   environment:
     KUBECONFIG: "{{ cluster_kubeconfig }}"
   roles:
-    - openshift-install-time-operations
+    - deploy/openshift-install-time-operations
   tags:
     - openshift-install-time-operations
 
-
-- name: Remove Bootstrap VM
-  hosts: bootstrap
+- name: Eject Virtual CD Drive
+  hosts: worker
   connection: local
   roles:
-    - libvirt-remove-bootstrap
+    - role: common/idrac-operations
+      action: eject-cd
+      when: type == "bm"
   tags:
-    - libvirt-remove-bootstrap
-
-- name: Output kubeadmin password
-  hosts: localhost
-  connection: local
-  roles:
-    - openshift-show-admin-credentials
-  tags:
-    - openshift-show-admin-credentials
-   
+    - eject-virtual-cd
 
 - name: Add HTPasswd auth provider
   hosts: localhost
@@ -116,23 +120,34 @@
   environment:
     KUBECONFIG: "{{ cluster_kubeconfig }}"
   roles:
-    - openshift-auth-provider
+    - deploy/openshift-auth-provider
   tags:
     - openshift-auth-provider
 
+- name: Clean data disks on worker nodes
+  hosts: worker
+  gather_facts: False
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: deploy/openshift-clean-storage
+      when: disks is defined
+  tags:
+    - openshift-clean-storage
 
-- name: Install ODF
+- name: Install Cluster Storage Provider
   hosts: localhost
   connection: local
   environment:
     KUBECONFIG: "{{ cluster_kubeconfig }}"
   roles:
-    - role: openshift-odf-install
+    - role: deploy/openshift-odf-install
       when: storage_provider == "odf"
+    - role: deploy/openshift-lvm-operator-install
+      when: storage_provider == "lvm"
   tags:
-    - openshift-odf-install
+    - openshift-storage-install
     - post-install
-
 
 - name: Install Nmstate Operator
   hosts: localhost
@@ -140,11 +155,10 @@
   environment:
     KUBECONFIG: "{{ cluster_kubeconfig }}"
   roles:
-    - openshift-nmstate-install
+    - deploy/openshift-nmstate-install
   tags:
     - openshift-nmstate-install
     - post-install
-
 
 - name: Install OpenShift Virtualization
   hosts: localhost
@@ -152,19 +166,19 @@
   environment:
     KUBECONFIG: "{{ cluster_kubeconfig }}"
   roles:
-    - role: openshift-virt-install
+    - role: deploy/openshift-virt-olm-install
       when: ocp_virt_install == True
   tags:
     - openshift-virt-install
     - post-install
 
 - name: Create network bridge
-  hosts: localhost
-  connection: local
+  hosts: worker
+  gather_facts: False
   environment:
     KUBECONFIG: "{{ cluster_kubeconfig }}"
   roles:
-    - openshift-create-bridge
+    - deploy/openshift-create-bridge
   tags:
     - openshift-create-bridge
     - post-install
@@ -175,7 +189,7 @@
   environment:
     KUBECONFIG: "{{ cluster_kubeconfig }}"
   roles:
-    - openshift-metallb-install
+    - deploy/openshift-metallb-install
   tags:
     - openshift-metallb-install
     - post-install
