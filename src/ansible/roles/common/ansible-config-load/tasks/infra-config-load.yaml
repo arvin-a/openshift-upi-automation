@@ -1,4 +1,4 @@
 - name: Set Storage Class Names
   set_fact:
-    infra_cluster_storage_class_name:  "{% if storage_provider=='lvm' %}lvms-standard-im{% elif storage_provider=='odf'%}odf-storagecluster-ceph-rbd{% endif %}"
-    infra_cluster_fast_storage_class_name:  "{% if storage_provider=='lvm' %}lvms-fast-im{% elif storage_provider=='odf'%}odf-storagecluster-ceph-rbd-fast{% endif %}"
+    infra_cluster_storage_class_name:  "{% if storage_provider=='lvm' %}{{ lvms.standard.name }}-im{% elif storage_provider=='odf'%}odf-storagecluster-ceph-rbd{% endif %}"
+    infra_cluster_fast_storage_class_name:  "{% if storage_provider=='lvm' %}{{ lvms.standard.name }}-im{% elif storage_provider=='odf'%}odf-storagecluster-ceph-rbd-fast{% endif %}"

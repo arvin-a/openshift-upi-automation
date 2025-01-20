@@ -10,3 +10,7 @@
     wipefs -a {{ disk }};
     kpartx -f -v {{ disk }};
     rm -rf /mnt/local-storage/*;
+  register: clean_result
+  until: clean_result.rc == 0
+  retries: 10
+  delay: 20

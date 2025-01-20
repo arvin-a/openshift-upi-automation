@@ -7,9 +7,6 @@ cluster_role: infra   # values can be infra or tenant
 # OCP Vars
 ocp_version: "4.16"  # get latest stable release
 ocp_bin_channel: "stable"
-rhcos_bin_qcow_url: "{{ rhcos_bin_release_url }}/{{ libvirt_rhcos_bin_archive_name }}"
-rhcos_bin_archive_name: "{{ libvirt_rhcos_bin_archive_name }}"
-rhcos_bin_file_name: "{{ libvirt_rhcos_bin_file_name }}"
 ocp_network_type: "OVNKubernetes"  # , Calico,Cilium,OVNKubernetes"
 
 #### NETWORK CONFIGURATION

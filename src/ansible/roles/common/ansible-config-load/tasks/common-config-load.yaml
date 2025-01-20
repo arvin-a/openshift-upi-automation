@@ -17,10 +17,3 @@
     rhcos_ssh_pub_key: "{{ vault_payload[rhcos_ssh_pub_key_vault_key] }}"
     additional_trust_bundle: "{{ vault_payload[additional_trust_bundle_vault_key] }}"
     pull_secret: '{{ vault_payload[pull_secret_vault_key] | b64decode | string }}'
-
-- name: Copy contents for ssh PK to staging dir
-  copy:
-    content: "{{ rhcos_ssh_private_key }}"
-    dest: "{{ rhcos_ssh_private_key_file }}"
-    mode: 0600
-  run_once: True

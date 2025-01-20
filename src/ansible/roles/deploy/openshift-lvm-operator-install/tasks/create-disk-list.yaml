@@ -1,0 +1,28 @@
+---
+- name: Create list of standards disk paths
+  set_fact: 
+    standard_disks: "{{ standard_disks + [item.path] }}" 
+  loop: "{{ hostvars[node].disks }}" 
+  when: item.speed == 'standard'
+
+- name: Create list of fast disk paths
+  set_fact: 
+    fast_disks: "{{ fast_disks + [item.path] }}" 
+  loop: "{{ hostvars[node].disks }}" 
+  when: item.speed == 'fast'
+
+- name: Remove duplicate paths for standard disks 
+  set_fact: 
+    standard_disks: "{{ standard_disks | unique }}"
+
+- name: Remove duplicate paths for fast disks 
+  set_fact: 
+    fast_disks: "{{ fast_disks | unique }}"
+
+- name: Ouput standard disk list
+  debug:
+    var: standard_disks
+
+- name: Ouput fast disk list
+  debug:
+    var: fast_disks

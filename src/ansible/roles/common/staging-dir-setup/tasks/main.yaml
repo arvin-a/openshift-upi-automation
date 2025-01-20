@@ -41,6 +41,13 @@
   when: inventory_hostname in groups.webserver
 
 
+- name: Copy contents for ssh PK to staging dir
+  copy:
+    content: "{{ rhcos_ssh_private_key }}"
+    dest: "{{ rhcos_ssh_private_key_file }}"
+    mode: 0600
+  when: inventory_hostname == "localhost"
+
 # - name: Remove staging folder on kvm Hypervisor host
 #   delegate_to: "{{ groups.hypervisor[0] }}"
 #   file:

@@ -25,6 +25,16 @@
   retries: 100
   delay: 5
 
+- set_fact:
+    standard_disks: "{{ list | default([]) }}"
+    fast_disks: "{{ list | default([]) }}"
+
+- name: loop through nodes and add disks to a list
+  vars:
+    node: "{{ item }}"
+  include_tasks: create-disk-list.yaml
+  loop: "{{ groups['worker'] | list }}"
+
 - name: Apply LVMCluster Instance yaml
   k8s:
     state: present
@@ -38,7 +48,6 @@
   k8s:
     state: present
     definition: "{{ lookup('template', '04-lvm-sc.yaml') }}"
-    
 
 - name: Wait until LVMCluster is ready
   shell:

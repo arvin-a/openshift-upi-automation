@@ -17,9 +17,9 @@ spec:
             - matchExpressions:
                 - values:
                 {% for node in groups['worker'] %}
-                  {% for disk in node.disks %}
+                  {% for disk in hostvars[node].disks %}
                     {% if disk.speed == 'standard' %}
-                    - "{{ inventory_hostname }}"
+                    - "{{ node }}"
                     {% endif %}
                   {% endfor %}          
                 {% endfor %}   
@@ -28,12 +28,8 @@ spec:
         deviceSelector:
           forceWipeDevicesAndDestroyAllData: True
           optionalPaths :
-          {% for node in groups['worker'] %}
-            {% for disk in node.disks %}
-              {% if disk.speed == 'standard' %}
-            - "{{ disk.path }}"
-              {% endif %}
-            {% endfor %}          
+          {% for disk in standard_disks %}
+            - "{{ disk }}"
           {% endfor %}          
       - name: "{{ lvms.fast.name }}"
         thinPoolConfig:
@@ -45,9 +41,9 @@ spec:
             - matchExpressions:
                 - values:
                 {% for node in groups['worker'] %}
-                  {% for disk in node.disks %}
+                  {% for disk in  hostvars[node].disks %}
                     {% if disk.speed == 'fast' %}
-                    - "{{ inventory_hostname }}"
+                    - "{{ node }}"
                     {% endif %}
                   {% endfor %}          
                 {% endfor %}   
@@ -56,10 +52,6 @@ spec:
         deviceSelector:
           forceWipeDevicesAndDestroyAllData: True
           optionalPaths :
-          {% for node in groups['worker'] %}
-            {% for disk in node.disks %}
-              {% if disk.speed == 'fast' %}
-            - "{{ disk.path }}"
-              {% endif %}
-            {% endfor %}          
-          {% endfor %} 
+          {% for disk in fast_disks %}
+            - "{{ disk }}"
+          {% endfor %}   
