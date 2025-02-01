@@ -1,13 +1,13 @@
 platform: "kvm_bm" # Accepted values (kvm,kvm_bm,O^3)
 base_domain: k8s.arvhomelab.com
-ocp_cluster_name: infra1 # this should be the same name as the directory conatainging the cluster 
+ocp_cluster_name: infra1    # this should be the same name as the vars directory containing the cluster inventory
 ocp_cluster_fqdn: "{{ ocp_cluster_name }}.{{ base_domain }}"
 cluster_role: infra   # values can be infra or tenant
 
 # OCP Vars
 ocp_version: "4.16"  # get latest stable release
 ocp_bin_channel: "stable"
-ocp_network_type: "OVNKubernetes"  # , Calico,Cilium,OVNKubernetes"
+ocp_network_type: "OVNKubernetes"  # Calico,Cilium,OVNKubernetes"
 
 #### NETWORK CONFIGURATION
 bridge_interface_name: br1

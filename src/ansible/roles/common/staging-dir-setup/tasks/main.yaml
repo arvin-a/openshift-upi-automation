@@ -7,7 +7,7 @@
     - "{{ staging_temp_dir }}"
     - "{{ staging_dir }}"
   ignore_errors: True
-  when: inventory_hostname in groups.hypervisor or
+  when: (groups.hypervisor is defined and inventory_hostname in groups.hypervisor) or
         inventory_hostname == 'localhost'
 
 - name: Create staging folder
@@ -19,9 +19,8 @@
     - "{{ staging_dir }}"
     - "{{ binary_archive_base_dir }}"
     - "{{ ocp_binaries_archive_base_dir }}"
-  when: inventory_hostname in groups.hypervisor or
+  when: (groups.hypervisor is defined and inventory_hostname in groups.hypervisor) or
         inventory_hostname == 'localhost'
-
 
 - name: Remove Webserver cluster files root path
   file:
@@ -37,9 +36,7 @@
     path: "{{ web_server.files_root_path }}"
     mode: '0655'
   become: True
-  # ignore_errors: True
   when: inventory_hostname in groups.webserver
-
 
 - name: Copy contents for ssh PK to staging dir
   copy:
@@ -47,23 +44,3 @@
     dest: "{{ rhcos_ssh_private_key_file }}"
     mode: 0600
   when: inventory_hostname == "localhost"
-
-# - name: Remove staging folder on kvm Hypervisor host
-#   delegate_to: "{{ groups.hypervisor[0] }}"
-#   file:
-#     state: absent
-#     path: "{{ staging_dir }}"
-#   ignore_errors: True
-#   when:
-#     - platform == "kvm"
-#     - platform == "kvm_bm"
-
-# - name: Create staging folder kvm Hypervisor host
-#   delegate_to: "{{ groups.hypervisor[0] }}"
-#   file:
-#     state: directory
-#     path: "{{ staging_dir }}"
-#   when:
-#     - platform == "kvm"
-#     - platform == "kvm_bm"
-

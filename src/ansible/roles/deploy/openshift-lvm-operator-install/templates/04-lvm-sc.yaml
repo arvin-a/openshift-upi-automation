@@ -7,7 +7,7 @@ metadata:
 provisioner: topolvm.io
 parameters:
   csi.storage.k8s.io/fstype: xfs
-  topolvm.io/device-class: standard
+  topolvm.io/device-class: lvms-standard
 reclaimPolicy: Delete
 allowVolumeExpansion: true
 volumeBindingMode: Immediate
@@ -21,7 +21,7 @@ metadata:
   name: lvms-fast-im
 parameters:
   csi.storage.k8s.io/fstype: xfs
-  topolvm.io/device-class: fast
+  topolvm.io/device-class: lvms-fast
 provisioner: topolvm.io
 reclaimPolicy: Delete
 volumeBindingMode: Immediate
