@@ -2,7 +2,7 @@ kind: ConfigMap
 apiVersion: v1
 metadata:
   name: user-ca-bundle
-  namespace: {{ ocp_cluster_name }}
+  namespace: {{ ocp_cluster_namespace }}
 data:
   ca-bundle.crt: |
 {{ additional_trust_bundle | indent(width=4, first=true) }}

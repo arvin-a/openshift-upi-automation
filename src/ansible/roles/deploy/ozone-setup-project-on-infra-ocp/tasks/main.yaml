@@ -1,0 +1,24 @@
+---
+# This is jus for debugging purposes
+- name: Process all templates
+  template:
+    src: "{{ item }}"
+    dest: "{{ staging_dir }}"
+  with_fileglob:
+    - ../templates/*
+
+- name: Create Namespace
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'namespace.yaml') }}"
+
+- name: Apply Network Attachment Definition
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'bridge-nad.yaml') }}"
+
+- name: Add user ca configmap to cluster namespace
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'user-ca-configmap.yaml') }}"
+

@@ -21,8 +21,9 @@ control:
     type: 'ocp-v'
     node_role: 'master'
     cpu: '4'
-    memory: '28'
-    rhcos_os_disk_size: '100G'
+    memory: '28Gi'
+    rhcos_os_disk_size: '100Gi'
+    rhcos_etcd_disk_size: '5Gi'
     nic1_name: 'enp1s0'
 
 worker:
@@ -43,8 +44,8 @@ worker:
     type: 'ocp-v'
     node_role: 'worker'
     cpu: '16'
-    memory: '64'
-    rhcos_os_disk_size: '100G'
+    memory: '64Gi'
+    rhcos_os_disk_size: '100Gi'
     nic1_name: 'enp1s0'
 
 ocp_nodes:

@@ -1,4 +1,4 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ ocp_cluster_name }}
+  name: {{ ocp_cluster_namespace }}

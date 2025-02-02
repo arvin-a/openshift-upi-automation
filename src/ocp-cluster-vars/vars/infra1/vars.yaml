@@ -1,16 +1,13 @@
 platform: "kvm" # Accepted values (kvm,kvm_bm,O^3)
 base_domain: k8s.arvhomelab.com
-ocp_cluster_name: infra1 # this should be the same name as the directory conatainging the cluster 
+ocp_cluster_name: infra1    # this should be the same name as the vars directory containing the cluster inventory
 ocp_cluster_fqdn: "{{ ocp_cluster_name }}.{{ base_domain }}"
 cluster_role: infra   # values can be infra or tenant
 
 # OCP Vars
 ocp_version: "4.16"  # get latest stable release
 ocp_bin_channel: "stable"
-rhcos_bin_qcow_url: "{{ rhcos_bin_release_url }}/{{ libvirt_rhcos_bin_archive_name }}"
-rhcos_bin_archive_name: "{{ libvirt_rhcos_bin_archive_name }}"
-rhcos_bin_file_name: "{{ libvirt_rhcos_bin_file_name }}"
-ocp_network_type: "OVNKubernetes"  # , Calico,Cilium,OVNKubernetes"
+ocp_network_type: "OVNKubernetes"  # Calico,Cilium,OVNKubernetes"
 
 #### NETWORK CONFIGURATION
 bridge_interface_name: br1
@@ -29,10 +26,25 @@ cluster_vms_storage_base_dir: "/storage/p4600-1/kvm/clusters/{{ ocp_cluster_fqdn
 libvirt_bridge_name: "br" # base name for the bridge. the vlan number will be appended to the name
 
 ### Storage Vars
-storage_provider: odf  # Options are lvm or odf
+storage_provider: lvm  # Options are lvm or odf
 
 ### ODF Install vars (If storage_provider is odf)
 odf_version: "4.16"
+odf_fast:
+  local_storage_class: local-block-fast
+  min_size: 200Gi
+  max_size: 300Gi
+odf_standard:
+  local_storage_class: local-block
+  min_size: 2500Gi
+  max_size: 3500Gi
+
+lvms:
+  standard:
+    name: lvms-standard
+  fast:
+    name: lvms-fast
+
 odf_node_disk_size: "690" # Size in Gi
 odf_node_fast_disk_size: "260" # Size in Gi
 

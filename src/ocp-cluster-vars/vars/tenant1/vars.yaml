@@ -2,7 +2,9 @@ platform: "O^3"
 base_domain: k8s.arvhomelab.com
 ocp_cluster_name: tenant1     # this should be the same name as the vars directory containing the cluster inventory
 ocp_cluster_fqdn: "{{ ocp_cluster_name }}.{{ base_domain }}"
+ocp_cluster_namespace: "{{ ocp_cluster_fqdn.split('.') | join('-')}}" # namespace on the infra cluster
 cluster_role: tenant   # values can be infra or tenant
+agent_iso_url: "http://{{ groups.webserver[0] }}/{{ ocp_cluster_fqdn }}/agent.x86_64.iso"
 
 ## OCP Vars
 ocp_version: "4.16"
@@ -28,14 +30,14 @@ calico_version: 3.28.2
 calico_archive_uri: "https://github.com/projectcalico/calico/releases/download/v{{ calico_version }}/ocp.tgz"
 
 
-### CONTROL vars
-control_ign: "{{ ocp_install_dir }}/master.ign"
-control_cpu: "4"
-control_memory: "16384"
-control_type: master
+# ### CONTROL vars
+# control_ign: "{{ ocp_install_dir }}/master.ign"
+# control_cpu: "4"
+# control_memory: "16384"
+# control_type: master
 
-### WORKER vars
-worker_ign: "{{ ocp_install_dir }}/worker.ign"
-worker_cpu: "4"
-worker_memory: "16384"
-worker_type: "worker"
+# ### WORKER vars
+# worker_ign: "{{ ocp_install_dir }}/worker.ign"
+# worker_cpu: "4"
+# worker_memory: "16384"
+# worker_type: "worker"

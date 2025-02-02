@@ -6,7 +6,7 @@ metadata:
 spec:
   storage:
     deviceClasses:
-      - name: "{{ lvms.standard.name }}"
+      - name: standard
         default: true
         thinPoolConfig:
           name: {{ lvms.fast.name }}-thin-pool
@@ -21,8 +21,8 @@ spec:
                     {% if disk.speed == 'standard' %}
                     - "{{ node }}"
                     {% endif %}
-                  {% endfor %}          
-                {% endfor %}   
+                  {% endfor %}
+                {% endfor %} 
                   key: kubernetes.io/hostname
                   operator: In        
         deviceSelector:
@@ -31,7 +31,7 @@ spec:
           {% for disk in standard_disks %}
             - "{{ disk }}"
           {% endfor %}          
-      - name: "{{ lvms.fast.name }}"
+      - name: fast
         thinPoolConfig:
           name: {{ lvms.fast.name }}-thin-pool
           overprovisionRatio: 20
@@ -45,10 +45,10 @@ spec:
                     {% if disk.speed == 'fast' %}
                     - "{{ node }}"
                     {% endif %}
-                  {% endfor %}          
-                {% endfor %}   
+                  {% endfor %}
+                {% endfor %}
                   key: kubernetes.io/hostname
-                  operator: In  
+                  operator: In
         deviceSelector:
           forceWipeDevicesAndDestroyAllData: True
           optionalPaths :

@@ -44,11 +44,6 @@
   wait_for:
     timeout: 30
 
-- name: Create immediate bounding storage classes
-  k8s:
-    state: present
-    definition: "{{ lookup('template', '04-lvm-sc.yaml') }}"
-
 - name: Wait until LVMCluster is ready
   shell:
     cmd: "{{ oc_bin }} get LVMCluster -n openshift-storage lvmcluster -o=jsonpath='{.status.state}'"
