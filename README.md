@@ -1,10 +1,4 @@
-# OpenShift UPI Install Automation
-
- Note: The guides below are out of date. There are new docs incoming.
-
-This repo hosts playbooks for OpenShift UPI install automation for O^3  (OpenShift On OpenShift) and KVM/Libvirt. See guides for each platform for information on how to run their respective playbooks
-
-## [O^3 - OpenShift On OpenShift](./O^3)
-## [Libvirt/KVM](./libvirt)
+# OpenShift ~~UPI~~ Agent Install Automation
+This project started as automating UPI installation on KVM, Bare Metal and OpenShift Virtualization. I believe Agent Install is now mature enough to displace UPI other than for edge cases. The guides below are now out of date and out of sync with what the automation in this repository does. There are new docs incoming.
 
 This is a work in progress and there is lots of room for improvement. I will be updating this repo pretty often.
