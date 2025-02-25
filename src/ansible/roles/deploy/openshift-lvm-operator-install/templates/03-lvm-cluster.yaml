@@ -16,12 +16,12 @@ spec:
           nodeSelectorTerms:
             - matchExpressions:
                 - values:
-                {% for node in groups['worker'] %}
-                  {% for disk in hostvars[node].disks %}
-                    {% if disk.speed == 'standard' %}
-                    - "{{ node }}"
-                    {% endif %}
-                  {% endfor %}
+                {% for node in groups['worker'] %} 
+                  {% for disk in hostvars[node].disks %} 
+                    {% if disk.speed == 'standard' %} 
+                    - "{{ node }}" 
+                    {% endif %} 
+                  {% endfor %} 
                 {% endfor %} 
                   key: kubernetes.io/hostname
                   operator: In        
@@ -40,13 +40,13 @@ spec:
           nodeSelectorTerms:
             - matchExpressions:
                 - values:
-                {% for node in groups['worker'] %}
-                  {% for disk in  hostvars[node].disks %}
-                    {% if disk.speed == 'fast' %}
-                    - "{{ node }}"
-                    {% endif %}
-                  {% endfor %}
-                {% endfor %}
+                {% for node in groups['worker'] %} 
+                  {% for disk in  hostvars[node].disks %} 
+                    {% if disk.speed == 'fast' %} 
+                    - "{{ node }}" 
+                    {% endif %} 
+                  {% endfor %} 
+                {% endfor %} 
                   key: kubernetes.io/hostname
                   operator: In
         deviceSelector:
