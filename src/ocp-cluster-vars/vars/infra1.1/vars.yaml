@@ -1,13 +1,13 @@
 platform: "kvm_bm" # Accepted values (kvm,kvm_bm,O^3)
 base_domain: k8s.arvhomelab.com
-ocp_cluster_name: infra1 # this should be the same name as the directory conatainging the cluster 
+ocp_cluster_name: infra1    # this should be the same name as the vars directory containing the cluster inventory
 ocp_cluster_fqdn: "{{ ocp_cluster_name }}.{{ base_domain }}"
 cluster_role: infra   # values can be infra or tenant
 
 # OCP Vars
-ocp_version: "4.16"  # get latest stable release
+ocp_version: "4.19"  # get latest stable release
 ocp_bin_channel: "stable"
-ocp_network_type: "OVNKubernetes"  # , Calico,Cilium,OVNKubernetes"
+ocp_network_type: "OVNKubernetes"  # Calico,Cilium,OVNKubernetes"
 
 #### NETWORK CONFIGURATION
 bridge_interface_name: br1
@@ -29,7 +29,7 @@ libvirt_bridge_name: "br" # base name for the bridge. the vlan number will be ap
 storage_provider: lvm  # Options are lvm or odf
 
 ### ODF Install vars (If storage_provider is odf)
-odf_version: "4.16"
+odf_version: "4.19"
 odf_fast:
   local_storage_class: local-block-fast
   min_size: 200Gi
@@ -40,6 +40,7 @@ odf_standard:
   max_size: 3500Gi
 
 lvms:
+  channel: 4.18
   standard:
     name: lvms-standard
   fast:
@@ -52,4 +53,4 @@ odf_node_fast_disk_size: "260" # Size in Gi
 ocp_virt_install: True # Set to True to install OCP Virtualization
 
 ## Multi Cluster Engine (MCE) vars
-mce_channel: stable-2.5 
+mce_channel: stable-2.8 

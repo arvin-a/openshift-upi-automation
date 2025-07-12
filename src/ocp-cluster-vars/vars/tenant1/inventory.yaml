@@ -1,0 +1,54 @@
+webserver:
+  hosts:
+    infra-ddi.arvhomelab.com:
+      ansible_python_interpreter: "/usr/bin/python"
+
+control:
+  hosts:
+    control1.tenant1.k8s.arvhomelab.com:
+      nic1:
+        mac_address: '02:00:00:4a:1e:bc'
+        vlan: '8'
+    control2.tenant1.k8s.arvhomelab.com:
+      nic1:
+        mac_address: '02:00:00:ab:cb:4f'
+        vlan: '8'
+    control3.tenant1.k8s.arvhomelab.com:
+      nic1:
+        mac_address: '02:00:00:0c:d6:48'
+        vlan: '8'
+  vars:
+    type: 'ocp-v'
+    node_role: 'master'
+    cpu: '4'
+    memory: '28Gi'
+    rhcos_os_disk_size: '100Gi'
+    rhcos_etcd_disk_size: '5Gi'
+    nic1_name: 'enp1s0'
+
+worker:
+  hosts:
+    worker1.tenant1.k8s.arvhomelab.com:
+      nic1:
+        mac_address: '02:00:00:d7:97:5f'
+        vlan: '8'
+    worker2.tenant1.k8s.arvhomelab.com:
+      nic1:
+        mac_address: '02:00:00:f1:5c:17'
+        vlan: '8'
+    worker3.tenant1.k8s.arvhomelab.com:
+      nic1:
+        mac_address: '02:00:00:be:b9:95'
+        vlan: '8'
+  vars:
+    type: 'ocp-v'
+    node_role: 'worker'
+    cpu: '16'
+    memory: '64Gi'
+    rhcos_os_disk_size: '100Gi'
+    nic1_name: 'enp1s0'
+
+ocp_nodes:
+  children:
+    control:
+    worker:

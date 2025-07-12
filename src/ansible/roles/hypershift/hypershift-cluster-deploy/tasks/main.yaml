@@ -101,7 +101,10 @@
 
 - name: Make users cluster admin
   shell: |
-    {{ oc_bin }} --kubeconfig={{ cluster_kubeconfig }} adm policy add-cluster-role-to-user cluster-admin arvin &> /dev/null
+    {{ oc_bin }} --kubeconfig={{ cluster_kubeconfig }} adm policy add-cluster-role-to-user cluster-admin {{ item }} &> /dev/null
+  loop: 
+    - mariam
+    - arvin
   ignore_errors: true
   
 - include_tasks: create-ingress.yaml

@@ -1,0 +1,20 @@
+---
+- name: Delete O^3 VMs
+  shell: |
+    {{ oc_bin }} delete vm --all -n {{ ocp_cluster_namespace }}
+
+- name: Wait until virt launcher pods are teminated
+  shell: |
+    {{ oc_bin }} delete pod --all --wait=true -n {{ ocp_cluster_namespace }}
+
+- name: Delete remanining DVs and PVCs
+  shell: |
+    {{ oc_bin }} delete dv --all -n {{ ocp_cluster_namespace }}
+    {{ oc_bin }} delete pvc --all -n {{ ocp_cluster_namespace }}
+
+- name: Delete Cluster Namespace
+  k8s:
+    name: "{{ ocp_cluster_namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: absent

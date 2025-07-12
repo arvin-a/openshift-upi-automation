@@ -2,22 +2,21 @@
 
 # cd to ansible directory
 # export CLUSTER_NAME=ocp-tenant1
-# ansible-playbook playbooks/openshift-O^3-cluster-destroy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
+# ansible-playbook playbooks/openshift-O^3-cluster-deco.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
 
 - name: Load configs
   hosts: all:localhost
   connection: local
   roles:
-    - role: ansible-config-load
+    - role: common/ansible-config-load
       action: base
   tags:
     - always
 
 - name: Setup Staging Directory
-  hosts: localhost
-  connection: local
+  hosts: localhost:hypervisor:webserver
   roles:
-    - staging-dir-setup
+    - common/staging-dir-setup
   tags:
     - always
 
@@ -25,27 +24,25 @@
   hosts: localhost
   connection: local
   roles:
-    - role: openshift-credentials-get
+    - role: deploy/openshift-credentials-get
       vars:
-        cluster: "{{ infra_cluster_name }}"
+        cluster: "{{ infra_cluster_fqdn }}"
   tags:
     - always
 
 - name: Load cluster configs
-  hosts: localhost:all
+  hosts: all:localhost
   connection: local
   roles:
-    - role: ansible-config-load
+    - role: common/ansible-config-load
       action: cluster-config
   tags:
     - always
 
-- name: Download Artifacts and stage files
+- name: Download Artifacts
   hosts: localhost
-  vars:
-    destroy: true
   roles:
-    - openshift-download-artifacts
+    - deploy/openshift-download-artifacts
   tags:
     - openshift-download-artifacts
     - pre-deploy
@@ -56,15 +53,15 @@
   environment:
     KUBECONFIG: "{{ infra_cluster_kubeconfig }}"
   roles:
-    - ozone-destroy-cluster
+    - deco/ozone-destroy-cluster
   tags:
     - ozone-destroy-cluster
 
-- name: Remove cluster kubeconfig
-  hosts: localhost
-  connection: local
-  roles:
-    - openshift-remove-kubeconfig
-  tags:
-    - openshift-remove-kubeconfig
-    - cleanup
+# - name: Remove cluster kubeconfig
+#   hosts: localhost
+#   connection: local
+#   roles:
+#     - deco/openshift-remove-kubeconfig
+#   tags:
+#     - openshift-remove-kubeconfig
+#     - cleanup

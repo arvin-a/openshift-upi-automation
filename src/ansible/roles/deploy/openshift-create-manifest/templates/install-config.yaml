@@ -1,5 +1,17 @@
 apiVersion: v1
 baseDomain: {{ base_domain }}
+capabilities:
+  baselineCapabilitySet: None
+  additionalEnabledCapabilities: 
+    - CSISnapshot
+    - Console
+    - Storage
+    - marketplace
+    - OperatorLifecycleManager
+    - OperatorLifecycleManagerV1
+    - openshift-samples
+    - NodeTuning
+    - Ingress
 compute:
 - name: worker
   replicas: {{ groups['worker'] | length }}

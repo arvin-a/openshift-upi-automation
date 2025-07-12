@@ -62,7 +62,7 @@
   tags:
     - openshift-create-manifest
 
-- name: Create OpenShift iginition
+- name:  Create OpenShift Agent ISO and stage it on webserver
   hosts: localhost
   roles:
     - deploy/openshift-agent-iso-create-and-stage

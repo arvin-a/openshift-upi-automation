@@ -4,7 +4,7 @@ metadata:
   name: lvms-operator
   namespace: openshift-storage
 spec:
-  channel: "stable-{{ ocp_version }}"
+  channel: "stable-{{ lvms.channel }}"
   installPlanApproval: Automatic
   name: lvms-operator
   source: redhat-operators

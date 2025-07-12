@@ -1,0 +1,43 @@
+platform: "O^3"
+base_domain: k8s.arvhomelab.com
+ocp_cluster_name: tenant1     # this should be the same name as the vars directory containing the cluster inventory
+ocp_cluster_fqdn: "{{ ocp_cluster_name }}.{{ base_domain }}"
+ocp_cluster_namespace: "{{ ocp_cluster_fqdn.split('.') | join('-')}}" # namespace on the infra cluster
+cluster_role: tenant   # values can be infra or tenant
+agent_iso_url: "http://{{ groups.webserver[0] }}/{{ ocp_cluster_fqdn }}/agent.x86_64.iso"
+
+## OCP Vars
+ocp_version: "4.19"
+ocp_bin_channel: "stable"
+ocp_network_type: "OVNKubernetes"  # Calico,Cilium,OVNKubernetes"
+
+## Infra cluster vars
+infra_cluster_fqdn: "infra1.k8s.arvhomelab.com"
+infra_cluster_kubeconfig: "{{ staging_dir }}/{{ infra_cluster_fqdn }}-kubeconfig"
+infra_cluster_bridge_name: "br1"
+infra_cluster_storage_volume_mode: "Block" # If your storage class supports block, its recommended you use that
+infra_cluster_storage_access_mode: "ReadWriteOnce" # If your storage class supports it, ReadWriteMany is recommended
+
+
+# external_ip_range: 192.168.8.200-192.168.8.230
+
+## Cilium - Only required if network type is Cilium
+cilium_version: 1.15.1
+cilium_repo_uri: "https://github.com/isovalent/olm-for-cilium"
+
+## Calico - Only required if network type is Calico
+calico_version: 3.28.2
+calico_archive_uri: "https://github.com/projectcalico/calico/releases/download/v{{ calico_version }}/ocp.tgz"
+
+
+# ### CONTROL vars
+# control_ign: "{{ ocp_install_dir }}/master.ign"
+# control_cpu: "4"
+# control_memory: "16384"
+# control_type: master
+
+# ### WORKER vars
+# worker_ign: "{{ ocp_install_dir }}/worker.ign"
+# worker_cpu: "4"
+# worker_memory: "16384"
+# worker_type: "worker"

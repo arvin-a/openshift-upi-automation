@@ -6,7 +6,7 @@ metadata:
 spec:
   storage:
     deviceClasses:
-      - name: "{{ lvms.standard.name }}"
+      - name: standard
         default: true
         thinPoolConfig:
           name: {{ lvms.fast.name }}-thin-pool
@@ -16,13 +16,13 @@ spec:
           nodeSelectorTerms:
             - matchExpressions:
                 - values:
-                {% for node in groups['worker'] %}
-                  {% for disk in hostvars[node].disks %}
-                    {% if disk.speed == 'standard' %}
-                    - "{{ node }}"
-                    {% endif %}
-                  {% endfor %}          
-                {% endfor %}   
+                {% for node in groups['worker'] %} 
+                  {% for disk in hostvars[node].disks %} 
+                    {% if disk.speed == 'standard' %} 
+                    - "{{ node }}" 
+                    {% endif %} 
+                  {% endfor %} 
+                {% endfor %} 
                   key: kubernetes.io/hostname
                   operator: In        
         deviceSelector:
@@ -31,7 +31,7 @@ spec:
           {% for disk in standard_disks %}
             - "{{ disk }}"
           {% endfor %}          
-      - name: "{{ lvms.fast.name }}"
+      - name: fast
         thinPoolConfig:
           name: {{ lvms.fast.name }}-thin-pool
           overprovisionRatio: 20
@@ -40,15 +40,15 @@ spec:
           nodeSelectorTerms:
             - matchExpressions:
                 - values:
-                {% for node in groups['worker'] %}
-                  {% for disk in  hostvars[node].disks %}
-                    {% if disk.speed == 'fast' %}
-                    - "{{ node }}"
-                    {% endif %}
-                  {% endfor %}          
-                {% endfor %}   
+                {% for node in groups['worker'] %} 
+                  {% for disk in  hostvars[node].disks %} 
+                    {% if disk.speed == 'fast' %} 
+                    - "{{ node }}" 
+                    {% endif %} 
+                  {% endfor %} 
+                {% endfor %} 
                   key: kubernetes.io/hostname
-                  operator: In  
+                  operator: In
         deviceSelector:
           forceWipeDevicesAndDestroyAllData: True
           optionalPaths :

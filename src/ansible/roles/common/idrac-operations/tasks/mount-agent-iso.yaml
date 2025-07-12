@@ -7,7 +7,6 @@
     validate_certs: False
   ignore_errors: True
 
-
 - name: Eject Virtual CD drive
   include_tasks: eject-virtual-cd.yaml
 
@@ -32,7 +31,6 @@
 - name: Mount ISO Result
   debug:
     var: mount_iso_operation
-    # msg: "{{ mount_iso_operation.msg }}"
 
 - name: pause for 10 seconds
   pause:
@@ -60,23 +58,6 @@
 - name: One time boot from CD operation result
   debug:
     var: one_time_boot_operation
-    # msg: "{{ one_time_boot_operation.msg }}"
-
-# - name: pause for 10 seconds
-#   pause:
-#     seconds: 10
-
-# - name: Performing power reset operation
-#   dellemc.openmanage.redfish_powerstate:
-#     baseuri: "{{ lookup('community.general.dig', 'idrac-{{ inventory_hostname }}') }}"
-#     username: "{{ idrac_admin_user }}"
-#     password: "{{ idrac_admin_password }}"
-#     validate_certs: false
-#     reset_type: "ForceRestart"
-#   register: force_restart_command
-
-# - debug:
-#     msg: "{{ force_restart_command.msg }}"
 
 - name: Performing power on operation if device is off
   dellemc.openmanage.redfish_powerstate:

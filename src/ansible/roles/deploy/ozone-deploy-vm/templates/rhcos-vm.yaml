@@ -1,0 +1,117 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  labels:
+    app: {{ inventory_hostname }}
+  name: {{ inventory_hostname }}
+  namespace: {{ ocp_cluster_namespace }}
+spec:
+  dataVolumeTemplates:
+    - metadata:
+        name: {{ inventory_hostname }}-installation-cdrom
+      spec:
+        preallocation: false
+        source:
+          http:
+            url: '{{ agent_iso_url }}'
+        storage:
+          resources:
+            requests:
+              storage: 2Gi
+          storageClassName:  {{ infra_cluster_storage_class_name }}
+    - metadata:
+        name: {{ inventory_hostname }}-root-disk
+      spec:
+        preallocation: false
+        source:
+          blank: {}
+        storage:
+          resources:
+            requests:
+              storage: {{ rhcos_os_disk_size }}
+          storageClassName:  {{ infra_cluster_storage_class_name }}
+          volumeMode: {{ infra_cluster_storage_volume_mode }}
+          accessModes:
+            - {{ infra_cluster_storage_access_mode }}
+{% if node_role == 'master' %}
+    - metadata:
+        name: {{ inventory_hostname }}-etcd-disk
+      spec:
+        preallocation: false
+        source:
+          blank: {}
+        storage:
+          resources:
+            requests:
+              storage: {{ rhcos_etcd_disk_size }}
+          storageClassName:  {{ infra_cluster_storage_class_name }}
+          volumeMode: {{ infra_cluster_storage_volume_mode }}
+          accessModes:
+            - {{ infra_cluster_storage_access_mode }}
+{% endif %}
+  running: true
+  template:
+    metadata:
+      annotations:
+        vm.kubevirt.io/os: rhel9
+        vm.kubevirt.io/workload: server
+      labels:
+        kubevirt.io/domain: {{ inventory_hostname }}
+    spec:
+      architecture: amd64
+      domain:
+        cpu:
+          cores: {{ cpu }}
+          sockets: 1
+          threads: 1
+        devices:
+          disks:
+            - bootOrder: 2
+              cdrom:
+                bus: sata
+              name: installation-cdrom
+            - bootOrder: 1
+              disk:
+                bus: virtio
+              name: root-disk
+{% if node_role == 'master' %}
+            - disk:
+                bus: virtio
+              name: etcd-disk
+{% endif %} 
+          interfaces:
+            - bridge: {}
+              macAddress: '{{ nic1.mac_address }}'
+              model: virtio
+              name: nic-0
+          rng: {}
+        features:
+          acpi: {}
+          smm:
+            enabled: true
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: false
+        machine:
+          type: pc-q35-rhel9.4.0
+        memory:
+          guest: {{ memory }}
+        resources: {}
+      networks:
+        - multus:
+            networkName: {{ infra_cluster_bridge_name }}
+          name: nic-0
+      terminationGracePeriodSeconds: 90
+      volumes:
+        - dataVolume:
+            name: {{ inventory_hostname }}-root-disk
+          name: root-disk
+        - dataVolume:
+            name: {{ inventory_hostname }}-installation-cdrom
+          name: installation-cdrom
+{% if node_role == 'master' %}
+        - dataVolume:
+            name: {{ inventory_hostname }}-etcd-disk
+          name: etcd-disk
+{% endif %}

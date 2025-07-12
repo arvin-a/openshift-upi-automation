@@ -1,9 +1,9 @@
 ---
 - include_role:
-    name: hashicorp-vault-get-token
+    name: common/hashicorp-vault-get-token
 
 - include_role:
-    name: hashicorp-vault-read-secret
+    name: common/hashicorp-vault-read-secret
   vars: 
     secret_path: "{{ cluster }}"
 

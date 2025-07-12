@@ -44,5 +44,6 @@
     src: "{{ ocp_install_dir }}/agent.x86_64.iso"
     dest: "{{ web_server.files_root_path }}/agent.x86_64.iso"
     mode: "0666"
-  when: platform == "kvm_bm"
+  when: platform == "kvm_bm" or
+        platform == "O^3"
     
