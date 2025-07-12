@@ -7,7 +7,7 @@ cluster_role: tenant   # values can be infra or tenant
 agent_iso_url: "http://{{ groups.webserver[0] }}/{{ ocp_cluster_fqdn }}/agent.x86_64.iso"
 
 ## OCP Vars
-ocp_version: "4.16"
+ocp_version: "4.19"
 ocp_bin_channel: "stable"
 ocp_network_type: "OVNKubernetes"  # Calico,Cilium,OVNKubernetes"
 

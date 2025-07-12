@@ -41,8 +41,8 @@
 - name: Wait until OpenShift Virtualization hyperconverged cluster installation has succeeded
   vars:
     json_path: '{.status.conditions[?(@.type=="Available")].status}'
-  shell:
-    cmd: "{{ oc_bin }} get hyperconverged kubevirt-hyperconverged -n openshift-cnv -o=jsonpath='{{ json_path }}'"
+  shell: |
+    {{ oc_bin }} get hyperconverged kubevirt-hyperconverged -n openshift-cnv -o=jsonpath='{{ json_path }}'
   register: result
   until: result.stdout == "True"
   retries: 100

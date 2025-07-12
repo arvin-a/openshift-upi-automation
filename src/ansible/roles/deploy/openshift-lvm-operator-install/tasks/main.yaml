@@ -35,6 +35,11 @@
   include_tasks: create-disk-list.yaml
   loop: "{{ groups['worker'] | list }}"
 
+- name: Process LVMS cluster template
+  template: 
+    src: 03-lvm-cluster.yaml
+    dest: "{{ staging_backup_dir }}"
+
 - name: Apply LVMCluster Instance yaml
   k8s:
     state: present
