@@ -16,6 +16,6 @@ spec:
           operator: In
           values:
           - ""
-  maxDeviceCount: 1
+  # maxDeviceCount: 1
   storageClassName: {{ odf_standard.local_storage_class }}
   volumeMode: Block

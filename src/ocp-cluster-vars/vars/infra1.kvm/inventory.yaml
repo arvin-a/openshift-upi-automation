@@ -6,7 +6,6 @@ hypervisor:
 webserver:
   hosts:
     infra-ddi.arvhomelab.com:
-      ansible_python_interpreter: "/usr/bin/python"
 
 control:
   hosts:
@@ -23,10 +22,9 @@ control:
         mac_address: '02:00:00:03:ff:8f'
         vlan: '7'
   vars:
-    type: 'kvm'
     node_role: 'master'
     cpu: '4'
-    memory: '28'
+    memory: '24'
     rhcos_os_disk_size: '100G'
     nic1_name: 'enp1s0'
 
@@ -34,67 +32,53 @@ worker:
   hosts:
     worker1.infra1.k8s.arvhomelab.com:
       type: 'kvm'
-      cpu: '90'
-      memory: '384'
-      rhcos_os_disk_size: '120G'
       nic1:
-        name: enp1s0
         mac_address: '02:00:00:a1:13:f3'
         vlan: '7'
       nic2:
-        name: enp2s0
         mac_address: '02:00:00:b8:11:df'
         vlan: '8'
       disks:
-        - type: 'block'
+        - type: 'file'
           speed: 'standard'
           bus: '05'
-          path_on_hv_host: '/dev/disk/by-path/pci-0000:3d:00.0-nvme-1'
-          target_dev: 'vdb'
-          path: '/dev/disk/by-path/pci-0000:05:00.0'
-          size: '3T'
+          path_on_hv_host: '/storage/p4600-2.1'
+          size: '690G'
         - type: 'block'
           speed: 'fast'
           bus: '06'
-          path_on_hv_host: '/dev/disk/by-path/pci-0000:3b:00.0-nvme-1'
-          target_dev: 'vdc'
-          path: '/dev/disk/by-path/pci-0000:06:00.0'
-          size: '260G'
-    r730-1.arvhomelab.com:
-      type: 'bm'
-      virtual_media_uefi_path: "PciRoot(0x0)/Pci(0x1A,0x0)/USB(0x0,0x0)/USB(0x5,0x0)/USB(0x3,0x0)/Unit(0x0)"
+          path_on_hv_host: '/dev/nvme0n1'
+    worker2.infra1.k8s.arvhomelab.com:
+      type: 'kvm'
       nic1:
-        name: eno1
-        mac_address: '24:6E:96:0F:8E:40'
+        mac_address: '02:00:00:94:e8:8e'
+        vlan: '7'
       nic2:
-        name: eno2
-        mac_address: '24:6E:96:0F:8E:42'
+        mac_address: '02:00:00:83:af:ca'
+        vlan: '8'
       disks:
-        - type: 'block'
+        - type: 'file'
           speed: 'standard'
-          path: '/dev/disk/by-path/pci-0000:85:00.0-nvme-1'
-          size: '2.9T'
+          bus: '05'
+          path_on_hv_host: '/storage/p4600-2.2'
+          size: '690G'
         - type: 'block'
           speed: 'fast'
-          path: '/dev/disk/by-path/pci-0000:03:00.0-nvme-1'
-          size: '232G'
-    r730-2.arvhomelab.com:
-      type: 'bm'
-      virtual_media_uefi_path: "PciRoot(0x0)/Pci(0x1A,0x0)/USB(0x0,0x0)/USB(0x5,0x0)/USB(0x3,0x0)/Unit(0x0)"
+          bus: '06'
+          path_on_hv_host: '/dev/nvme1n1'
+    worker3.infra1.k8s.arvhomelab.com:
+      type: 'kvm'
       nic1:
-        name: eno1
-        mac_address: '24:6E:96:1F:6E:38' 
+        mac_address: '02:00:00:11:51:f5'
+        vlan: '7'
       nic2:
-        name: eno2
-        mac_address: '24:6E:96:1F:6E:3A'
-      disks:
-        - type: 'block'
-          speed: 'standard'
-          path: '/dev/disk/by-path/pci-0000:85:00.0-nvme-1'
-          size: '2.9T'
+        mac_address: '02:00:00:06:a0:24'
+        vlan: '8'
   vars:
     node_role: 'worker'
-
+    cpu: '30'
+    memory: '128'
+    rhcos_os_disk_size: '100G'
 
 ocp_nodes:
   children:

@@ -1,0 +1,21 @@
+---
+- name: Create Logging namespace
+  k8s:
+    state: present
+    definition: "{{ lookup('template', item ) }}"
+  with_items:
+    - 01-logging-ns.yaml
+    - 02-operator-group.yaml
+    - 03-logging-sub.yaml
+
+- name: sleep for 5 seconds
+  wait_for:
+    timeout: 10
+
+- name: Wait until Logging Operator installation has succeeded
+  shell:
+    cmd: "{{ oc_bin }} get csv $({{ oc_bin }} get subscriptions.operators.coreos.com cluster-logging -n openshift-logging -o=jsonpath='{.status.currentCSV}') -n openshift-logging -o=jsonpath='{.status.phase}'"
+  register: result
+  until: result.stdout == "Succeeded"
+  retries: 100
+  delay: 5

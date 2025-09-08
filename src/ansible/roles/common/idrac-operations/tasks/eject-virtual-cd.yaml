@@ -7,3 +7,5 @@
     force: True
     virtual_media:
       - insert: false
+  retries: 10
+  delay: 30

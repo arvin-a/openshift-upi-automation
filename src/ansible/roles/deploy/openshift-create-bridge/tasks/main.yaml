@@ -18,4 +18,5 @@
   k8s:
     state: present
     definition: "{{ lookup('template', 'bridge-nncp.yaml') }}"
-    
+  retries: 30
+  delay: 10

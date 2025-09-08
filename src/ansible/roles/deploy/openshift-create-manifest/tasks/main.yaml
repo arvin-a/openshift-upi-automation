@@ -37,9 +37,25 @@
     - "{{ ocp_install_dir }}"
     - "{{ staging_backup_dir }}"
 
+- name: Process disk wipe template
+  template: 
+    src: 98-worker-disk-wipe.bu
+    dest: "{{ staging_dir }}"
+
 - name: Create OCP manifests
   shell: |
     {{ openshift_install_bin }} agent create cluster-manifests --dir {{ ocp_install_dir }}
+
+- name: Create openshift directory under cluster config directory
+  file:
+    state: directory
+    path: "{{ ocp_install_dir }}/openshift"
+
+
+- name: Process wipe disk butane template
+  shell: |
+    {{ butane_bin }} {{ staging_dir }}/98-worker-disk-wipe.bu -o {{ ocp_install_dir }}/openshift/98-worker-disk-wipe.yaml
+
 
 # # Separate partition for ETCD for better performance
 # - name: Process machine config for disk partitioning
@@ -101,6 +117,6 @@
 
 - name: Backup manifest folder for debugging
   copy:
-    src: "{{ ocp_install_dir }}/cluster-manifests/"
+    src: "{{ ocp_install_dir }}/"
     dest: "{{ staging_dir }}/backup/"
     mode: '0666'

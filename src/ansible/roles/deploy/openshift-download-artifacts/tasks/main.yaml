@@ -29,6 +29,11 @@
     path: "{{ ocp_binaries_archive_base_dir }}/{{ ocp_selected_version }}/openshift-install"
   register: ocp_install_bin_stat_result
 
+- name: "Check if butane binary exist for OCP {{ ocp_selected_version }}"
+  stat:
+    path: "{{ ocp_binaries_archive_base_dir }}/{{ ocp_selected_version }}/butane"
+  register: butane_bin_stat_result
+
 # If oc and openshift-install binaries are not present in archive directory, then download the binaries
 - name: "Download oc binary for OCP {{ ocp_selected_version }}"
   get_url:
@@ -53,9 +58,16 @@
     src: "{{ staging_temp_dir }}/openshift-install-linux.tar.gz"
     dest: "{{ ocp_binaries_archive_base_dir }}/{{ ocp_selected_version }}"
   when: not ocp_install_bin_stat_result.stat.exists
+
+- name: "Download butane binary for OCP {{ ocp_selected_version }}"
+  get_url:
+    url: "https://mirror.openshift.com/pub/openshift-v4/clients/butane/latest/butane"
+    dest: "{{ ocp_binaries_archive_base_dir }}/{{ ocp_selected_version }}/butane"
+  when: not butane_bin_stat_result.stat.exists
 ###
 
-- name: Copy oc and openshift-install binaries to staging location
+
+- name: Copy oc, openshift-install and butane binaries to staging location
   copy:
     src: "{{ item }}"
     dest: "{{ staging_dir }}"
@@ -63,3 +75,4 @@
   loop:
     - "{{ ocp_binaries_archive_base_dir }}/{{ ocp_selected_version }}/oc"
     - "{{ ocp_binaries_archive_base_dir }}/{{ ocp_selected_version }}/openshift-install"
+    - "{{ ocp_binaries_archive_base_dir }}/{{ ocp_selected_version }}/butane"

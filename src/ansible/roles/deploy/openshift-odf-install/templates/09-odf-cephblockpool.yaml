@@ -5,16 +5,16 @@ metadata:
   name: odf-storagecluster-cephblockpool
   namespace: openshift-storage
 spec:
-  deviceClass: "dc-standard"
+  deviceClass: ssd
   enableRBDStats: true
-  failureDomain: rack
+  enableCrushUpdates: true
+  failureDomain: host
   erasureCoded:
     codingChunks: 0
     dataChunks: 0
   replicated:
-    requiredSafeReplicaSize: false
-    size: 2
-    targetSizeRatio: 0.95
-
+    replicasPerFailureDomain: 1
+    size: 3
+    targetSizeRatio: 0.49
 
 

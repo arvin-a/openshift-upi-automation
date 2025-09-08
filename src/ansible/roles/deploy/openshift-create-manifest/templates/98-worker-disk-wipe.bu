@@ -1,0 +1,23 @@
+variant: openshift
+version: {{ ocp_version }}.0
+metadata:
+  name: 99-wipe-disks-worker
+  labels:
+    machineconfiguration.openshift.io/role: worker
+storage:
+  files:
+    - path: /etc/systemd/system/wipe-disks.service
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=Wipe and zero disks
+          Before=local-fs.target
+          DefaultDependencies=no
+          [Service]
+          Type=oneshot
+          ExecStart=/bin/bash -c 'for disk in /dev/nvme0n1 /dev/nvme1n1 /dev/vdb /dev/vdc; do if [ -e "$disk" ]; then echo Cleaning $disk; echo; kpartx -f -v "$disk" || true; wipefs --all --force "$disk" || true; dd if=/dev/zero of="$disk" bs=1M count=5000 conv=fsync status=progress || true; for gb in 0 1 10 100 1000; do dd if=/dev/zero of=$disk bs=1K count=200 oflag=direct,dsync seek=$((gb * 1024**2)) || true; done;  fi; done'
+systemd:
+  units:
+    - name: wipe-disks.service
+      enabled: true

@@ -14,3 +14,10 @@
   until: clean_result.rc == 0
   retries: 10
   delay: 20
+
+
+- name: Drive clean Result 
+  debug:
+    msg: 
+      - "stdout: {{ clean_result.stdout }}"
+      - "stdout: {{ clean_result.stderr }}"

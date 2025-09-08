@@ -19,6 +19,7 @@ ocp_bin_client_url: "{{ ocp_bin_release_url }}/{{ ocp_bin_client_archive_name }}
 ocp_bin_installer_url: "{{ ocp_bin_release_url }}/{{ ocp_bin_installer_archive_name }}"
 oc_bin: "{{ staging_dir }}/oc"
 openshift_install_bin: "{{ staging_dir }}/openshift-install"
+butane_bin: "{{ staging_dir }}/butane"
 
 
 # Agent installer ISO vars
