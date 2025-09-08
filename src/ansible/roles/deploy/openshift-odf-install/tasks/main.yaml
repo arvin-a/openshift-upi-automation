@@ -38,7 +38,7 @@
   shell:
     cmd: "{{ oc_bin }} get pv | grep local-pv | wc -l"
   register: result
-  until: result.stdout | int > 3
+  until: result.stdout | int >= 3
   retries: 100
   delay: 10
 
@@ -62,7 +62,7 @@
     timeout: 20
 
 
-- name: Wait until ODF CSV has succeeded before continueing
+- name: Wait until ODF CSV has succeeded before continuing
   shell:
     cmd: "{{ oc_bin }} get csv $({{ oc_bin }} get subscriptions odf-operator -o=jsonpath='{.status.currentCSV}' -n openshift-storage) -n openshift-storage -o=jsonpath='{.status.phase}'"
   register: result
@@ -70,42 +70,46 @@
   retries: 100
   delay: 10
 
+- name: Enable ODF web interface
+  shell: |
+   {{ oc_bin }} patch console.operator cluster -n openshift-storage --type json -p '[{"op": "add", "path": "/spec/plugins", "value": ["odf-console"]}]'
 
 - name: Create ODF Cluster
   k8s:
     state: present
     definition: "{{ lookup('template', '08-odf-create-cluster.yaml') }}"
-
+  register: odf_storage_cluster_apply
+  until: odf_storage_cluster_apply.result.spec is defined
+  retries: 100
+  delay: 10
+  
 
 - name: Wait until ODF Cluster is ready
   shell:
     cmd: "{{ oc_bin }} get StorageCluster odf-storagecluster -n openshift-storage -o=jsonpath='{.status.phase}'"
   register: result
   until: result.stdout == "Ready"
-  retries: 100
-  delay: 10
+  retries: 60
+  delay: 20
 
-- name: Create ODF CephBlockPool
-  k8s:
-    state: present
-    definition: "{{ lookup('template', item ) }}"
-  with_items:
-    - 09-odf-cephblockpool.yaml
-    - 09-odf-cephblockpool-fast.yaml
-    - 10-storage-class.yaml
-    - 10-storage-class-fast.yaml
+# - name: Create ODF CephBlockPool
+#   k8s:
+#     state: present
+#     definition: "{{ lookup('template', item ) }}"
+#   with_items:
+#     - 09-odf-cephblockpool.yaml
+#     - 09-odf-cephblockpool-fast.yaml
+#     - 10-storage-class.yaml
+#     - 10-storage-class-fast.yaml
 
-- name: Wait until CephBlockPools are ready
-  shell: "{{ oc_bin }} get cephblockpool -A -o=jsonpath='{.items[*].status.phase}'"
-  register: result
-  until: result.stdout == "Ready Ready"
-  retries: 100
-  delay: 10
+# - name: Wait until CephBlockPools are ready
+#   shell: "{{ oc_bin }} get cephblockpool -A -o=jsonpath='{.items[*].status.phase}'"
+#   register: result
+#   until: result.stdout == "Ready Ready"
+#   retries: 100
+#   delay: 10
 
-- name: Set CephFS as the default storage class
-  shell: |
-   {{ oc_bin }} patch storageclass odf-storagecluster-ceph-rbd -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class": "true"}}}'
+# - name: Set CephFS as the default storage class
+#   shell: |
+#    {{ oc_bin }} patch storageclass odf-storagecluster-ceph-rbd -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class": "true"}}}'
  
-- name: Enable ODF web interface
-  shell: |
-   {{ oc_bin }} patch console.operator cluster -n openshift-storage --type json -p '[{"op": "add", "path": "/spec/plugins", "value": ["odf-console"]}]'

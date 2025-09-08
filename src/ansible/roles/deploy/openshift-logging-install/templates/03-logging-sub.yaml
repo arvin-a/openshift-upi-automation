@@ -1,13 +1,13 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: odf-operator
-  namespace: openshift-storage
   labels:
-    operators.coreos.com/odf-operator.openshift-storage: ""
+    operators.coreos.com/cluster-logging.openshift-logging: ""
+  name: cluster-logging
+  namespace: openshift-logging
 spec:
-  channel: "stable-{{ odf_version }}"
+  channel: stable-6.2
   installPlanApproval: Automatic
-  name: odf-operator
+  name: cluster-logging
   source: redhat-operators
   sourceNamespace: openshift-marketplace

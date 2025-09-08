@@ -10,17 +10,17 @@ webserver:
 
 control:
   hosts:
-    control1.infra1.k8s.arvhomelab.com:
+    control1.infra2.k8s.arvhomelab.com:
       nic1:
-        mac_address: '02:00:00:be:30:19'
+        mac_address: '02:00:00:45:3d:3a'
         vlan: '7'
-    control2.infra1.k8s.arvhomelab.com:
+    control2.infra2.k8s.arvhomelab.com:
       nic1:
-        mac_address: '02:00:00:3d:5f:2b'
+        mac_address: '02:00:00:ff:a5:14'
         vlan: '7'
-    control3.infra1.k8s.arvhomelab.com:
+    control3.infra2.k8s.arvhomelab.com:
       nic1:
-        mac_address: '02:00:00:03:ff:8f'
+        mac_address: '02:00:00:d3:b0:0f'
         vlan: '7'
   vars:
     type: 'kvm'
@@ -32,89 +32,71 @@ control:
 
 worker:
   hosts:
-    worker1.infra1.k8s.arvhomelab.com:
+    worker1.infra2.k8s.arvhomelab.com:
       type: 'kvm'
       cpu: '22'
       memory: '96'
       rhcos_os_disk_size: '120G'
       nic1:
         name: enp1s0
-        mac_address: '02:00:00:a1:13:f3'
+        mac_address: '02:00:00:3c:2c:10'
         vlan: '7'
       nic2:
         name: enp2s0
-        mac_address: '02:00:00:b8:11:df'
+        mac_address: '02:00:00:ea:ae:e6'
         vlan: '8'
       disks:
         - type: 'block'
           speed: 'standard'
           bus: '05'
-          path_on_hv_host: '/dev/p4610lvm/p4610-1'
+          path_on_hv_host: '/dev/p4610lvm/p4610-3'
           target_dev: 'vdb'
           path: '/dev/disk/by-path/pci-0000:05:00.0'
           size: '1.2T'
         - type: 'block'
           speed: 'fast'
           bus: '06'
-          path_on_hv_host: '/dev/p900lvm/p900-1'
+          path_on_hv_host: '/dev/p900lvm/p900-3'
           target_dev: 'vdc'
           path: '/dev/disk/by-path/pci-0000:06:00.0'
           size: '130G'
-    worker2.infra1.k8s.arvhomelab.com:
+    worker2.infra2.k8s.arvhomelab.com:
       type: 'kvm'
       cpu: '22'
       memory: '96'
       rhcos_os_disk_size: '120G'
       nic1:
         name: enp1s0
-        mac_address: '02:00:00:94:e8:8e'
+        mac_address: '02:00:00:b7:ac:db'
         vlan: '7'
       nic2:
         name: enp2s0
-        mac_address: '02:00:00:83:af:ca'
+        mac_address: '02:00:00:a8:b8:41'
         vlan: '8'
       disks:
         - type: 'block'
           speed: 'standard'
           bus: '05'
-          path_on_hv_host: '/dev/p4610lvm/p4610-2'
+          path_on_hv_host: '/dev/p4610lvm/p4610-4'
           target_dev: 'vdb'
           path: '/dev/disk/by-path/pci-0000:05:00.0'
           size: '1.2T'
         - type: 'block'
           speed: 'fast'
           bus: '06'
-          path_on_hv_host: '/dev/p900lvm/p900-2'
+          path_on_hv_host: '/dev/p900lvm/p900-4'
           target_dev: 'vdc'
           path: '/dev/disk/by-path/pci-0000:06:00.0'
           size: '130G'
-    r730-1.arvhomelab.com:
-      type: 'bm'
-      virtual_media_uefi_path: "PciRoot(0x0)/Pci(0x1A,0x0)/USB(0x0,0x0)/USB(0x5,0x0)/USB(0x3,0x0)/Unit(0x0)"
-      nic1:
-        name: eno1
-        mac_address: '24:6E:96:0F:8E:40'
-      nic2:
-        name: eno2
-        mac_address: '24:6E:96:0F:8E:42'
-      disks:
-        - type: 'block'
-          speed: 'standard'
-          path: '/dev/disk/by-path/pci-0000:85:00.0-nvme-1'
-          size: '2.9T'
-        - type: 'block'
-          speed: 'fast'
-          path: '/dev/disk/by-path/pci-0000:03:00.0-nvme-1'
-          size: '232G'
-    # r730-2.arvhomelab.com:
+    # r730-1.arvhomelab.com:
     #   type: 'bm'
     #   virtual_media_uefi_path: "PciRoot(0x0)/Pci(0x1A,0x0)/USB(0x0,0x0)/USB(0x5,0x0)/USB(0x3,0x0)/Unit(0x0)"
     #   nic1:
     #     name: eno1
-    #     mac_address: '24:6E:96:1F:6E:38' 
+    #     mac_address: '24:6E:96:0F:8E:40'
     #   nic2:
     #     name: eno2
-    #     mac_address: '24:6E:96:1F:6E:3A'
+    #     mac_address: '24:6E:96:0F:8E:42'
     #   disks:
     #     - type: 'block'
     #       speed: 'standard'
@@ -122,8 +104,26 @@ worker:
     #       size: '2.9T'
     #     - type: 'block'
     #       speed: 'fast'
-    #       path: '/dev/disk/by-path/pci-0000:82:00.0-nvme-1'
-    #       size: '465G'
+    #       path: '/dev/disk/by-path/pci-0000:03:00.0-nvme-1'
+    #       size: '232G'
+    r730-2.arvhomelab.com:
+      type: 'bm'
+      virtual_media_uefi_path: "PciRoot(0x0)/Pci(0x1A,0x0)/USB(0x0,0x0)/USB(0x5,0x0)/USB(0x3,0x0)/Unit(0x0)"
+      nic1:
+        name: eno1
+        mac_address: '24:6E:96:1F:6E:38' 
+      nic2:
+        name: eno2
+        mac_address: '24:6E:96:1F:6E:3A'
+      disks:
+        - type: 'block'
+          speed: 'standard'
+          path: '/dev/disk/by-path/pci-0000:85:00.0-nvme-1'
+          size: '2.9T'
+        - type: 'block'
+          speed: 'fast'
+          path: '/dev/disk/by-path/pci-0000:82:00.0-nvme-1'
+          size: '465G'
   vars:
     node_role: 'worker'
 
@@ -135,12 +135,12 @@ ocp_nodes:
 
 
 # worker:
-#   r730-1.ocp-infra2.arvhomelab.com:
-#     custom_vm_name: 'r730-1.ocp-infra2.arvhomelab.com'
+#   r730-1.infra2.k8s.arvhomelab.com:
+#     custom_vm_name: 'r730-1.infra2.k8s.arvhomelab.com'
 #     custom_mac: '24:6E:96:0F:8E:40'
 #     idrac: 'r730-1-idrac.arvhomelab.com'
-#   r730-2.ocp-infra2.arvhomelab.com:
-#     custom_vm_name: 'r730-2.ocp-infra2.arvhomelab.com'
+#   r730-2.infra2.k8s.arvhomelab.com:
+#     custom_vm_name: 'r730-2.infra2.k8s.arvhomelab.com'
 #     custom_mac: '24:6E:96:1F:6E:38' 
 #     idrac: 'r730-2-idrac.arvhomelab.com'
 #   vars:
