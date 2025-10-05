@@ -9,15 +9,26 @@
     sgdisk --zap-all --clear {{ disk }};
     wipefs -a {{ disk }};
     kpartx -f -v {{ disk }};
-    rm -rf /mnt/local-storage/*;
+    rm -rf /mnt/local-storage/*
   register: clean_result
   until: clean_result.rc == 0
   retries: 10
   delay: 20
 
-
-- name: Drive clean Result 
-  debug:
-    msg: 
-      - "stdout: {{ clean_result.stdout }}"
-      - "stdout: {{ clean_result.stderr }}"
+- name: "Override the first sectors of - {{ inventory_hostname }} -> {{ disk }}"
+  vars:
+    ansible_ssh_private_key_file: "{{ rhcos_ssh_private_key_file }}"
+    ansible_python_interpreter: /usr/libexec/platform-python
+    offsets_gb: [0, 1, 10, 100, 1000]
+  remote_user: core
+  become: true
+  shell: |
+    dd if=/dev/zero of={{ disk }} bs=1K count=200 oflag=direct,dsync seek=$(({{ offset }} * 1024**2))
+  register: dd_result
+  until: dd_result.rc == 0
+  retries: 2
+  delay: 5
+  ignore_errors: true
+  loop: "{{ offsets_gb | list }}"
+  loop_control:
+    loop_var: offset
