@@ -7,6 +7,16 @@ spec:
     kubernetes.io/hostname: {{ inventory_hostname }}
   desiredState:
     interfaces:
+      - name: {{ secondary_nic }}
+        state: up
+        type: ethernet
+{% if type == 'bm' %}
+        # Disable rx-vlan-offload and tx-vlan-offload for bare metal nodes that have older NICs
+        ethtool:
+          feature:
+            rx-vlan-offload: false
+            tx-vlan-offload: false
+{% endif %}
       - name: {{ bridge_interface_name }}
         description: Linux bridge using {{ secondary_nic }} device
         type: linux-bridge
