@@ -11,7 +11,7 @@
   with_items:
     - "{{ ocp_install_dir }}"
     - "{{ staging_backup_dir }}"
-    # - "{{ staging_dir }}/calico"
+    - "{{ staging_dir }}/calico"
 
 - name: Set rendezvous ip for cluster
   set_fact:
@@ -64,41 +64,34 @@
 #     dest: "{{ ocp_install_dir }}/cluster-manifests"
 #   when: platform == "O^3"
 
-# - name: Download Calico manifests
-#   ansible.builtin.get_url:
-#     url: "{{ calico_archive_uri }}"
-#     dest: "{{ staging_dir }}/calico"
-#   when: ocp_network_type == "Calico"
+- name: Download Calico manifests
+  ansible.builtin.get_url:
+    url: "{{ calico_archive_uri }}"
+    dest: "{{ staging_dir }}/calico"
+  when: ocp_network_type == "Calico"
 
-# - name: Extract Calico manifests
-#   ansible.builtin.unarchive:
-#     src: "{{ staging_dir }}/calico/ocp.tgz"
-#     dest: "{{ staging_dir }}/calico"
-#     remote_src: yes
-#   when: ocp_network_type == "Calico"
+- name: Extract Calico manifests
+  ansible.builtin.unarchive:
+    src: "{{ staging_dir }}/calico/ocp.tgz"
+    dest: "{{ staging_dir }}/calico"
+    remote_src: yes
+  when: ocp_network_type == "Calico"
 
-# - name: Copy Calico manifests to OCP manifests directory
-#   copy:
-#     src: "{{ staging_dir }}/calico/ocp/"
-#     dest: "{{ ocp_install_dir }}/manifests/"
-#   when: ocp_network_type == "Calico"
+- name: Copy Calico manifests to OCP openshift directory
+  copy:
+    src: "{{ staging_dir }}/calico/ocp/"
+    dest: "{{ ocp_install_dir }}/openshift/"
+  when: ocp_network_type == "Calico"
 
-# # - name: Set Calico to eBPF mode
-# #   template: 
-# #     src: calico/01-cr-installation.yaml
-# #     dest: "{{ ocp_install_dir }}/manifests/"
-# #   when: 
-# #    - ocp_network_type == "Calico"
-# #    - calico_dataplane is defined and calico_dataplane == "eBPF"
-
-# # - name: Create Calico data plane configmap
-# #   template: 
-# #     src: calico/kubernetes-services-endpoint.yaml
-# #     dest: "{{ ocp_install_dir }}/manifests/"
-# #   when: 
-# #    - ocp_network_type == "Calico"
-# #    - calico_dataplane is defined and calico_dataplane == "eBPF"
-
+- name: Set Calico to eBPF mode and update Calico data plane configmap
+  template: 
+    src: "calico/{{ item}}"
+    dest: "{{ ocp_install_dir }}/openshift/"
+  when: ocp_network_type == "Calico"
+  loop:
+    - "03-cr-installation.yaml"
+    - "01-configmap-kubernetes-services-endpoint.yaml"
+    
 # - name: Get cilium manifests
 #   ansible.builtin.git:
 #     repo: "{{ cilium_repo_uri }}"
