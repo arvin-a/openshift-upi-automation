@@ -6,7 +6,7 @@ cluster_role: infra   # values can be infra or tenant
 
 # OCP Vars
 ocp_version: "4.20"  # get latest stable release
-ocp_bin_channel: "stable"
+ocp_bin_channel: "fast"
 ocp_network_type: "OVNKubernetes"  # Calico,Cilium,OVNKubernetes"
 
 #### NETWORK CONFIGURATION
@@ -29,7 +29,7 @@ libvirt_bridge_name: "br" # base name for the bridge. the vlan number will be ap
 storage_provider: odf  # Options are lvm or odf
 
 ### ODF Install vars (If storage_provider is odf)
-odf_version: "4.19"
+odf_version: "4.20"
 odf_fast:
   local_storage_class: local-block-fast
   min_size: 200Gi
@@ -40,7 +40,7 @@ odf_standard:
   max_size: 4000Gi
 
 lvms:
-  channel: 4.18
+  channel: 4.20
   standard:
     name: lvms-standard
   fast:
