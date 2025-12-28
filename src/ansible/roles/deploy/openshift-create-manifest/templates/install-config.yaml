@@ -12,6 +12,7 @@ capabilities:
     - openshift-samples
     - NodeTuning
     - Ingress
+    - CloudCredential
 compute:
 - name: worker
   replicas: {{ groups['worker'] | length }}
