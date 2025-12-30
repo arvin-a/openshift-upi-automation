@@ -20,7 +20,10 @@ ocp_bin_installer_url: "{{ ocp_bin_release_url }}/{{ ocp_bin_installer_archive_n
 oc_bin: "{{ staging_dir }}/oc"
 openshift_install_bin: "{{ staging_dir }}/openshift-install"
 butane_bin: "{{ staging_dir }}/butane"
-
+bitwarden_secrets_cli: "/usr/bin/bws"
+bitwarden_homelab_project_name: "homelab"
+bitwarden_k8s_clusters_project_name: "k8s_clusters"
+jq_bin: "/usr/bin/jq"
 
 # Agent installer ISO vars
 ############################################################################################

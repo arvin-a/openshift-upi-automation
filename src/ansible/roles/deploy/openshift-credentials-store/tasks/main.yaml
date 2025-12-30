@@ -1,9 +1,10 @@
 ---
-# - include_role:
-#     name: hashicorp-vault-get-token
-
-- include_role:
-    name: common/hashicorp-vault-write-secret
-  vars: 
-    secret_path: "{{ path }}"
-    secret_data: "{{ data }}"
+- name: Create or update cluster kubeconfig in Bitwarden
+  include_role:
+    name: common/bitwarden-write-secret
+  vars:
+    project_name: "{{ bitwarden_k8s_clusters_project_name }}"
+    secret_name: "{{ secret_key }}"
+    secret_value: "{{ secret_data }}"
+  run_once: true
+...

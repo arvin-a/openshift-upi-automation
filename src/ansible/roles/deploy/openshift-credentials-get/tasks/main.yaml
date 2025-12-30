@@ -1,14 +1,13 @@
 ---
-- include_role:
-    name: common/hashicorp-vault-get-token
-
-- include_role:
-    name: common/hashicorp-vault-read-secret
+- name: Get cluster kubeconfig
+  include_role:
+    name: common/bitwarden-read-secret
   vars: 
-    secret_path: "{{ cluster }}"
+    project_name: "{{ bitwarden_k8s_clusters_project_name }}"
 
 - name: Copy kubeconfig to staging dir
   copy:
-    content: "{{ vault_payload.kubeconfig | b64decode }}"
+    content: "{{ (bitwarden_payload | selectattr('key', 'equalto', cluster + '-kubeconfig') | first).value | b64decode }}"
     dest: "{{ staging_dir }}/{{ cluster }}-kubeconfig"
     mode: "0660"
+...

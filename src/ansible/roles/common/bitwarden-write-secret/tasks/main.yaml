@@ -1,0 +1,45 @@
+---
+- name: Get project ID for '{{ project_name }}' project
+  ansible.builtin.command:
+    cmd: "{{ bitwarden_secrets_cli }} --access-token {{ bitwarden_token }} project list"
+  register: bw_projects
+  changed_when: false
+  run_once: true
+  no_log: false
+
+- name: Parse '{{ project_name }}' project ID
+  ansible.builtin.set_fact:
+    project_id: "{{ (bw_projects.stdout | from_json | selectattr('name', 'equalto', project_name) | first).id }}"
+  run_once: true
+  no_log: false
+
+- name: Check if secret '{{ secret_name }}' exists
+  ansible.builtin.command:
+    cmd: "{{ bitwarden_secrets_cli }} --access-token {{ bitwarden_token }} secret list"
+  register: bw_secrets_check
+  changed_when: false
+  run_once: true
+  no_log: false
+
+- name: Get existing secret ID if it exists
+  ansible.builtin.set_fact:
+    existing_secret_id: "{{ ((bw_secrets_check.stdout | from_json) | selectattr('key', 'equalto', secret_name) | selectattr('projectId', 'equalto', project_id) | first | default({})).id | default('') }}"
+  run_once: true
+  no_log: false
+
+- name: Create new secret '{{ secret_name }}'
+  ansible.builtin.command:
+    cmd: "{{ bitwarden_secrets_cli }} --access-token '{{ bitwarden_token }}' secret create  '{{ secret_name }}' '{{ secret_value }}' '{{ project_id }}'"
+  register: bw_secret_create
+  when: existing_secret_id == ""
+  run_once: true
+  no_log: false
+
+- name: Update existing secret '{{ secret_name }}'
+  ansible.builtin.command:
+    cmd: "{{ bitwarden_secrets_cli }} --access-token '{{ bitwarden_token }}' secret edit --key '{{ secret_name }}' --value '{{ secret_value }}' --project-id '{{ project_id }}' '{{ existing_secret_id }}'"
+  register: bw_secret_update
+  when: existing_secret_id != ""
+  run_once: true
+  no_log: false
+
