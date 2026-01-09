@@ -5,7 +5,8 @@ hypervisor:
 
 webserver:
   hosts:
-    infra-ddi.arvhomelab.com:
+    webserver.arvhomelab.com:
+      ansible_python_interpreter: "/usr/bin/python3"
 
 control:
   hosts:

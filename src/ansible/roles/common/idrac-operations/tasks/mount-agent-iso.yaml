@@ -25,12 +25,10 @@
       - insert: true
         image: "{{ web_server.http_base_url }}/{{ agent_iso_file_name }}"
         media_type: "CD"
-  ignore_errors: True
   register: mount_iso_operation
-
-- name: Mount ISO Result
-  debug:
-    var: mount_iso_operation
+  until: mount_iso_operation.changed is true
+  retries: 2
+  delay: 30
 
 - name: pause for 10 seconds
   pause:

@@ -1,7 +1,7 @@
 webserver:
   hosts:
-    infra-ddi.arvhomelab.com:
-      ansible_python_interpreter: "/usr/bin/python"
+    webserver.arvhomelab.com:
+      ansible_python_interpreter: "/usr/bin/python3"
 
 control:
   hosts:

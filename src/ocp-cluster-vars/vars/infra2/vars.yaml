@@ -23,7 +23,7 @@ calico_archive_uri: "https://github.com/projectcalico/calico/releases/download/v
 
 # KVM Hypervisor vars
 cluster_vms_storage_base_dir: "/storage/p4600-1/kvm/clusters/{{ ocp_cluster_fqdn }}"
-libvirt_bridge_name: "br" # base name for the bridge. the vlan number will be appended to the name
+libvirt_bridge_name: "bridge" # base name for the bridge. the vlan number will be appended to the name
 
 ### Storage Vars
 storage_provider: odf  # Options are lvm or odf
