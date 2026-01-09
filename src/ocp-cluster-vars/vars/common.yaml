@@ -20,7 +20,10 @@ ocp_bin_installer_url: "{{ ocp_bin_release_url }}/{{ ocp_bin_installer_archive_n
 oc_bin: "{{ staging_dir }}/oc"
 openshift_install_bin: "{{ staging_dir }}/openshift-install"
 butane_bin: "{{ staging_dir }}/butane"
-
+bitwarden_secrets_cli: "/usr/bin/bws"
+bitwarden_homelab_project_name: "homelab"
+bitwarden_k8s_clusters_project_name: "k8s_clusters"
+jq_bin: "/usr/bin/jq"
 
 # Agent installer ISO vars
 ############################################################################################
@@ -36,17 +39,13 @@ kubeadmin_password_src_path: "{{ ocp_install_dir }}/auth/kubeadmin-password"
 # Web Server
 web_server:
   files_root_path: "/var/www/html/{{ ocp_cluster_fqdn }}"
-  http_base_url: "http://infra-ddi.arvhomelab.com/{{ ocp_cluster_fqdn }}"
+  http_base_url: "http://{{ lookup('community.general.dig', '{{ groups.webserver[0] }}') }}/{{ ocp_cluster_fqdn }}"
   python_interpreter: "/usr/bin/python"
 
 web_server_files_bin_path: "{{ web_server.files_root_path }}/bin/{{ ocp_version }}"
 web_server_files_cluster_path: "{{ web_server.files_root_path }}/{{ ocp_cluster_name }}"
 web_server_http_rhcos_url: "{{ web_server.http_base_url }}/bin/{{ ocp_version }}/{{ kubevirt_rhcos_bin_file_name }}"
 agent_iso_http_url: 
-
-
-### Secrets stored in Hashi Vault
-vault_url: "http://vault.arvhomelab.com:8200"
 
 
 cluster_common_vault_secret_path: ahl-common
