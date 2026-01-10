@@ -6,9 +6,30 @@ rendezvousIP: {{ rendezvous_ip }}
 hosts:
 {% for node in groups['ocp_nodes'] %}
   - hostname: {{ node }}
-    role:  {{ hostvars[node].node_role }}
+    role: {{ hostvars[node].node_role }}
     interfaces:
-      - name: {{ node }}-nic1
-        macAddress: {{ hostvars[node].nic1.mac_address }}
+      - name: {{ hostvars[node].nic1.name | default(node + '-nic1') }}
+        macAddress: "{{ hostvars[node].nic1.mac_address }}"
+{% if hostvars[node].nic2 is defined %}
+      - name: {{ hostvars[node].nic2.name | default(node + '-nic2') }}
+        macAddress: "{{ hostvars[node].nic2.mac_address }}"
+{% endif %}
+{% if hostvars[node].nic2 is defined %}
+    networkConfig:
+      interfaces:
+        - name: {{ hostvars[node].nic1.name | default(node + '-nic1') }}
+          type: ethernet
+          state: up
+          ipv4:
+            enabled: true
+            dhcp: true
+        - name: {{ hostvars[node].nic2.name | default(node + '-nic2') }}
+          type: ethernet
+          state: up
+          mtu: 9000
+          ipv4:
+            enabled: false
+          ipv6:
+            enabled: false
+{% endif %}
 {% endfor %}
-  
