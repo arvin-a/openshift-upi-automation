@@ -31,7 +31,7 @@
   vars:
     disk: "{{ item }}"
   loop: "{{ disks | list }}"
-  when: disks is defined
+  when: disks is defined and item.type == "file"
 
 - name: "Process KVM VM XML spec for {{ inventory_hostname }} "
   delegate_to: "{{ groups.hypervisor[0] }}"
@@ -39,10 +39,17 @@
     src: vm_spec.j2
     dest: "{{ staging_dir }}/{{ inventory_hostname }}.xml"
 
-- name: "Create vm for host {{ inventory_hostname }}"
+- name: "Define vm for host {{ inventory_hostname }}"
   delegate_to: "{{ groups.hypervisor[0] }}"
-  shell: |
-    virsh define --file {{ staging_dir }}/{{ inventory_hostname }}.xml
-    virsh autostart {{ inventory_hostname }}
-    virsh start {{ inventory_hostname }}
+  command: "virsh define --file {{ staging_dir }}/{{ inventory_hostname }}.xml"
+  become: True
+
+- name: "Set autostart for vm {{ inventory_hostname }}"
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  command: "virsh autostart {{ inventory_hostname }}"
+  become: True
+
+- name: "Start vm {{ inventory_hostname }}"
+  delegate_to: "{{ groups.hypervisor[0] }}"
+  command: "virsh start {{ inventory_hostname }}"
   become: True
