@@ -32,7 +32,7 @@
   roles:
     - staging-dir-setup
   tags:
-    - always
+    - staging-dir-setup
 
 - name: Get Infra cluster credentials
   hosts: localhost

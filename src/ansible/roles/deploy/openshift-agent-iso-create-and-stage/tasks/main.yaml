@@ -15,7 +15,7 @@
   include_role:
     name: deploy/openshift-credentials-store
   vars: 
-    secret_key: "{{ ocp_cluster_fqdn }}"
+    secret_key: "{{ ocp_cluster_fqdn }}-kubeconfig"
     secret_data: "{{ lookup('file', cluster_kubeconfig) | b64encode }}"
 
 - name: Store cluster admin password
@@ -26,30 +26,25 @@
     secret_data: "{{ lookup('file', kubeadmin_password_src_path) | b64encode }}"
 
 - name: Copy agent ISO to hypervisor host
-  delegate_to: "{{ groups.hypervisor[0] }}"
+  delegate_to: "{{ groups.get('hypervisor', ['localhost']) | first }}"
   copy:
     src: "{{ ocp_install_dir }}/agent.x86_64.iso"
     dest: "{{ staging_dir }}/agent.x86_64.iso"
     mode: "0660"
-  when: platform == "kvm" or  
-        platform == "kvm_bm"
-
-- name: Copy agent ISO to hypervisor host
-  delegate_to: "{{ groups.hypervisor[0] }}"
-  copy:
-    src: "{{ ocp_install_dir }}/agent.x86_64.iso"
-    dest: "{{ staging_dir }}/agent.x86_64.iso"
-    mode: "0660"
-  when: platform == "kvm" or  
-        platform == "kvm_bm"
+  when:
+    - "'hypervisor' in groups"
+    - "groups['hypervisor'] | length > 0"
+    - platform == "kvm" or platform == "kvm_bm"
 
 - name: Copy agent ISO to Webserver host
-  delegate_to: "{{ groups.webserver[0] }}"
+  delegate_to: "{{ groups.get('webserver', ['localhost']) | first }}"
   become: True
   copy:
     src: "{{ ocp_install_dir }}/agent.x86_64.iso"
     dest: "{{ web_server.files_root_path }}/agent.x86_64.iso"
     mode: "0666"
-  when: platform == "kvm_bm" or
-        platform == "O^3"
+  when:
+    - "'webserver' in groups"
+    - "groups['webserver'] | length > 0"
+    - platform == "kvm_bm" or platform == "O^3"
     

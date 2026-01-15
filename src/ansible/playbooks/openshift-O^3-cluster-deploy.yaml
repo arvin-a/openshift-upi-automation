@@ -45,7 +45,7 @@
     - always
 
 - name: Load cluster configs
-  hosts: all:localhost
+  hosts: worker:control:localhost
   connection: local
   roles:
     - role: common/ansible-config-load

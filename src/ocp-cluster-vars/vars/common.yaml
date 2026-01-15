@@ -39,7 +39,7 @@ kubeadmin_password_src_path: "{{ ocp_install_dir }}/auth/kubeadmin-password"
 # Web Server
 web_server:
   files_root_path: "/var/www/html/{{ ocp_cluster_fqdn }}"
-  http_base_url: "http://{{ lookup('community.general.dig', '{{ groups.webserver[0] }}') }}/{{ ocp_cluster_fqdn }}"
+  http_base_url: "http://{{ lookup('community.general.dig', groups.webserver[0]) }}/{{ ocp_cluster_fqdn }}"
   python_interpreter: "/usr/bin/python"
 
 web_server_files_bin_path: "{{ web_server.files_root_path }}/bin/{{ ocp_version }}"

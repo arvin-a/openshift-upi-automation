@@ -7,14 +7,14 @@ cluster_role: tenant   # values can be infra or tenant
 agent_iso_url: "http://{{ groups.webserver[0] }}/{{ ocp_cluster_fqdn }}/agent.x86_64.iso"
 
 ## OCP Vars
-ocp_version: "4.19"
+ocp_version: "4.20"
 ocp_bin_channel: "stable"
-ocp_network_type: "Calico"  # Calico,Cilium,OVNKubernetes"
+ocp_network_type: "OVNKubernetes"  # Calico,Cilium,OVNKubernetes"
 
 ## Infra cluster vars
 infra_cluster_fqdn: "infra2.k8s.arvhomelab.com"
 infra_cluster_kubeconfig: "{{ staging_dir }}/{{ infra_cluster_fqdn }}-kubeconfig"
-infra_cluster_bridge_name: "br1"
+infra_cluster_bridge_name: "bridge1"
 infra_cluster_storage_volume_mode: "Block" # If your storage class supports block, its recommended you use that
 infra_cluster_storage_access_mode: "ReadWriteOnce" # If your storage class supports it, ReadWriteMany is recommended
 

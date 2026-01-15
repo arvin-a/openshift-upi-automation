@@ -40,7 +40,7 @@
   roles:
     - common/staging-dir-setup
   tags:
-    - always
+    - staging-dir-setup
 
 - name: Load cluster configs
   hosts: all:localhost
@@ -147,7 +147,6 @@
       when: storage_provider == "lvm"
   tags:
     - openshift-storage-install
-    - post-install
 
 - name: Install Nmstate Operator
   hosts: localhost
