@@ -193,6 +193,17 @@
     - openshift-metallb-install
     - post-install
 
+- name: Install RHACM Operator
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - deploy/openshift-rhacm-install
+  tags:
+    - openshift-rhacm-install
+    - post-install
+
 - name: Cluster metadata set
   hosts: localhost
   connection: local

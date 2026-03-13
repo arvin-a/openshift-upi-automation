@@ -1,0 +1,74 @@
+---
+apiVersion: hypershift.openshift.io/v1beta1
+kind: HostedCluster
+metadata:
+  name: "{{ ocp_cluster_name }}"
+  namespace: 'clusters'
+  labels:
+    "cluster.open-cluster-management.io/clusterset": 'default'
+spec:
+  configuration:
+    oauth:
+      identityProviders:
+        - name: my_htpasswd_provider 
+          mappingMethod: claim 
+          type: HTPasswd
+          htpasswd:
+            fileData:
+              name: "{{ ocp_cluster_name }}-htpass-secret"
+  etcd:
+    managed:
+      storage:
+        persistentVolume:
+          size: 8Gi
+          storageClassName: odf-storagecluster-ceph-rbd
+        type: PersistentVolume
+    managementType: Managed
+  release:
+    image: "{{ hcp_release_image }}"
+{% if image_content_sources is defined %}
+  imageContentSources:
+{% for source in image_content_sources %}
+    - source: "{{ source.source }}"
+      mirrors:
+{% for mirror in source.mirrors %}
+        - "{{ mirror }}"
+{% endfor %}
+{% endfor %}
+{% endif %}
+  pullSecret:
+    name: "{{ ocp_cluster_name }}-pull-secret"
+  sshKey:
+    name: "{{ ocp_cluster_name }}-ssh-key"
+  networking:
+    clusterNetwork:
+      - cidr: 10.132.0.0/14
+    serviceNetwork:
+      - cidr: 172.31.0.0/16
+    networkType: OVNKubernetes
+  controllerAvailabilityPolicy: HighlyAvailable
+  infrastructureAvailabilityPolicy: HighlyAvailable
+  platform:
+    type: KubeVirt
+    kubevirt:
+      baseDomainPassthrough: true
+      storageDriver:
+        type: Manual
+        manual:
+          storageClassMapping:
+            - infraStorageClassName: "{{ infra_cluster_storage_class_name }}"
+              guestStorageClassName: "{{ infra_cluster_storage_class_name }}"
+  infraID: "{{ ocp_cluster_name }}"
+  services:
+    - service: OAuthServer
+      servicePublishingStrategy:
+        type: Route
+    - service: OIDC
+      servicePublishingStrategy:
+        type: Route
+    - service: Konnectivity
+      servicePublishingStrategy:
+        type: Route
+    - service: Ignition
+      servicePublishingStrategy:
+        type: Route

@@ -9,6 +9,7 @@
         validate_certs: False
         state: present
       register: eject_login_info
+      ignore_errors: True
 
     - name: Eject Virtual CD Drive
       dellemc.openmanage.idrac_virtual_media:
@@ -30,3 +31,4 @@
         validate_certs: False
         state: absent
       when: eject_login_info.x_auth_token is defined
+      ignore_errors: True

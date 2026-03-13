@@ -1,0 +1,30 @@
+---
+apiVersion: metallb.io/v1beta2
+kind: BGPPeer
+metadata:
+  name: vyos-bgp-peer
+  namespace: metallb-system
+spec:
+  # MetalLB AS number
+  myASN: {{ cluster_bgp_asn }}
+  
+  # Switch or router AS number
+  peerASN: {{ network_bgp_peer_asn }}
+  
+  # Switch or router IP address
+  peerAddress: {{ network_bgp_peer_ip_address }}
+  
+  # Switch or router BGP password
+  password: {{ network_bgp_peer_password }}
+  
+  # BGP timers
+  holdTime: 90s
+  keepaliveTime: 30s
+  
+  # EBGP Multihop (required when not directly connected)
+  ebgpMultiHop: true
+  
+  # Node selectors to limit which nodes run BGP speakers
+  nodeSelectors:
+    - matchLabels:
+        node-role.kubernetes.io/worker: ""

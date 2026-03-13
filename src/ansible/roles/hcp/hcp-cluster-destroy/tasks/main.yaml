@@ -1,0 +1,90 @@
+---
+
+# Stage 1: Remove ACM resources first while the hosted cluster API is still reachable
+- name: Remove KlusterletAddonConfig
+  k8s:
+    state: absent
+    definition: "{{ lookup('template', '07-hcp-klusterlet-addon-config.yaml') }}"
+  ignore_errors: true
+
+- name: Remove ManagedCluster
+  k8s:
+    state: absent
+    definition: "{{ lookup('template', '06-hcp-managed-cluster.yaml') }}"
+  ignore_errors: true
+
+- name: Wait for ManagedCluster to be fully removed
+  shell:
+    cmd: "{{ oc_bin }} get managedcluster {{ ocp_cluster_name }}"
+  register: managed_cluster_check
+  until: managed_cluster_check.rc != 0
+  retries: 60
+  delay: 10
+  failed_when: false
+
+# Stage 2: Delete NodePool and wait for KubeVirt VMs to deprovision
+- name: Remove NodePool
+  k8s:
+    state: absent
+    definition: "{{ lookup('template', '05-hcp-node-pool.yaml') }}"
+
+
+# Sometimes removing the node pool gets stuck, so we force delete all the vms to unblock the finalizer
+# - name: Force delete all KubeVirt VMs in the tenant namespace
+#   k8s:
+#     api_version: kubevirt.io/v1
+#     kind: VirtualMachine
+#     namespace: "{{ infra_cluster_tenant_namespace }}"
+#     state: absent
+#     wait: false
+#     delete_options:
+#       gracePeriodSeconds: 0
+#   loop: "{{ query('k8s', api_version='kubevirt.io/v1', kind='VirtualMachine', namespace=infra_cluster_tenant_namespace) | map(attribute='metadata.name') | list }}"
+#   loop_control:
+#     loop_var: vm_name
+#   name: "{{ vm_name }}"
+#   ignore_errors: true
+
+
+# - name: Wait for NodePool to be fully removed
+#   shell:
+#     cmd: "{{ oc_bin }} get nodepool -n clusters {{ ocp_cluster_name }}-node-pool"
+#   register: nodepool_check
+#   until: nodepool_check.rc != 0
+#   retries: 120
+#   delay: 10
+#   failed_when: false
+
+# Stage 3: Delete HostedCluster and wait for control plane teardown
+- name: Remove HostedCluster
+  k8s:
+    state: absent
+    definition: "{{ lookup('template', '04-hcp-hosted-cluster.yaml') }}"
+
+- name: Wait for HostedCluster to be fully removed
+  shell:
+    cmd: "{{ oc_bin }} get hostedcluster -n clusters {{ ocp_cluster_name }}"
+  register: hostedcluster_check
+  until: hostedcluster_check.rc != 0
+  retries: 120
+  delay: 10
+  failed_when: false
+
+# Stage 4: Clean up secrets
+- name: Remove htpasswd secret
+  k8s:
+    state: absent
+    api_version: v1
+    kind: Secret
+    namespace: clusters
+    name: "{{ ocp_cluster_name }}-htpass-secret"
+  ignore_errors: true
+
+- name: Remove cluster secrets
+  k8s:
+    state: absent
+    definition: "{{ lookup('template', item) }}"
+  loop:
+    - "03-hcp-ssh-key-secret.yaml"
+    - "02-hcp-pull-secret.yaml"
+  ignore_errors: true

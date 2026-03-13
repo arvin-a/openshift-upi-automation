@@ -1,9 +1,0 @@
-apiVersion: metallb.io/v1beta1
-kind: IPAddressPool
-metadata:
-  name: metallb
-  namespace: metallb-system
-spec:
-  addresses:
-  - {{ external_ip_range }}
-  autoAssign: true

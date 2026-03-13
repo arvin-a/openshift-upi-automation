@@ -1,12 +1,12 @@
+---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: local-storage-operator
-  namespace: openshift-local-storage
+  name: advanced-cluster-management
+  namespace: open-cluster-management
 spec:
-  channel: stable
+  channel: "{{ rhacm_operator_channel }}"
   installPlanApproval: Automatic
-  name: local-storage-operator
+  name: advanced-cluster-management
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  

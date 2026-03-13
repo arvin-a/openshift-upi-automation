@@ -28,4 +28,12 @@
   include_tasks: tenant-config-load.yaml
   when:
     - cluster_role == "tenant"
+    - platform != "hcp"
+    - action == "cluster-config"
+
+
+- name: Loading HCP cluster cluster configuration
+  include_tasks: hcp-config-load.yaml
+  when:
+    - platform == "hcp"
     - action == "cluster-config"

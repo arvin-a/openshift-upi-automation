@@ -1,0 +1,15 @@
+apiVersion: config.openshift.io/v1
+kind: ImageTagMirrorSet
+metadata:
+  name: platform-mirror-set
+spec:
+  imageTagMirrors:
+{% if image_content_sources is defined %}
+{% for source in image_content_sources %}
+  - source: "{{ source.source }}"
+    mirrors:
+{% for mirror in source.mirrors %}
+      - "{{ mirror }}"
+{% endfor %}
+{% endfor %}
+{% endif %}

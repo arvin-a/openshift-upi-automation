@@ -55,5 +55,19 @@ rhcos_ssh_pub_key_vault_key: rhcos_ssh_pub_key
 rhcos_ssh_private_key_vault_key: rhcos_ssh_private_key
 additional_trust_bundle_vault_key: additional_trust_bundle
 pull_secret_vault_key: pull_secret
-
+network_bgp_peer_asn_vault_key: network_bgp_peer_asn
+network_bgp_peer_password_vault_key: network_bgp_peer_password
+network_bgp_peer_ip_address_vault_key: network_bgp_peer_ip_address
 rhcos_ssh_private_key_file: "{{ staging_dir }}/rhcos-ssh-pk"
+
+
+image_content_sources:
+  - source: quay.io
+    mirrors:
+      - zot.arvhomelab.com/quay.io
+  - source: registry.redhat.io
+    mirrors:
+      - zot.arvhomelab.com/registry.redhat.io
+  - source: registry-1.docker.io
+    mirrors:
+      - zot.arvhomelab.com/registry-1.docker.io

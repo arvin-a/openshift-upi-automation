@@ -1,3 +1,0 @@
-FROM docker.io/library/golang:1.18.8
-
-RUN go get -u github.com/openshift/hypershift@latest

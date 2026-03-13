@@ -1,8 +1,7 @@
-# Run sample
-
 # cd to ansible directory
-# export CLUSTER_NAME=tenant1
-# ansible-playbook playbooks/openshift-O^3-cluster-deco.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
+# export CLUSTER_NAME=hcp1
+# ansible-playbook playbooks/openshift-hcp-cluster-destroy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
+
 
 - name: Load configs
   hosts: all:localhost
@@ -14,7 +13,8 @@
     - always
 
 - name: Setup Staging Directory
-  hosts: localhost:hypervisor:webserver
+  hosts: localhost
+  connection: local
   roles:
     - common/staging-dir-setup
   tags:
@@ -31,7 +31,7 @@
     - always
 
 - name: Load cluster configs
-  hosts: ocp_nodes:localhost
+  hosts: localhost:all
   connection: local
   roles:
     - role: common/ansible-config-load
@@ -41,21 +41,22 @@
 
 - name: Download Artifacts
   hosts: localhost
+  connection: local
   roles:
     - deploy/openshift-download-artifacts
   tags:
     - openshift-download-artifacts
     - pre-deploy
 
-- name: Destroy O^3 cluster
+- name: Destroy HCP cluster
   hosts: localhost
   connection: local
   environment:
     KUBECONFIG: "{{ infra_cluster_kubeconfig }}"
   roles:
-    - deco/ozone-destroy-cluster
+    - hcp/hcp-cluster-destroy
   tags:
-    - ozone-destroy-cluster
+    - hcp-cluster-destroy
 
 # - name: Remove cluster kubeconfig
 #   hosts: localhost

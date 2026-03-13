@@ -1,0 +1,21 @@
+---
+- name: Query Cincinnati API for latest release in {{ ocp_bin_channel }}-{{ ocp_version }}
+  uri:
+    url: "https://api.openshift.com/api/upgrades_info/v1/graph?channel={{ ocp_bin_channel }}-{{ ocp_version }}&arch=multi"
+    method: GET
+    headers:
+      Accept: application/json
+    return_content: true
+  register: cincinnati_response
+
+- name: Resolve latest release version from Cincinnati graph
+  set_fact:
+    hcp_release_version: "{{ cincinnati_response.json.nodes | map(attribute='version') | list | community.general.version_sort | last }}"
+
+- name: Set HCP release image
+  set_fact:
+    hcp_release_image: "quay.io/openshift-release-dev/ocp-release:{{ hcp_release_version }}-multi"
+
+- name: Display resolved HCP release image
+  debug:
+    msg: "Using HCP release image: {{ hcp_release_image }}"

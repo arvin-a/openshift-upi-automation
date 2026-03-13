@@ -28,7 +28,7 @@
     path: "{{ web_server.files_root_path }}"
   become: True
   ignore_errors: True
-  when: inventory_hostname in groups.webserver
+  when: inventory_hostname is defined and (groups.webserver is defined and inventory_hostname in groups.webserver)
 
 - name: Create Webserver cluster files root path
   file:
@@ -36,7 +36,7 @@
     path: "{{ web_server.files_root_path }}"
     mode: '0655'
   become: True
-  when: inventory_hostname in groups.webserver
+  when: inventory_hostname is defined and (groups.webserver is defined and inventory_hostname in groups.webserver)
 
 - name: Copy contents for ssh PK to staging dir
   copy:

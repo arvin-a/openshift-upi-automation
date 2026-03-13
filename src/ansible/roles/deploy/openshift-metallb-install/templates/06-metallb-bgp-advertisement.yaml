@@ -1,0 +1,9 @@
+---
+apiVersion: metallb.io/v1beta1
+kind: BGPAdvertisement
+metadata:
+  name: vyos-bgp
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - external-ip-pool

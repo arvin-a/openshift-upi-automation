@@ -36,15 +36,15 @@ worker:
       nic1:
         mac_address: '02:00:00:f1:5c:17'
         vlan: '8'
-    worker3.tenant1.k8s.arvhomelab.com:
-      nic1:
-        mac_address: '02:00:00:be:b9:95'
-        vlan: '8'
+    # worker3.tenant1.k8s.arvhomelab.com:
+    #   nic1:
+    #     mac_address: '02:00:00:be:b9:95'
+    #     vlan: '8'
   vars:
     type: 'ocp-v'
     node_role: 'worker'
-    cpu: '16'
-    memory: '64Gi'
+    cpu: '8'
+    memory: '32Gi'
     rhcos_os_disk_size: '100Gi'
     nic1_name: 'enp1s0'
 

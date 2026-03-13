@@ -1,0 +1,81 @@
+---
+- name: Patch Infra cluster to allow wildcard policy
+  vars:
+    patchstr: '[{ "op": "add", "path": "/spec/routeAdmission", "value": {wildcardPolicy: "WildcardsAllowed"}}]'
+  shell:
+    cmd: "{{ oc_bin }} patch ingresscontroller -n openshift-ingress-operator default --type=json -p '{{ patchstr }}'"
+
+- name: Create HCP cluster namespace and pull secret
+  k8s:
+    state: present
+    definition: "{{ lookup('template', item) }}"
+  loop:
+    - "01-hcp-ns.yaml"
+    - "02-hcp-pull-secret.yaml"
+    - "03-hcp-ssh-key-secret.yaml"
+
+# Create htpasswd secret for hcp cluster
+- name: Create htpasswd secret for the cluster
+  shell:
+    cmd: "{{ oc_bin }} create secret generic {{ ocp_cluster_name }}-htpass-secret --from-file=htpasswd={{ role_path }}/files/users.htpasswd -n clusters --dry-run=client -o yaml | {{ oc_bin }} apply -f -"
+
+- name: Create HCP cluster using templated yamls
+  k8s:
+    state: present
+    definition: "{{ lookup('template', item) }}"
+  loop:
+    - "04-hcp-hosted-cluster.yaml"
+    - "05-hcp-node-pool.yaml"
+    - "06-hcp-managed-cluster.yaml"
+    - "07-hcp-klusterlet-addon-config.yaml"
+
+- name: Wait until apiserver is available
+  vars:
+    jsonfilter: '{.status.conditions[?(@.type=="Available")].status}'
+  shell:
+    cmd: "{{ oc_bin }} get --namespace clusters hostedclusters {{ ocp_cluster_name }} -o=jsonpath='{{ jsonfilter }}'"
+  register: apiserver_available
+  until: apiserver_available.stdout  == "True"
+  retries: 60
+  delay: 15
+
+- name: Save kubeconfig of HCP cluster
+  shell:
+    cmd: "{{ oc_bin }} -n clusters get secret {{ ocp_cluster_name }}-admin-kubeconfig  -o json -o=jsonpath='{.data.kubeconfig}' | base64 -d > {{ cluster_kubeconfig }}"
+  register: kubeconfig_data
+
+
+- name: Store cluster kubeconfig
+  include_role:
+    name: deploy/openshift-credentials-store
+  vars: 
+    secret_key: "{{ ocp_cluster_name }}-kubeconfig"
+    secret_data: "{{ lookup('file', cluster_kubeconfig) | b64encode }}"
+
+- name: Make users cluster admin
+  shell: |
+    {{ oc_bin }} --kubeconfig={{ cluster_kubeconfig }} adm policy add-cluster-role-to-user cluster-admin {{ item }} &> /dev/null
+  loop: 
+    - arvin
+    - mariam
+  ignore_errors: true
+  
+
+- name: Wait until cluster is fully up
+  vars:
+    jsonfilter: '{.status.version.history[0].state}'
+  shell:
+    cmd: "{{ oc_bin }} get --namespace clusters hostedclusters {{ ocp_cluster_name }} -o=jsonpath='{{ jsonfilter }}'"
+  register: apiserver_available
+  until: apiserver_available.stdout  == "Completed"
+  retries: 180
+  delay: 30
+
+- name: Get console url
+  shell:
+    cmd: "{{ oc_bin }}  --kubeconfig {{ cluster_kubeconfig }} whoami --show-console"
+  register: console_url_result
+
+- name: Display console url
+  debug:
+    msg: "Console URL: {{ console_url_result.stdout }}" 

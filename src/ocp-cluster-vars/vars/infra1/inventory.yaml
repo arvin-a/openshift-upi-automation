@@ -25,7 +25,7 @@ control:
   vars:
     type: 'kvm'
     node_role: 'master'
-    cpu: '4'
+    cpu: '6'
     memory: '28'
     rhcos_os_disk_size: '100G'
     nic1_name: 'enp1s0'
@@ -35,7 +35,7 @@ worker:
     worker1.infra1.k8s.arvhomelab.com:
       type: 'kvm'
       cpu: '22'
-      memory: '96'
+      memory: '88'
       rhcos_os_disk_size: '120G'
       nic1:
         name: enp1s0
@@ -63,7 +63,7 @@ worker:
     worker2.infra1.k8s.arvhomelab.com:
       type: 'kvm'
       cpu: '22'
-      memory: '96'
+      memory: '88'
       rhcos_os_disk_size: '120G'
       nic1:
         name: enp1s0
@@ -106,24 +106,6 @@ worker:
           speed: 'fast'
           path: '/dev/disk/by-path/pci-0000:03:00.0-nvme-1'
           size: '232G'
-    # r730-2.arvhomelab.com:
-    #   type: 'bm'
-    #   virtual_media_uefi_path: "PciRoot(0x0)/Pci(0x1A,0x0)/USB(0x0,0x0)/USB(0x5,0x0)/USB(0x3,0x0)/Unit(0x0)"
-    #   nic1:
-    #     name: eno1
-    #     mac_address: '24:6E:96:1F:6E:38' 
-    #   nic2:
-    #     name: eno2
-    #     mac_address: '24:6E:96:1F:6E:3A'
-    #   disks:
-    #     - type: 'block'
-    #       speed: 'standard'
-    #       path: '/dev/disk/by-path/pci-0000:85:00.0-nvme-1'
-    #       size: '2.9T'
-    #     - type: 'block'
-    #       speed: 'fast'
-    #       path: '/dev/disk/by-path/pci-0000:82:00.0-nvme-1'
-    #       size: '465G'
   vars:
     node_role: 'worker'
 
@@ -132,19 +114,3 @@ ocp_nodes:
   children:
     control:
     worker:
-
-
-# worker:
-#   r730-1.ocp-infra2.arvhomelab.com:
-#     custom_vm_name: 'r730-1.ocp-infra2.arvhomelab.com'
-#     custom_mac: '24:6E:96:0F:8E:40'
-#     idrac: 'r730-1-idrac.arvhomelab.com'
-#   r730-2.ocp-infra2.arvhomelab.com:
-#     custom_vm_name: 'r730-2.ocp-infra2.arvhomelab.com'
-#     custom_mac: '24:6E:96:1F:6E:38' 
-#     idrac: 'r730-2-idrac.arvhomelab.com'
-#   vars:
-#     node_type: 'bm'
-#     nic: 'eno1'
-#     disk_target: '/dev/disk/by-path/pci-0000:02:00.0-scsi-0:2:0:0'
-#     custom_vm_type: 'worker'

@@ -1,0 +1,33 @@
+platform: "hcp"
+cluster_type: kubevirt
+cluster_role: tenant   # values can be infra or tenant
+infra_cluster_fqdn: "infra1.k8s.arvhomelab.com"
+infra_cluster_kubeconfig: "{{ staging_dir }}/{{ infra_cluster_fqdn }}-kubeconfig"
+infra_cluster_tenant_namespace: "clusters-{{ ocp_cluster_name }}"
+infra_cluster_storage_class_name: "odf-storagecluster-ceph-rbd"
+
+## HCP cluster vars
+ocp_cluster_name: "hcp1"
+base_domain: "apps.{{ infra_cluster_name }}.{{ infra_cluster_base_domain }}"
+
+staging_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}"
+staging_backup_dir: "{{ staging_dir }}/backup"
+ocp_install_dir: "{{ staging_dir }}/ocp-install"
+cluster_kubeconfig: "{{ staging_dir }}/{{ ocp_cluster_name }}-kubeconfig"
+
+# OCP Vars
+ocp_version: "4.20"
+ocp_bin_channel: "fast"
+ocp_network_type: "OVNKubernetes"
+
+# Image content sources for registry mirroring (pull-through proxy)
+hcp_image_content_sources:
+  - source: quay.io
+    mirrors:
+      - zot.arvhomelab.com/quay.io
+  - source: registry.redhat.io
+    mirrors:
+      - zot.arvhomelab.com/registry.redhat.io
+  - source: registry-1.docker.io
+    mirrors:
+      - zot.arvhomelab.com/registry-1.docker.io

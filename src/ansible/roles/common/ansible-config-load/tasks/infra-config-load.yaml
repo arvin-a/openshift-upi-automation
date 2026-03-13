@@ -2,3 +2,6 @@
   set_fact:
     infra_cluster_storage_class_name:  "{% if storage_provider=='lvm' %}{{ lvms.standard.name }}{% elif storage_provider=='odf'%}odf-storagecluster-ceph-rbd{% endif %}"
     infra_cluster_fast_storage_class_name:  "{% if storage_provider=='lvm' %}{{ lvms.standard.name }}{% elif storage_provider=='odf'%}odf-storagecluster-ceph-rbd-fast{% endif %}"
+    network_bgp_peer_asn: "{{ (bitwarden_payload | selectattr('key', 'equalto', network_bgp_peer_asn_vault_key) | first).value | string }}"
+    network_bgp_peer_password: "{{ (bitwarden_payload | selectattr('key', 'equalto', network_bgp_peer_password_vault_key) | first).value | string }}"
+    network_bgp_peer_ip_address: "{{ (bitwarden_payload | selectattr('key', 'equalto', network_bgp_peer_ip_address_vault_key) | first).value | string }}"

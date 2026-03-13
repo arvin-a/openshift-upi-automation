@@ -1,0 +1,13 @@
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: external-ip-pool
+  namespace: metallb-system
+spec:
+  autoAssign: true
+  addresses:
+    - {{ external_ip_range }}
+  
+  # Optional: Avoid buggy IPs
+  # avoidBuggyIPs: true

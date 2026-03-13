@@ -5,7 +5,7 @@
 # Run sample
 
 # cd to ansible directory
-# export CLUSTER_NAME=infra1.1
+# export CLUSTER_NAME=infra1
 # ansible-playbook playbooks/openshift-kvm-vm-cluster-deco.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
 
 #### Options

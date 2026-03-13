@@ -21,9 +21,9 @@ spec:
         description: Linux bridge using {{ secondary_nic }} device
         type: linux-bridge
         state: up
-        mtu: 9000
         ipv4:
-          enabled: false
+          enabled: true
+          dhcp: true
         bridge:
           options:
             stp:

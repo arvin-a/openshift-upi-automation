@@ -1,0 +1,73 @@
+##################################################################
+## This playbook is not ready for use                           ##
+##################################################################
+
+# cd to ansible directory
+# export CLUSTER_NAME=hcp1
+# ansible-playbook playbooks/openshift-hcp-cluster-deploy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
+
+
+- name: Include a play after another play
+  import_playbook: openshift-hcp-cluster-destroy.yaml
+
+- name: Clear errors
+  hosts:  all:localhost
+  connection: local
+  tasks:
+    - meta: clear_host_errors
+
+- name: Load cluster configs
+  hosts: localhost:worker:control
+  connection: local
+  roles:
+    - role: common/ansible-config-load
+      action: cluster-config
+  tags:
+    - always
+
+- name: Setup Staging Directory
+  hosts: localhost
+  connection: local
+  roles:
+    - common/staging-dir-setup
+  tags:
+    - staging-dir-setup
+
+- name: Get Infra cluster credentials
+  hosts: localhost
+  connection: local
+  roles:
+    - role: deploy/openshift-credentials-get
+      vars:
+        cluster: "{{ infra_cluster_fqdn }}"
+  tags:
+    - always
+
+- name: Load cluster configs
+  hosts: localhost:all
+  connection: local
+  roles:
+    - role: common/ansible-config-load
+      action: cluster-config
+  tags:
+    - always
+
+- name: Download Artifacts
+  hosts: localhost
+  connection: local
+  roles:
+    - deploy/openshift-download-artifacts
+  tags:
+    - openshift-download-artifacts
+    - pre-deploy
+
+- name: Create HCP cluster
+  hosts: localhost
+  connection: local
+  environment:
+    KUBERNETES_MASTER: "{{ infra_cluster_kubeconfig }}"
+    KUBECONFIG: "{{ infra_cluster_kubeconfig }}"
+  roles:
+    - hcp/hcp-cluster-deploy
+  tags:
+    - hcp-cluster-deploy

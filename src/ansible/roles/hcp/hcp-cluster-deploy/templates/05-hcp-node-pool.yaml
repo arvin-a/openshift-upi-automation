@@ -1,0 +1,30 @@
+---
+apiVersion: hypershift.openshift.io/v1beta1
+kind: NodePool
+metadata:
+  name: '{{ ocp_cluster_name }}-node-pool'
+  namespace: 'clusters'
+spec:
+  arch: amd64
+  clusterName: '{{ ocp_cluster_name }}'
+  replicas: 2
+  management:
+    autoRepair: false
+    upgradeType: Replace
+  platform:
+    type: KubeVirt
+    kubevirt:
+      compute:
+        cores: 8
+        memory: 16Gi
+      rootVolume:
+        type: Persistent
+        persistent:
+          size: 32Gi
+          accessModes:
+            - ReadWriteMany
+          storageClass: '{{ infra_cluster_storage_class_name }}'
+          volumeMode: Block
+      attachDefaultNetwork: true
+  release:
+    image: "{{ hcp_release_image }}"

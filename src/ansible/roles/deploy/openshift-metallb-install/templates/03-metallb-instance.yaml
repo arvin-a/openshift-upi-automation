@@ -1,5 +1,10 @@
+---
 apiVersion: metallb.io/v1beta1
 kind: MetalLB
 metadata:
   name: metallb
   namespace: metallb-system
+spec:
+  # This ensures the speaker ONLY runs on nodes with the worker label
+  nodeSelector:
+    node-role.kubernetes.io/worker: ""

@@ -1,0 +1,45 @@
+
+- name: Apply RHACM NS and OG yaml
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '01-rhacm-ns-og.yaml') }}"
+
+- name: sleep for 5 seconds
+  wait_for:
+    timeout: 5
+
+- name: Apply RHACM Subscription yaml
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '02-rhacm-sub.yaml') }}"
+
+- name: sleep for 20 seconds
+  wait_for:
+    timeout: 20
+
+- name: Wait until RHACM Operator installation has succeeded
+  shell:
+    cmd: "{{ oc_bin }} get csv $({{ oc_bin }} get subscriptions.operators.coreos.com advanced-cluster-management -n open-cluster-management -o=jsonpath='{.status.currentCSV}') -n open-cluster-management -o=jsonpath='{.status.phase}'"
+  register: result
+  until: result.stdout == "Succeeded"
+  retries: 100
+  delay: 5
+
+- name: Create MultiClusterHub instance
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '03-rhacm-multiclusterhub.yaml') }}"
+
+- name: sleep for 5 seconds
+  wait_for:
+    timeout: 5
+
+- name: Wait until MultiClusterHub is running
+  vars:
+    json_path: '{.status.phase}'
+  shell:
+    cmd: "{{ oc_bin }} get multiclusterhub multiclusterhub -n open-cluster-management -o=jsonpath='{{ json_path }}'"
+  register: result
+  until: result.stdout == "Running"
+  retries: 100
+  delay: 10

@@ -44,16 +44,14 @@
   retries: 100
   delay: 10
 
-- name: Create IP Address Pool
+- name: Process and apply all Metallb templates for this role
   k8s:
     state: present
-    definition: "{{ lookup('template', '04-metallb-ipaddresspool.yaml') }}"
-
-- name: Create L2 Ip Advertisement
-  k8s:
-    state: present
-    definition: "{{ lookup('template', '05-metallb-l2advertisement.yaml') }}"
-
-- name: sleep for 5 seconds
-  wait_for:
-    timeout: 5
+    definition: "{{ lookup('template', item) }}"
+  loop:
+    - 01-metallb-ns-og.yaml
+    - 02-metallb-sub.yaml
+    - 03-metallb-instance.yaml
+    - 04-metallb-bgp-peer.yaml
+    - 05-metallb-ipaddresspool.yaml
+    - 06-metallb-bgp-advertisement.yaml

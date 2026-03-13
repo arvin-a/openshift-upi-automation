@@ -40,3 +40,13 @@ additionalTrustBundle: |
 {{ additional_trust_bundle | indent(width=2, first=true) }}
 pullSecret: '{{ pull_secret | trim  }}'
 sshKey: '{{ rhcos_ssh_pub_key }}'
+imageContentSources:
+{% if image_content_sources is defined %}
+{% for source in image_content_sources %}
+  - source: "{{ source.source }}"
+    mirrors:
+{% for mirror in source.mirrors %}
+      - "{{ mirror }}"
+{% endfor %}
+{% endfor %}
+{% endif %}
