@@ -1,7 +1,3 @@
-##################################################################
-## This playbook is not ready for use                           ##
-##################################################################
-
 # cd to ansible directory
 # export CLUSTER_NAME=hcp1
 # ansible-playbook playbooks/openshift-hcp-cluster-deploy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file

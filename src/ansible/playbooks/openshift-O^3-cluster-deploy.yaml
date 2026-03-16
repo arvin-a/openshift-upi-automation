@@ -1,5 +1,3 @@
-# Run sample
-
 # cd to ansible directory
 # export CLUSTER_NAME=tenant1
 # ansible-playbook playbooks/openshift-O^3-cluster-deploy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
