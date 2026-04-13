@@ -7,14 +7,18 @@
 # --tags openshift-install-time-operations,openshift-auth-provider
 
 
-- name: Include a play after another play
+- name: Run cluster deco before doing a deploy
   import_playbook: openshift-O^3-cluster-deco.yaml
+  tags:
+    - pre-install-deco
 
 - name: Clear errors
   hosts: all:localhost
   connection: local
   tasks:
     - meta: clear_host_errors
+  tags:
+    - always
 
 - name: Load configs
   hosts: all:localhost
@@ -43,7 +47,7 @@
     - always
 
 - name: Load cluster configs
-  hosts: worker:control:localhost
+  hosts: ocp_nodes:localhost
   connection: local
   roles:
     - role: common/ansible-config-load
@@ -106,13 +110,7 @@
   tags:
     - openshift-install-time-operations
 
-- name: Add HTPasswd auth provider
-  hosts: localhost
-  connection: local
-  environment:
-    KUBECONFIG: "{{ cluster_kubeconfig }}"
-  roles:
-    - deploy/openshift-auth-provider
-  tags:
-    - openshift-auth-provider
-
+- name: Post-install cluster configuration
+  import_playbook: openshift-cluster-configure.yaml
+  vars:
+    openshift_cluster_configure_from_deploy: true

@@ -4,6 +4,7 @@
     PATH: "{{ staging_dir }}:{{ lookup('env', 'PATH') }}"
   shell: |
     {{ openshift_install_bin }} agent create image --dir {{ ocp_install_dir }}
+  register: openshift_agent_create_image
 
 - name: Copy kubeconfig to staging dir
   copy:

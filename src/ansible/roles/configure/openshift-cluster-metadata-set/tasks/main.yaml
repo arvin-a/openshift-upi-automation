@@ -6,4 +6,4 @@
     definition: "{{ lookup('template', item ) }}"
   loop:
     - "01-cluster-metadata-ns.yaml"
-    - "02-custer-meatada-cm.yaml"
+    - "02-custer-metadata-cm.yaml"

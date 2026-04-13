@@ -13,4 +13,5 @@
     rhcos_ssh_pub_key: "{{ (bitwarden_payload | selectattr('key', 'equalto', rhcos_ssh_pub_key_vault_key) | first).value }}"
     additional_trust_bundle: "{{ (bitwarden_payload | selectattr('key', 'equalto', additional_trust_bundle_vault_key) | first).value }}"
     pull_secret: "{{ (bitwarden_payload | selectattr('key', 'equalto', pull_secret_vault_key) | first).value | b64decode | string }}"
+    cloudflare_api_token: "{{ (bitwarden_payload | selectattr('key', 'equalto', cloudflare_api_token_vault_key) | first).value }}"
 ...

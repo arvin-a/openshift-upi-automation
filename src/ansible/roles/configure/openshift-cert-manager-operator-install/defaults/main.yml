@@ -1,0 +1,4 @@
+---
+# Namespace where openshift-cert-manager-operator installs cert-manager workloads (webhook, controller, etc.)
+cert_manager_operand_namespace: cert-manager
+cert_manager_webhook_rollout_timeout: 15m

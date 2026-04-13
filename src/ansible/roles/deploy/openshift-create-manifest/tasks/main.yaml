@@ -51,6 +51,12 @@
     state: directory
     path: "{{ ocp_install_dir }}/openshift"
 
+- name: Setting Jumbo Frames for OVN-Kubernetes
+  ansible.builtin.template:
+    src: cluster-network-03-config.yaml
+    dest: "{{ ocp_install_dir }}/openshift/cluster-network-03-config.yaml"
+    mode: "0644"
+  when: ocp_network_type == "OVNKubernetes"
 
 - name: Process wipe disk butane template
   shell: |
@@ -62,6 +68,7 @@
   template: 
     src: platform-registry-itms.yaml
     dest: "{{ ocp_install_dir }}/openshift"
+  when: image_content_sources is defined and image_content_sources | length > 0
 
 - name: Download Calico manifests
   ansible.builtin.get_url:

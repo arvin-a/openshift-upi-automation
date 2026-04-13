@@ -1,0 +1,41 @@
+
+- name: Apply cert-manager operator Namespace and OperatorGroup
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '01-cert-manager-ns-og.yaml') }}"
+
+- name: sleep for 5 seconds
+  wait_for:
+    timeout: 5
+
+- name: Apply cert-manager operator Subscription
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '02-cert-manager-sub.yaml') }}"
+
+- name: sleep for 20 seconds
+  wait_for:
+    timeout: 20
+
+- name: Wait until cert-manager operator ClusterServiceVersion is Succeeded
+  shell:
+    cmd: "{{ oc_bin }} get csv $({{ oc_bin }} get subscriptions.operators.coreos.com openshift-cert-manager-operator -n {{ cert_manager_operator_namespace }} -o=jsonpath='{.status.currentCSV}') -n {{ cert_manager_operator_namespace }} -o=jsonpath='{.status.phase}'"
+  register: cert_manager_csv_phase
+  until: cert_manager_csv_phase.stdout == "Succeeded"
+  retries: 100
+  delay: 5
+
+# CSV Succeeded does not guarantee the webhook Service has endpoints; ClusterIssuer/Certificate APIs call webhook.cert-manager.io.
+- name: Wait until cert-manager-webhook deployment exists (operand created by operator)
+  ansible.builtin.shell:
+    cmd: "{{ oc_bin }} get deployment cert-manager-webhook -n {{ cert_manager_operand_namespace }} -o name"
+  register: cert_manager_webhook_deploy
+  until: cert_manager_webhook_deploy.rc == 0 and cert_manager_webhook_deploy.stdout | length > 0
+  retries: 120
+  delay: 5
+  changed_when: false
+
+- name: Wait for cert-manager-webhook deployment rollout (endpoints available for validating webhook)
+  ansible.builtin.command:
+    cmd: "{{ oc_bin }} rollout status deployment/cert-manager-webhook -n {{ cert_manager_operand_namespace }} --timeout={{ cert_manager_webhook_rollout_timeout }}"
+  changed_when: false

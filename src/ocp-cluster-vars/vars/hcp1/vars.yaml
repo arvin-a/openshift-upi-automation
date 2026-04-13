@@ -16,7 +16,7 @@ ocp_install_dir: "{{ staging_dir }}/ocp-install"
 cluster_kubeconfig: "{{ staging_dir }}/{{ ocp_cluster_name }}-kubeconfig"
 
 # OCP Vars
-ocp_version: "4.20"
+ocp_version: "4.21"
 ocp_bin_channel: "fast"
 ocp_network_type: "OVNKubernetes"
 

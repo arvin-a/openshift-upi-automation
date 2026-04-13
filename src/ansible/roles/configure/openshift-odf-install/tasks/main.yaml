@@ -68,7 +68,7 @@
   register: result
   until: result.stdout == "Succeeded"
   retries: 100
-  delay: 10
+  delay: 20
 
 - name: Enable ODF web interface
   shell: |
@@ -83,13 +83,12 @@
   retries: 100
   delay: 10
   
-
 - name: Wait until ODF Cluster is ready
   shell:
     cmd: "{{ oc_bin }} get StorageCluster odf-storagecluster -n openshift-storage -o=jsonpath='{.status.phase}'"
   register: result
   until: result.stdout == "Ready"
-  retries: 60
+  retries: 80
   delay: 20
 
 # - name: Create ODF CephBlockPool

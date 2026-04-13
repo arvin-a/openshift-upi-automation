@@ -1,9 +1,4 @@
-
-- name: Apply Metallb NS and OG yaml
-  k8s:
-    state: present
-    definition: "{{ lookup('template', '01-metallb-ns-og.yaml') }}"
-
+---
 - name: sleep for 5 seconds
   wait_for:
     timeout: 5
@@ -19,7 +14,7 @@
 
 - name: Wait until Metallb Operator installation has succeeded
   shell:
-    cmd: "{{ oc_bin }} get csv $({{ oc_bin }} get subscriptions.operators.coreos.com metallb-operator -n metallb-system -o=jsonpath='{.status.currentCSV}') -o=jsonpath='{.status.phase}'"
+    cmd: "{{ oc_bin }} get csv $({{ oc_bin }} get subscriptions.operators.coreos.com metallb-operator -n metallb-system -o=jsonpath='{.status.currentCSV}') -n metallb-system -o=jsonpath='{.status.phase}'"
   register: result
   until: result.stdout == "Succeeded"
   retries: 100

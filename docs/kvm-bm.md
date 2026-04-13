@@ -15,19 +15,21 @@ The deploy playbook (`openshift-kvm-bm-cluster-deploy.yaml`) performs the follow
 7. Deploys KVM VMs via libvirt (for `type: kvm` nodes)
 8. Mounts the Agent ISO via iDRAC virtual media and boots bare-metal nodes (for `type: bm` nodes)
 9. Waits for bootstrap completion and cluster installation
-10. Ejects virtual CD from bare-metal iDRAC
-11. Configures an HTPasswd OAuth identity provider
+10. Runs **post-install configuration** via `openshift-cluster-configure.yaml` (imported from the deploy playbook)
 
-**Post-install** (tagged `post-install`):
+**Post-install** (`openshift-cluster-configure.yaml`; many plays tagged `post-install`):
 
-12. Wipes additional data disks on worker nodes
-13. Installs a cluster storage provider (ODF or LVM Operator)
-14. Installs the NMState Operator
-15. Installs OpenShift Virtualization (optional, controlled by `ocp_virt_install`)
-16. Creates network bridges on worker nodes via NNCP
-17. Installs and configures MetalLB with BGP peering
-18. Installs Red Hat Advanced Cluster Management (RHACM)
-19. Sets cluster metadata ConfigMap (used by tenant clusters to discover storage classes)
+11. Ejects virtual CD from bare-metal iDRAC (`kvm_bm` + `type: bm` only; tag `eject-virtual-cd`)
+12. Configures an HTPasswd OAuth identity provider (`configure/openshift-auth-provider`)
+13. Wipes additional data disks on worker nodes (when `disks` is defined)
+14. Installs a cluster storage provider (ODF or LVM Operator), per `storage_provider`
+15. Installs the NMState Operator
+16. Installs OpenShift Virtualization (optional, controlled by `ocp_virt_install`)
+17. Creates network bridges on worker nodes via NNCP
+18. Installs and configures MetalLB with BGP peering
+19. Installs Red Hat Advanced Cluster Management (RHACM)
+20. Installs cert-manager (operator) and issues a Let’s Encrypt wildcard certificate for the apps ingress (Cloudflare DNS-01)
+21. Sets cluster metadata ConfigMap (used by tenant clusters to discover storage classes)
 
 The destroy playbook (`openshift-kvm-bm-cluster-deco.yaml`) removes KVM VMs, storage pools, and cleans host disks.
 
@@ -67,7 +69,7 @@ cd src/ansible
 ./update_env.sh
 ```
 
-This installs Python packages (`requirements.txt`), Ansible Galaxy collections (`requirements.yaml`), and the Bitwarden Secrets CLI.
+This installs Python packages (`requirements.txt`), Ansible Galaxy collections (`requirements.yaml`, including `community.general`), and the Bitwarden Secrets CLI.
 
 ## Configuration
 
@@ -127,7 +129,7 @@ src/scripts/generate-mac.sh
 
 ### Credentials (Bitwarden)
 
-Sensitive values (pull secret, SSH keys, iDRAC passwords, trust bundles) are retrieved at runtime from Bitwarden Secrets Manager. The vault-encrypted `credentials.yaml` stores the Bitwarden access token.
+Sensitive values (pull secret, SSH keys, iDRAC passwords, trust bundles, **Cloudflare API token** for Let’s Encrypt DNS-01) are retrieved at runtime from Bitwarden Secrets Manager. The vault-encrypted `credentials.yaml` stores the Bitwarden access token. Zone name and contact email for certificates are set in `common.yaml` (`cloudflare_zone_name`, `letsencrypt_email`).
 
 ## Deploy
 
@@ -148,10 +150,18 @@ Skip or target specific stages:
 # Skip teardown and pre-deploy (re-run from manifest creation onward)
 --skip-tags pre-deploy
 
-# Only run install monitoring and auth setup
---tags openshift-install-time-operations,openshift-auth-provider
+# Only run install-time monitoring (before post-install configure)
+--tags openshift-install-time-operations
 
-# Run only post-install operators
+# Post-install is applied by openshift-cluster-configure.yaml (imported at end of deploy).
+# Run it standalone or target tags on that playbook:
+ansible-playbook playbooks/openshift-cluster-configure.yaml \
+  -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml \
+  -e cluster_name=$CLUSTER_NAME \
+  --vault-password-file ./vault-password-file
+
+# Examples on the configure playbook
+--tags openshift-auth-provider
 --tags post-install
 ```
 
@@ -174,6 +184,8 @@ This removes KVM VMs (`virsh destroy` / `undefine`), destroys libvirt storage po
 
 The Agent-based installer replaces the older UPI/ignition workflow. The automation generates an `agent-config.yaml` listing each node's MAC, role, and network config, then builds a bootable Agent ISO. Each node boots from this ISO, discovers its peers via a rendezvous IP, and self-assembles the cluster.
 
+When `ocp_network_type` is `OVNKubernetes`, the manifest step adds `openshift/cluster-network-03-config.yaml` for **jumbo frames (MTU 9000)** on the OVN-Kubernetes network. Registry mirror `ImageContentSourcePolicy` / platform-registry `ImageTagMirrorSet` manifests are applied only when `image_content_sources` is defined in your variables.
+
 ### KVM Node Deployment
 
 For KVM nodes, the `kvm-deploy-vms` role:
@@ -188,57 +200,8 @@ For bare-metal nodes, the `idrac-operations` role:
 - Mounts the Agent ISO as virtual media via Dell iDRAC
 - Configures one-time boot from virtual CD
 - Powers on the server
-- After install completes, ejects the virtual CD
+- After install completes, ejects the virtual CD (handled in `openshift-cluster-configure.yaml`, play **Eject Virtual CD Drive**)
 
 ### Mixed Clusters
 
 Clusters can combine KVM and bare-metal nodes (platform `kvm_bm`). Control-plane nodes typically run as KVM VMs on a hypervisor, while workers can be a mix of KVM VMs and bare-metal servers. The `type` field on each host in the inventory controls which deployment path is used.
-
-## Directory Layout
-
-```
-kvm-bm/
-└── README.md                              # this file
-
-src/ansible/
-├── playbooks/
-│   ├── openshift-kvm-bm-cluster-deploy.yaml
-│   └── openshift-kvm-bm-cluster-deco.yaml
-├── roles/
-│   ├── deploy/
-│   │   ├── kvm-deploy-vms/                # libvirt VM creation
-│   │   ├── openshift-create-manifest/     # install-config + agent-config
-│   │   ├── openshift-agent-iso-create-and-stage/
-│   │   ├── openshift-download-artifacts/
-│   │   ├── openshift-install-time-operations/
-│   │   ├── openshift-auth-provider/
-│   │   ├── openshift-clean-storage/       # disk wipe on workers
-│   │   ├── openshift-odf-install/         # ODF storage operator
-│   │   ├── openshift-lvm-operator-install/
-│   │   ├── openshift-nmstate-install/
-│   │   ├── openshift-virt-olm-install/    # OpenShift Virtualization
-│   │   ├── openshift-create-bridge/       # NNCP bridge on workers
-│   │   ├── openshift-metallb-install/     # MetalLB + BGP
-│   │   ├── openshift-rhacm-install/       # RHACM
-│   │   └── openshift-cluster-metadata-set/
-│   ├── deco/
-│   │   ├── kvm-remove-vms/
-│   │   ├── kvm-remove-storage/
-│   │   └── kvm-clean-host-storage/
-│   └── common/
-│       ├── ansible-config-load/
-│       ├── staging-dir-setup/
-│       └── idrac-operations/              # iDRAC virtual media + boot
-
-src/ocp-cluster-vars/vars/
-├── common.yaml                            # shared variables
-├── credentials.yaml                       # vault-encrypted secrets
-├── infra1/                                # KVM + bare-metal cluster
-│   ├── main.yaml
-│   ├── vars.yaml
-│   └── inventory.yaml
-└── infra2/                                # second infra cluster
-    ├── main.yaml
-    ├── vars.yaml
-    └── inventory.yaml
-```

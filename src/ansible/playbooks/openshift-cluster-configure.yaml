@@ -1,0 +1,185 @@
+# Post-install cluster configuration (operators, storage, ingress TLS, etc.).
+# Intended for import from deploy playbooks or standalone runs after the cluster is up.
+# Does not create the staging directory; loads facts via common/ansible-config-load only.
+#
+# Plays that only existed on openshift-kvm-bm-cluster-deploy are gated with when: platform == "kvm_bm".
+# O^3 (and other non-kvm_bm platforms) runs auth, cert-manager, and apps ingress TLS only.
+#
+# cd to ansible directory
+# export CLUSTER_NAME=infra1
+# ansible-playbook playbooks/openshift-cluster-configure.yaml \
+#   -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml \
+#   -e cluster_name=$CLUSTER_NAME \
+#   --vault-password-file ./vault-password-file
+#
+#
+# Deploy playbooks set openshift_cluster_configure_from_deploy: true on import_playbook so these
+# prerequisite plays are skipped (the parent already ran ansible-config-load).
+# (Play-level `when` is not used here for compatibility with Ansible versions that disallow it.)
+
+- name: Clear errors
+  hosts: all:localhost
+  connection: local
+  tasks:
+    - meta: clear_host_errors
+      when: not (openshift_cluster_configure_from_deploy | default(false) | bool)
+  tags:
+    - always
+
+- name: Load configs
+  hosts: all:localhost
+  connection: local
+  roles:
+    - role: common/ansible-config-load
+      action: base
+      when: not (openshift_cluster_configure_from_deploy | default(false) | bool)
+  tags:
+    - always
+
+- name: Load cluster configs
+  hosts: ocp_nodes:localhost
+  connection: local
+  roles:
+    - role: common/ansible-config-load
+      action: cluster-config
+      when: not (openshift_cluster_configure_from_deploy | default(false) | bool)
+  tags:
+    - always
+
+- name: Eject Virtual CD Drive
+  hosts: worker
+  connection: local
+  roles:
+    - role: common/idrac-operations
+      action: eject-cd
+      when: platform == "kvm_bm" and type == "bm"
+  tags:
+    - eject-virtual-cd
+
+- name: Add HTPasswd auth provider
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - configure/openshift-auth-provider
+  tags:
+    - openshift-auth-provider
+
+- name: Clean data disks on worker nodes
+  hosts: worker
+  gather_facts: False
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: configure/openshift-clean-storage
+      when: platform == "kvm_bm" and disks is defined
+  tags:
+    - openshift-clean-storage
+
+- name: Install Cluster Storage Provider
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: configure/openshift-odf-install
+      when: platform == "kvm_bm" and storage_provider | default('') == "odf"
+    - role: configure/openshift-lvm-operator-install
+      when: platform == "kvm_bm" and storage_provider | default('') == "lvm"
+  tags:
+    - openshift-storage-install
+
+- name: Install Nmstate Operator
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: configure/openshift-nmstate-install
+      when: platform == "kvm_bm"
+  tags:
+    - openshift-nmstate-install
+    - post-install
+
+- name: Install OpenShift Virtualization
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: configure/openshift-virt-olm-install
+      when: platform == "kvm_bm" and ocp_virt_install | default(false) | bool
+  tags:
+    - openshift-virt-install
+    - post-install
+
+- name: Create network bridge
+  hosts: worker
+  gather_facts: False
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: configure/openshift-create-bridge
+      when: platform == "kvm_bm"
+  tags:
+    - openshift-create-bridge
+    - post-install
+
+- name: Metallb install and configure
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: configure/openshift-metallb-install
+      when: platform == "kvm_bm"
+  tags:
+    - openshift-metallb-install
+    - post-install
+
+- name: Install RHACM Operator
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: configure/openshift-rhacm-install
+      when: platform == "kvm_bm"
+  tags:
+    - openshift-rhacm-install
+    - post-install
+
+- name: Install cert-manager operator
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - configure/openshift-cert-manager-operator-install
+  tags:
+    - openshift-cert-manager-operator-install
+    - post-install
+
+- name: Create ingress TLS certificate and update ingress controller
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: configure/openshift-apps-cert-update
+  tags:
+    - openshift-apps-cert-update
+    - post-install
+
+- name: Cluster metadata set
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: configure/openshift-cluster-metadata-set
+      when: platform == "kvm_bm"
+  tags:
+    - openshift-cluster-metadata-set
+    - post-install

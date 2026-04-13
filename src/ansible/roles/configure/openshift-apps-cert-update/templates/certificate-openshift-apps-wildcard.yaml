@@ -1,0 +1,14 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ openshift_apps_certificate_name }}
+  namespace: openshift-ingress
+spec:
+  secretName: {{ openshift_ingress_router_tls_secret_name }}
+  issuerRef:
+    name: {{ cert_manager_clusterissuer_name }}
+    kind: ClusterIssuer
+    group: cert-manager.io
+  dnsNames:
+    - "*.apps.{{ ocp_cluster_name }}.{{ base_domain }}"

@@ -1,0 +1,123 @@
+---
+- name: Verify required configuration
+  ansible.builtin.assert:
+    that:
+      - cloudflare_zone_name | length > 0
+      - letsencrypt_email | length > 0
+      - cloudflare_api_token is defined
+      - cloudflare_api_token | length > 0
+    fail_msg: "Set cloudflare_zone_name, letsencrypt_email, and ensure cloudflare_api_token is loaded (Bitwarden / ansible-config-load)."
+
+- name: Resolve ingress IP using lab DNS (dig)
+  ansible.builtin.command:
+    cmd: "dig +short {{ ocp_apps_dig_hostname }} A"
+  register: openshift_apps_dig
+  changed_when: false
+
+- name: Set ingress IP from dig output
+  ansible.builtin.set_fact:
+    apps_ingress_ip: "{{ openshift_apps_dig.stdout_lines | map('trim') | reject('equalto', '') | select('match', '^[0-9.]+$') | list | first | default('') }}"
+
+- name: Require a usable IPv4 address from dig
+  ansible.builtin.assert:
+    that:
+      - apps_ingress_ip | length > 0
+    fail_msg: "dig did not return an IPv4 A record for {{ ocp_apps_dig_hostname }}. Output was: {{ openshift_apps_dig.stdout }}"
+
+- name: Derive Cloudflare DNS record name (relative to zone)
+  ansible.builtin.set_fact:
+    cf_dns_name: "*.apps.{{ ocp_cluster_name }}.{{ base_domain }}"
+
+- name: Ensure Cloudflare A record for OpenShift apps wildcard
+  community.general.cloudflare_dns:
+    zone: "{{ cloudflare_zone_name }}"
+    record: "{{ cf_dns_name }}"
+    type: A
+    value: "{{ apps_ingress_ip }}"
+    ttl: "{{ cloudflare_apps_dns_ttl | int }}"
+    proxied: "{{ cloudflare_apps_dns_proxied | bool }}"
+    api_token: "{{ cloudflare_api_token }}"
+    state: present
+
+- name: Remove existing router TLS Secret when requested (avoids cert-manager IncorrectIssuer on first install)
+  k8s:
+    api_version: v1
+    kind: Secret
+    name: "{{ openshift_ingress_router_tls_secret_name }}"
+    namespace: openshift-ingress
+    state: absent
+    validate_certs: "{{ k8s_validate_certs | default(true) | bool }}"
+  when: openshift_apps_cert_delete_existing_router_secret | default(false) | bool
+
+- name: Create Cloudflare API token Secret in namespaces required for DNS-01 (Challenge uses Certificate ns)
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'secret-cloudflare-api-token.yaml') }}"
+    validate_certs: "{{ k8s_validate_certs | default(true) | bool }}"
+  loop: "{{ cert_manager_cloudflare_token_namespaces }}"
+  loop_control:
+    loop_var: cloudflare_api_token_namespace
+
+- name: Create ClusterIssuer (Let's Encrypt + Cloudflare DNS-01)
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'clusterissuer-letsencrypt-cloudflare.yaml') }}"
+    validate_certs: "{{ k8s_validate_certs | default(true) | bool }}"
+
+- name: Create Certificate for OpenShift apps wildcard (router TLS)
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'certificate-openshift-apps-wildcard.yaml') }}"
+    validate_certs: "{{ k8s_validate_certs | default(true) | bool }}"
+
+# Existing router-certs-default from oc/operator without cert-manager owner annotations -> IncorrectIssuer.
+- name: Wait until Certificate is Ready, or IncorrectIssuer is reported (stale Secret)
+  ansible.builtin.shell:
+    cmd: |
+      {{ oc_bin }} get certificate "{{ openshift_apps_certificate_name }}" -n openshift-ingress -o json \
+        | {{ jq_bin }} -r '
+          def ready: any(.status.conditions[]?; .type=="Ready" and .status=="True");
+          def bad: any(.status.conditions[]?; .type=="Issuing" and .reason=="IncorrectIssuer");
+          if ready then "READY"
+          elif bad then "BAD"
+          else "WAIT"
+          end'
+  register: cert_gate
+  until: cert_gate.stdout | trim == "READY" or cert_gate.stdout | trim == "BAD"
+  retries: 40
+  delay: 10
+  changed_when: false
+
+- name: Delete conflicting router TLS Secret (IncorrectIssuer — cert-manager will re-issue)
+  k8s:
+    api_version: v1
+    kind: Secret
+    name: "{{ openshift_ingress_router_tls_secret_name }}"
+    namespace: openshift-ingress
+    state: absent
+    validate_certs: "{{ k8s_validate_certs | default(true) | bool }}"
+  when: cert_gate.stdout | trim == "BAD"
+
+- name: Wait until cert-manager Certificate is Ready
+  ansible.builtin.shell:
+    cmd: |
+      {{ oc_bin }} get certificate "{{ openshift_apps_certificate_name }}" -n openshift-ingress -o json \
+        | {{ jq_bin }} -r '(.status.conditions // [])[] | select(.type=="Ready") | .status // empty'
+  register: cert_ready
+  until: cert_ready.stdout | trim == "True"
+  retries: 90
+  delay: 10
+  changed_when: false
+
+- name: Point default IngressController at cert-manager router TLS secret
+  ansible.builtin.shell:
+    cmd: |
+      {{ oc_bin }} patch ingresscontroller default -n openshift-ingress-operator --type=merge \
+        -p '{"spec":{"defaultCertificate":{"name":"{{ openshift_ingress_router_tls_secret_name }}"}}}'
+  register: ic_patch
+  changed_when: "'patched' in ic_patch.stdout | lower"
+
+- name: Wait for default router deployment rollout to complete
+  ansible.builtin.command:
+    cmd: "{{ oc_bin }} rollout status deployment/{{ openshift_ingress_router_deployment }} -n {{ openshift_ingress_namespace }} --timeout={{ openshift_ingress_router_rollout_timeout }}"
+  changed_when: false

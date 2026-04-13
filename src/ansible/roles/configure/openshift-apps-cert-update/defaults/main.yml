@@ -1,0 +1,35 @@
+---
+# Overridable via inventory (see common.yaml `k8s_validate_certs`).
+k8s_validate_certs: true
+
+# Concrete hostname to resolve via dig (lab DNS); must yield the ingress VIP (A record).
+ocp_apps_dig_hostname: "oauth-openshift.apps.{{ ocp_cluster_name }}.{{ base_domain }}"
+
+# ACME directory (Let's Encrypt production; use staging URL only for testing)
+acme_directory_url: "https://acme-v02.api.letsencrypt.org/directory"
+
+# Cloudflare API token Secret (key must match ClusterIssuer dns01.cloudflare.apiTokenSecretRef).
+# DNS-01 Challenges run in the Certificate namespace — Secret must exist in openshift-ingress.
+# Replicated to cert-manager for controller/solver expectations; do not use cert-manager-operator.
+cert_manager_cloudflare_token_secret_name: cloudflare-api-token
+cert_manager_cloudflare_token_secret_key: api-token
+cert_manager_cloudflare_token_namespaces:
+  - openshift-ingress
+  - cert-manager
+
+cert_manager_clusterissuer_name: letsencrypt-cloudflare
+
+# Certificate CR in openshift-ingress; cert-manager writes tls Secret {{ openshift_ingress_router_tls_secret_name }}
+openshift_apps_certificate_name: openshift-apps-wildcard
+openshift_ingress_router_tls_secret_name: router-certs-default
+
+# If true, delete router-certs-default before applying Certificate (e.g. stale manual secret).
+openshift_apps_cert_delete_existing_router_secret: false
+
+# Default IngressController router Deployment (oc rollout status)
+openshift_ingress_namespace: openshift-ingress
+openshift_ingress_router_deployment: router-default
+openshift_ingress_router_rollout_timeout: 15m
+
+cloudflare_apps_dns_ttl: 120
+cloudflare_apps_dns_proxied: false

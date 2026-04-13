@@ -55,6 +55,8 @@ cd src/ansible
 ./update_env.sh
 ```
 
+`update_env.sh` installs Ansible Galaxy collections from `context/_build/requirements.yml` (including `community.general`).
+
 ## Configuration
 
 All cluster variables live under `src/ocp-cluster-vars/vars/`. The HCP cluster directory (e.g. `hcp1/`) contains two files:
@@ -71,7 +73,7 @@ Lists the variable files to include. No changes needed unless adding new variabl
 | `cluster_type` | `"kubevirt"` |
 | `cluster_role` | `"tenant"` |
 | `ocp_cluster_name` | Cluster name (e.g. `hcp1`) |
-| `ocp_version` | OpenShift version (e.g. `"4.20"`) |
+| `ocp_version` | OpenShift version (e.g. `"4.21"`) |
 | `ocp_bin_channel` | Release channel (`stable`, `fast`, `candidate`) |
 | `ocp_network_type` | CNI plugin (default `OVNKubernetes`) |
 | `infra_cluster_fqdn` | FQDN of the infrastructure cluster |
@@ -167,7 +169,7 @@ All HCP services are published via **Routes** on the infra cluster:
 ## Directory Layout
 
 ```
-Docs/
+docs/
 └── hcp.md                                 # this file
 
 src/ansible/

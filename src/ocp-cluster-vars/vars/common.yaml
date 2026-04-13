@@ -58,16 +58,23 @@ pull_secret_vault_key: pull_secret
 network_bgp_peer_asn_vault_key: network_bgp_peer_asn
 network_bgp_peer_password_vault_key: network_bgp_peer_password
 network_bgp_peer_ip_address_vault_key: network_bgp_peer_ip_address
+cloudflare_api_token_vault_key: cloudflare_api_token
+cloudflare_zone_name: "arvhomelab.com"
+letsencrypt_email: "arvin.amirian@pronton.me"
+cert_manager_operator_namespace: cert-manager-operator
+# Operand workloads (webhook, controller); used after operator CSV is ready
+cert_manager_operand_namespace: cert-manager
+cert_manager_webhook_rollout_timeout: 10m
 rhcos_ssh_private_key_file: "{{ staging_dir }}/rhcos-ssh-pk"
 
 
-image_content_sources:
-  - source: quay.io
-    mirrors:
-      - zot.arvhomelab.com/quay.io
-  - source: registry.redhat.io
-    mirrors:
-      - zot.arvhomelab.com/registry.redhat.io
-  - source: registry-1.docker.io
-    mirrors:
-      - zot.arvhomelab.com/registry-1.docker.io
+# image_content_sources:
+#   - source: quay.io
+#     mirrors:
+#       - zot.arvhomelab.com/quay.io
+#   - source: registry.redhat.io
+#     mirrors:
+#       - zot.arvhomelab.com/registry.redhat.io
+#   - source: registry-1.docker.io
+#     mirrors:
+#       - zot.arvhomelab.com/registry-1.docker.io

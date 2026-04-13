@@ -8,6 +8,7 @@ spec:
     deviceClasses:
       - name: standard
         default: true
+        fstype: xfs
         thinPoolConfig:
           name: {{ lvms.fast.name }}-thin-pool
           overprovisionRatio: 20
@@ -32,6 +33,7 @@ spec:
             - "{{ disk }}"
           {% endfor %}          
       - name: fast
+        fstype: xfs
         thinPoolConfig:
           name: {{ lvms.fast.name }}-thin-pool
           overprovisionRatio: 20
