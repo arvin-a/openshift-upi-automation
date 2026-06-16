@@ -1,12 +1,11 @@
 ---
-- name: sleep for 5 seconds
-  wait_for:
-    timeout: 5
-
-- name: Apply Metallb Subscription yaml
+- name: Create Metallb Namespace, Operator Group, and Subscription
   k8s:
     state: present
-    definition: "{{ lookup('template', '02-metallb-sub.yaml') }}"
+    definition: "{{ lookup('template', item) }}"
+  loop:
+    - 01-metallb-ns-og.yaml
+    - 02-metallb-sub.yaml
 
 - name: sleep for 20 seconds
   wait_for:
@@ -44,9 +43,6 @@
     state: present
     definition: "{{ lookup('template', item) }}"
   loop:
-    - 01-metallb-ns-og.yaml
-    - 02-metallb-sub.yaml
-    - 03-metallb-instance.yaml
     - 04-metallb-bgp-peer.yaml
     - 05-metallb-ipaddresspool.yaml
     - 06-metallb-bgp-advertisement.yaml

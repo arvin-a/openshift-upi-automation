@@ -75,6 +75,7 @@
     - role: configure/openshift-clean-storage
       when: platform == "kvm_bm" and disks is defined
   tags:
+    - openshift-storage
     - openshift-clean-storage
 
 - name: Install Cluster Storage Provider
@@ -88,6 +89,7 @@
     - role: configure/openshift-lvm-operator-install
       when: platform == "kvm_bm" and storage_provider | default('') == "lvm"
   tags:
+    - openshift-storage
     - openshift-storage-install
 
 - name: Install Nmstate Operator
@@ -115,28 +117,30 @@
     - post-install
 
 - name: Create network bridge
-  hosts: worker
+  hosts: worker:control
   gather_facts: False
   environment:
     KUBECONFIG: "{{ cluster_kubeconfig }}"
   roles:
     - role: configure/openshift-create-bridge
-      when: platform == "kvm_bm"
+      when: 
+       - platform == "kvm_bm"
+       - nic2 is defined
   tags:
     - openshift-create-bridge
     - post-install
 
-- name: Metallb install and configure
-  hosts: localhost
-  connection: local
-  environment:
-    KUBECONFIG: "{{ cluster_kubeconfig }}"
-  roles:
-    - role: configure/openshift-metallb-install
-      when: platform == "kvm_bm"
-  tags:
-    - openshift-metallb-install
-    - post-install
+# - name: Metallb install and configure
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - role: configure/openshift-metallb-install
+#       when: platform == "kvm_bm"
+#   tags:
+#     - openshift-metallb-install
+#     - post-install
 
 - name: Install RHACM Operator
   hosts: localhost

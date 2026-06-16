@@ -10,6 +10,9 @@ spec:
       - name: {{ secondary_nic }}
         state: up
         type: ethernet
+        ipv4:
+          enabled: true
+          dhcp: true
 {% if type == 'bm' %}
         # Disable rx-vlan-offload and tx-vlan-offload for bare metal nodes that have older NICs
         ethtool:
@@ -17,16 +20,16 @@ spec:
             rx-vlan-offload: false
             tx-vlan-offload: false
 {% endif %}
-      - name: {{ bridge_interface_name }}
-        description: Linux bridge using {{ secondary_nic }} device
-        type: linux-bridge
-        state: up
-        ipv4:
-          enabled: true
-          dhcp: true
-        bridge:
-          options:
-            stp:
-              enabled: false
-          port:
-            - name: {{ secondary_nic }}
+      # - name: {{ bridge_interface_name }}
+      #   description: Linux bridge using {{ secondary_nic }} device
+      #   type: linux-bridge
+      #   state: up
+      #   ipv4:
+      #     enabled: true
+      #     dhcp: true
+      #   bridge:
+      #     options:
+      #       stp:
+      #         enabled: false
+      #     port:
+      #       - name: {{ secondary_nic }}

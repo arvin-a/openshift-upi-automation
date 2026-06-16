@@ -21,13 +21,13 @@ ocp_bin_channel: "fast"
 ocp_network_type: "OVNKubernetes"
 
 # Image content sources for registry mirroring (pull-through proxy)
-hcp_image_content_sources:
-  - source: quay.io
-    mirrors:
-      - zot.arvhomelab.com/quay.io
-  - source: registry.redhat.io
-    mirrors:
-      - zot.arvhomelab.com/registry.redhat.io
-  - source: registry-1.docker.io
-    mirrors:
-      - zot.arvhomelab.com/registry-1.docker.io
+# hcp_image_content_sources:
+#   - source: quay.io
+#     mirrors:
+#       - zot.arvhomelab.com/quay.io
+#   - source: registry.redhat.io
+#     mirrors:
+#       - zot.arvhomelab.com/registry.redhat.io
+#   - source: registry-1.docker.io
+#     mirrors:
+#       - zot.arvhomelab.com/registry-1.docker.io

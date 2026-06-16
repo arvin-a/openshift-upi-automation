@@ -27,7 +27,7 @@ metadata:
   name: {{ ocp_cluster_name }}
 networking:
   machineNetwork:
-  - cidr: 192.0.0.0/8
+  - cidr: {{ machine_network }}
   clusterNetwork:
   - cidr: 10.128.0.0/14
     hostPrefix: 23
@@ -40,8 +40,8 @@ additionalTrustBundle: |
 {{ additional_trust_bundle | indent(width=2, first=true) }}
 pullSecret: '{{ pull_secret | trim  }}'
 sshKey: '{{ rhcos_ssh_pub_key }}'
-imageContentSources:
 {% if image_content_sources is defined %}
+imageContentSources:
 {% for source in image_content_sources %}
   - source: "{{ source.source }}"
     mirrors:

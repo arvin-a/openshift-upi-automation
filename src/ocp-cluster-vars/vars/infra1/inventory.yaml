@@ -12,16 +12,31 @@ control:
   hosts:
     control1.infra1.k8s.arvhomelab.com:
       nic1:
+        name: enp1s0
         mac_address: '02:00:00:be:30:19'
         vlan: '7'
+      nic2:
+        name: enp2s0
+        mac_address: '02:00:cd:91:6e:c0'
+        vlan: '8'
     control2.infra1.k8s.arvhomelab.com:
       nic1:
+        name: enp1s0
         mac_address: '02:00:00:3d:5f:2b'
         vlan: '7'
+      nic2:
+        name: enp2s0
+        mac_address: '02:00:7b:72:db:ad'
+        vlan: '8'
     control3.infra1.k8s.arvhomelab.com:
       nic1:
+        name: enp1s0
         mac_address: '02:00:00:03:ff:8f'
         vlan: '7'
+      nic2:
+        name: enp2s0
+        mac_address: '02:00:6e:c0:ab:94'
+        vlan: '8'
   vars:
     type: 'kvm'
     node_role: 'master'

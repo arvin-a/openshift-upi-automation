@@ -12,22 +12,21 @@
   tasks:
     - meta: clear_host_errors
 
-- name: Load cluster configs
-  hosts: localhost:worker:control
+- name: Load configs
+  hosts: localhost
   connection: local
   roles:
     - role: common/ansible-config-load
-      action: cluster-config
+      action: base
   tags:
     - always
 
 - name: Setup Staging Directory
   hosts: localhost
-  connection: local
   roles:
     - common/staging-dir-setup
   tags:
-    - staging-dir-setup
+    - always
 
 - name: Get Infra cluster credentials
   hosts: localhost
@@ -40,7 +39,7 @@
     - always
 
 - name: Load cluster configs
-  hosts: localhost:all
+  hosts: localhost
   connection: local
   roles:
     - role: common/ansible-config-load

@@ -7,14 +7,17 @@ control:
   hosts:
     control1.tenant1.k8s.arvhomelab.com:
       nic1:
+        name: enp1s0
         mac_address: '02:00:00:4a:1e:bc'
         vlan: '8'
     control2.tenant1.k8s.arvhomelab.com:
       nic1:
+        name: enp1s0
         mac_address: '02:00:00:ab:cb:4f'
         vlan: '8'
     control3.tenant1.k8s.arvhomelab.com:
       nic1:
+        name: enp1s0
         mac_address: '02:00:00:0c:d6:48'
         vlan: '8'
   vars:
@@ -30,10 +33,12 @@ worker:
   hosts:
     worker1.tenant1.k8s.arvhomelab.com:
       nic1:
+        name: enp1s0
         mac_address: '02:00:00:d7:97:5f'
         vlan: '8'
     worker2.tenant1.k8s.arvhomelab.com:
       nic1:
+        name: enp1s0
         mac_address: '02:00:00:f1:5c:17'
         vlan: '8'
     # worker3.tenant1.k8s.arvhomelab.com:
