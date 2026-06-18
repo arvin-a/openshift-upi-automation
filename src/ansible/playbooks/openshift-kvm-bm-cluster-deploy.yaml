@@ -1,5 +1,6 @@
 # cd to ansible directory
 # export CLUSTER_NAME=infra1
+# source venv/ansible2.20/bin/activate
 # ansible-playbook playbooks/openshift-kvm-bm-cluster-deploy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
 
 #### Options
