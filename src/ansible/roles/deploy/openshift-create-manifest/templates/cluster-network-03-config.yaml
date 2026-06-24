@@ -9,7 +9,18 @@ spec:
   #   hostPrefix: 23
   # serviceNetwork:
   # - 172.30.0.0/16
+{% if evpn_enabled | default(false) %}
+  additionalRoutingCapabilities:
+    providers:
+    - FRR
+{% endif %}
   defaultNetwork:
     type: OVNKubernetes
     ovnKubernetesConfig:
       mtu: 8900
+{% if evpn_enabled | default(false) %}
+      gatewayConfig:
+        routingViaHost: true
+        ipForwarding: Global
+      routeAdvertisements: Enabled
+{% endif %}

@@ -1,0 +1,21 @@
+apiVersion: local.storage.openshift.io/v1alpha1
+kind: LocalVolumeSet
+metadata:
+  name: {{ odf_standard.local_storage_class }}
+  namespace: openshift-local-storage
+spec:
+  deviceInclusionSpec:
+    deviceTypes:
+      - disk
+    minSize: {{ odf_standard.min_size }}
+    maxSize: {{ odf_standard.max_size }}
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: cluster.ocs.openshift.io/openshift-storage
+          operator: In
+          values:
+          - ""
+  # maxDeviceCount: 1
+  storageClassName: {{ odf_standard.local_storage_class }}
+  volumeMode: Block

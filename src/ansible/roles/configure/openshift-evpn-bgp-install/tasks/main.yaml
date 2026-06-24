@@ -1,0 +1,138 @@
+---
+# 1. Wait for frr-k8s operator namespace
+- name: Wait until openshift-frr-k8s namespace exists
+  k8s_info:
+    api_version: v1
+    kind: Namespace
+    name: openshift-frr-k8s
+  register: frr_namespace
+  wait:
+    - frr_namespace.resources is defined
+    - frr_namespace.resources | length > 0
+    - frr_namespace.resources[0].status.phase == "Active"
+  retries: 2
+  delay: 5
+
+
+# 4. Apply FRRConfiguration
+- name: Create FRR configuration
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '02-frr-crd.yaml') }}"
+
+# 5. Apply VTEP CRD
+- name: Create VTEP configuration
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '03-vtep-crd.yaml') }}"
+
+
+
+- name: Wait until openshift-frr-k8s namespace exists
+  shell:
+    cmd: "{{ oc_bin }} get namespace openshift-frr-k8s -o=jsonpath='{.status.phase}'"
+  register: result
+  until: result.stdout == "Active"
+  retries: 100
+  delay: 5
+  changed_when: false
+
+- name: Create FRR configuration
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '02-frr-crd.yaml') }}"
+
+- name: Wait until Local Storage CSV has succeeded
+  shell:
+    cmd: "{{ oc_bin }} get csv $({{ oc_bin }} get csv -n openshift-local-storage -o custom-columns=NAME:.metadata.name | grep local-storage) -n openshift-local-storage -o=jsonpath='{.status.phase}'"
+  register: result
+  until: result.stdout == "Succeeded"
+  retries: 100
+  delay: 5
+
+- name: Create Local Storage Volumes
+  k8s:
+    state: present
+    definition: "{{ lookup('template', item ) }}"
+  with_items:
+    - 04-local-storage-lv.yaml
+    - 04-local-storage-lv-fast.yaml
+
+- name: Wait until Local Storage PVs are available
+  shell:
+    cmd: "{{ oc_bin }} get pv | grep local-pv | wc -l"
+  register: result
+  until: result.stdout | int >= 3
+  retries: 100
+  delay: 10
+
+- name: Create ODF Namespace
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '05-odf-ns.yaml') }}"
+
+
+- name: Create ODF Operator Group
+  k8s:
+    state: present
+    definition: "{{ lookup('template', item ) }}"
+  with_items:
+    - 06-odf-og.yaml
+    - 07-odf-sub.yaml
+
+
+- name: sleep for 20 seconds
+  wait_for:
+    timeout: 20
+
+
+- name: Wait until ODF CSV has succeeded before continuing
+  shell:
+    cmd: "{{ oc_bin }} get csv $({{ oc_bin }} get subscriptions odf-operator -o=jsonpath='{.status.currentCSV}' -n openshift-storage) -n openshift-storage -o=jsonpath='{.status.phase}'"
+  register: result
+  until: result.stdout == "Succeeded"
+  retries: 100
+  delay: 20
+
+- name: Enable ODF web interface
+  shell: |
+   {{ oc_bin }} patch console.operator cluster -n openshift-storage --type json -p '[{"op": "add", "path": "/spec/plugins", "value": ["odf-console"]}]'
+
+- name: Create ODF Cluster
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '08-odf-create-cluster.yaml') }}"
+  register: odf_storage_cluster_apply
+  until: odf_storage_cluster_apply.result.spec is defined
+  retries: 100
+  delay: 10
+  
+- name: Wait until ODF Cluster is ready
+  shell:
+    cmd: "{{ oc_bin }} get StorageCluster odf-storagecluster -n openshift-storage -o=jsonpath='{.status.phase}'"
+  register: result
+  until: result.stdout == "Ready"
+  retries: 80
+  delay: 20
+
+# - name: Create ODF CephBlockPool
+#   k8s:
+#     state: present
+#     definition: "{{ lookup('template', item ) }}"
+#   with_items:
+#     - 09-odf-cephblockpool.yaml
+#     - 09-odf-cephblockpool-fast.yaml
+#     - 10-storage-class.yaml
+#     - 10-storage-class-fast.yaml
+
+# - name: Wait until CephBlockPools are ready
+#   shell: "{{ oc_bin }} get cephblockpool -A -o=jsonpath='{.items[*].status.phase}'"
+#   register: result
+#   until: result.stdout == "Ready Ready"
+#   retries: 100
+#   delay: 10
+
+# - name: Set CephFS as the default storage class
+#   shell: |
+#    {{ oc_bin }} patch storageclass odf-storagecluster-ceph-rbd -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class": "true"}}}'
+ 

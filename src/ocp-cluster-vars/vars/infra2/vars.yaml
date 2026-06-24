@@ -18,6 +18,10 @@ cluster_bgp_asn: 65002
 ## Cilium - Only required if network type is Cilium
 cilium_version: 1.15.1
 cilium_repo_uri: "https://github.com/isovalent/olm-for-cilium"
+#### EVPN Vars
+evpn_enabled: True
+evpn_neighbour_asn: 65000
+evpn_neighbour_ip: 192.168.8.1
 
 ## Calico - Only required if network type is Calico
 calico_version: 3.28.2

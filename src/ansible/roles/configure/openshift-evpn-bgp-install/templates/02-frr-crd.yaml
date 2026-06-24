@@ -1,0 +1,16 @@
+apiVersion: frrk8s.metallb.io/v1beta1
+kind: FRRConfiguration
+metadata:
+  labels:
+    network: default-evpn
+  name: frrconfiguration-evpn
+  namespace: openshift-frr-k8s
+spec:
+  bgp:
+    routers:
+    - asn: {{ cluster_bgp_asn }}
+      neighbors:
+      - address: {{ evpn_neighbour_ip }}
+        asn: {{ evpn_neighbour_asn }}
+        disableMP: false
+        dualStackAddressFamily: false

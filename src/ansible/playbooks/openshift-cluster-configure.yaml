@@ -10,7 +10,7 @@
 # ansible-playbook playbooks/openshift-cluster-configure.yaml \
 #   -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml \
 #   -e cluster_name=$CLUSTER_NAME \
-#   --vault-password-file ./vault-password-file
+#   --vault-password-file ./vault-password-file --tags openshift-metallb-install
 #
 #
 # Deploy playbooks set openshift_cluster_configure_from_deploy: true on import_playbook so these
@@ -75,7 +75,6 @@
     - role: configure/openshift-clean-storage
       when: platform == "kvm_bm" and disks is defined
   tags:
-    - openshift-storage
     - openshift-clean-storage
 
 - name: Install Cluster Storage Provider
@@ -89,7 +88,6 @@
     - role: configure/openshift-lvm-operator-install
       when: platform == "kvm_bm" and storage_provider | default('') == "lvm"
   tags:
-    - openshift-storage
     - openshift-storage-install
 
 - name: Install Nmstate Operator
@@ -104,17 +102,17 @@
     - openshift-nmstate-install
     - post-install
 
-- name: Install OpenShift Virtualization
-  hosts: localhost
-  connection: local
-  environment:
-    KUBECONFIG: "{{ cluster_kubeconfig }}"
-  roles:
-    - role: configure/openshift-virt-olm-install
-      when: platform == "kvm_bm" and ocp_virt_install | default(false) | bool
-  tags:
-    - openshift-virt-install
-    - post-install
+# - name: Install OpenShift Virtualization
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - role: configure/openshift-virt-olm-install
+#       when: platform == "kvm_bm" and ocp_virt_install | default(false) | bool
+#   tags:
+#     - openshift-virt-install
+#     - post-install
 
 - name: Create network bridge
   hosts: worker:control
@@ -123,36 +121,34 @@
     KUBECONFIG: "{{ cluster_kubeconfig }}"
   roles:
     - role: configure/openshift-create-bridge
-      when: 
-       - platform == "kvm_bm"
-       - nic2 is defined
+      when: platform == "kvm_bm"
   tags:
     - openshift-create-bridge
     - post-install
 
-# - name: Metallb install and configure
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - role: configure/openshift-metallb-install
-#       when: platform == "kvm_bm"
-#   tags:
-#     - openshift-metallb-install
-#     - post-install
-
-- name: Install RHACM Operator
+- name: Metallb install and configure
   hosts: localhost
   connection: local
   environment:
     KUBECONFIG: "{{ cluster_kubeconfig }}"
   roles:
-    - role: configure/openshift-rhacm-install
+    - role: configure/openshift-metallb-install
       when: platform == "kvm_bm"
   tags:
-    - openshift-rhacm-install
+    - openshift-metallb-install
     - post-install
+
+# - name: Install RHACM Operator
+#   hosts: localhost
+#   connection: local
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - role: configure/openshift-rhacm-install
+#       when: platform == "kvm_bm"
+#   tags:
+#     - openshift-rhacm-install
+#     - post-install
 
 - name: Install cert-manager operator
   hosts: localhost
@@ -187,3 +183,15 @@
   tags:
     - openshift-cluster-metadata-set
     - post-install
+
+# - name: Post CUDN config for evpn
+#   hosts: worker:control
+#   gather_facts: False
+#   environment:
+#     KUBECONFIG: "{{ cluster_kubeconfig }}"
+#   roles:
+#     - role: configure/openshift-evpn-post-config
+#       when: platform == "kvm_bm"
+#   tags:
+#     - openshift-evpn-post-config
+#     - post-install

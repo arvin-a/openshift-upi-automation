@@ -1,0 +1,188 @@
+---
+# Post-configuration playbook for OpenShift EVPN CUDN connectivity
+#
+# This playbook handles two issues that arise after deploying or updating an
+# EVPN-based ClusterUserDefinedNetwork (CUDN):
+#
+# ── Issue 1: rp_filter on EVPN interfaces ────────────────────────────────────
+# OVN-Kubernetes creates kernel interfaces for EVPN (VXLAN, bridge, SVI, VRF).
+# These inherit net.ipv4.conf.default.rp_filter=1 (strict), which drops
+# decapsulated EVPN packets because the inner source IP is only reachable via
+# the tunnel — not the interface it arrived on.
+#
+# FIX (persistent, applied once): Apply the Tuned CR that sets
+#   net.ipv4.conf.all.rp_filter=0
+#   net.ipv4.conf.default.rp_filter=0
+# on all worker nodes. This is CUDN-name and interface-name agnostic; it works
+# for any number of CUDNs without modification.
+#
+# ── Issue 2: frr-k8s VRF binding race condition ───────────────────────────────
+# OVN-Kubernetes generates per-node FRRConfiguration objects that include VRF-
+# specific BGP config. If frr-k8s reloads this config before OVN-K has created
+# the corresponding kernel VRF device, FRR records "vrf id -" for that VRF
+# instance and does NOT rebind automatically when the device appears.
+#
+# Symptom: EVPN routes from VyOS (e.g., 0.0.0.0/0) are not installed in the
+# CUDN VRF kernel table, so CUDN pods have no return path to external clients.
+#
+# Detection: FRRNodeState.status.runningConfig contains "vrf id -".
+# Fix: delete the affected frr-k8s pod (DaemonSet recreates it with VRF present).
+#
+# This race can recur after a node reboot (frr-k8s DaemonSet starts before
+# ovnkube-node finishes setting up the VRF device). Run this playbook after any
+# full cluster or node restart if connectivity issues are observed.
+#
+# ── Prerequisites ─────────────────────────────────────────────────────────────
+#   - KUBECONFIG env var or --extra-vars kubeconfig=<path>
+#   - oc/kubectl in PATH on the Ansible controller
+#   - ClusterUserDefinedNetwork deployed with EVPN transport
+#   - VyOS EVPN configured (run vyos-configure.yml first)
+#
+# Usage:
+#   ansible-playbook playbooks/openshift-evpn-post-config.yml \
+#     -e kubeconfig=/home/arvin/kubeconfig/infra1.k8s.arvhomelab.com-kubeconfig-kubeconfig
+#
+# Safe to re-run idempotently.
+
+- name: OpenShift EVPN CUDN post-configuration
+  hosts: localhost
+  gather_facts: false
+  vars:
+    kubeconfig: "{{ lookup('env', 'KUBECONFIG') | default('/home/arvin/kubeconfig/infra1.k8s.arvhomelab.com-kubeconfig-kubeconfig') }}"
+    evpn_tuned_manifest: "{{ playbook_dir }}/../files/openshift-evpn/tuned-evpn-rp-filter.yaml"
+    evpn_vrf_name: "l3-cudn"
+    nto_namespace: "openshift-cluster-node-tuning-operator"
+    frr_namespace: "openshift-frr-k8s"
+
+  tasks:
+    # ── Step 1: Apply Tuned profile (rp_filter fix) ───────────────────────────
+    # NOTE: These tasks are only needed if the Tuned CR is not already applied
+    # (e.g., pre-baked into the cluster via Ignition at install time). If the
+    # evpn-rp-filter Tuned profile is already active on workers, comment these
+    # out or run with --tags frr_restart,verify to skip them.
+    #
+    # - name: Apply Tuned CR for EVPN rp_filter
+    #   ansible.builtin.command:
+    #     cmd: "kubectl apply -f {{ evpn_tuned_manifest }}"
+    #   environment:
+    #     KUBECONFIG: "{{ kubeconfig }}"
+    #   register: tuned_apply
+    #   changed_when: "'configured' in tuned_apply.stdout or 'created' in tuned_apply.stdout"
+    #   tags: [rp_filter, tuned]
+    #
+    # - name: Wait for Tuned profile to be applied on at least one worker node
+    #   ansible.builtin.command:
+    #     cmd: >
+    #       kubectl get profiles.tuned.openshift.io -n {{ nto_namespace }}
+    #       -o jsonpath='{range .items[?(@.status.tunedProfile=="evpn-rp-filter")]}{.metadata.name}{" "}{end}'
+    #   environment:
+    #     KUBECONFIG: "{{ kubeconfig }}"
+    #   register: tuned_status
+    #   retries: 12
+    #   delay: 10
+    #   until: tuned_status.stdout | trim | length > 0
+    #   changed_when: false
+    #   tags: [rp_filter, tuned]
+    #
+    # - name: Display Tuned profile application status
+    #   ansible.builtin.debug:
+    #     msg: "{{ tuned_apply.stdout }}"
+    #   tags: [rp_filter, tuned]
+
+    # ── Step 2: Detect frr-k8s VRF binding issues via FRRNodeState API ────────
+    - name: Get all FRRNodeState resources
+      ansible.builtin.command:
+        cmd: >
+          kubectl get frrnodestate -n {{ frr_namespace }}
+          -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.runningConfig}{"\n"}{end}'
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+      register: frr_node_states
+      changed_when: false
+      tags: [frr_restart]
+
+    - name: Identify nodes with unbound VRF (vrf id - in running config)
+      ansible.builtin.set_fact:
+        nodes_with_unbound_vrf: >-
+          {{ frr_node_states.stdout_lines
+             | select('search', 'vrf id -')
+             | map('regex_replace', '\t.*', '')
+             | list }}
+      tags: [frr_restart]
+
+    - name: Report nodes with unbound VRF
+      ansible.builtin.debug:
+        msg: "Nodes with unbound {{ evpn_vrf_name }} VRF: {{ nodes_with_unbound_vrf | default([]) | join(', ') | default('none') }}"
+      tags: [frr_restart]
+
+    - name: Delete frr-k8s pod on each node with unbound VRF
+      ansible.builtin.command:
+        cmd: >
+          kubectl delete pod -n {{ frr_namespace }}
+          -l app=frr-k8s
+          --field-selector spec.nodeName={{ item }}
+          --wait=false
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+      loop: "{{ nodes_with_unbound_vrf }}"
+      loop_control:
+        label: "{{ item }}"
+      when: nodes_with_unbound_vrf | length > 0
+      tags: [frr_restart]
+
+    - name: Wait for frr-k8s pods to be Ready after restart
+      ansible.builtin.command:
+        cmd: >
+          kubectl wait pod -n {{ frr_namespace }} -l app=frr-k8s
+          --for=condition=Ready --timeout=120s
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+      when: nodes_with_unbound_vrf | length > 0
+      tags: [frr_restart]
+
+    # ── Step 3: Verify BGP sessions are Established via BGPSessionState API ──────
+    # Note: FRRNodeState.status.runningConfig shows FRR configuration (show running-config),
+    # not the BGP routing table. Received EVPN routes (e.g., 0.0.0.0/0 from VyOS) live in
+    # the BGP RIB and do not appear in runningConfig. Use BGPSessionState to verify
+    # session health, and vtysh/ip route for received route verification if needed.
+    - name: Get BGP session states
+      ansible.builtin.command:
+        cmd: >
+          kubectl get bgpsessionstates -n {{ frr_namespace }}
+          -o jsonpath='{range .items[*]}{.status.node}{"\t"}{.status.peer}{"\t"}{.status.bgpStatus}{"\n"}{end}'
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+      register: bgp_sessions
+      changed_when: false
+      tags: [verify]
+
+    - name: Identify sessions not yet Established
+      ansible.builtin.set_fact:
+        sessions_not_up: >-
+          {{ bgp_sessions.stdout_lines
+             | reject('search', 'Established')
+             | list }}
+      tags: [verify]
+
+    - name: Assert all BGP sessions are Established
+      ansible.builtin.assert:
+        that:
+          - bgp_sessions.stdout_lines | select('search', 'Established') | list | length > 0
+          - sessions_not_up | length == 0
+        fail_msg: >-
+          BGP sessions not Established: {{ sessions_not_up | join(', ') }}.
+          Check FRR logs and VyOS BGP summary.
+        success_msg: >-
+          All {{ bgp_sessions.stdout_lines | select('search', 'Established') | list | length }}
+          BGP sessions Established toward VyOS.
+      tags: [verify]
+
+    - name: Summary
+      ansible.builtin.debug:
+        msg: |
+          OpenShift EVPN post-configuration complete:
+          - rp_filter: managed by evpn-rp-filter Tuned profile (pre-applied)
+          - frr-k8s pods restarted for VRF rebinding: {{ nodes_with_unbound_vrf | join(', ') | default('none needed') }}
+          - BGP sessions Established: {{ bgp_sessions.stdout_lines | select('search', 'Established') | list | length }} sessions toward VyOS (192.168.8.1)
+          - To verify EVPN received routes: kubectl exec -n {{ frr_namespace }} <frr-k8s-pod> -c frr -- vtysh -c "show bgp vrf l3-cudn ipv4 unicast"
+      tags: [always]

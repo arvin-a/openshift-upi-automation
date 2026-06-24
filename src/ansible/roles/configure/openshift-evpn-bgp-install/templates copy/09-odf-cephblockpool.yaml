@@ -1,0 +1,20 @@
+---
+apiVersion: ceph.rook.io/v1
+kind: CephBlockPool
+metadata:
+  name: odf-storagecluster-cephblockpool
+  namespace: openshift-storage
+spec:
+  deviceClass: ssd
+  enableRBDStats: true
+  enableCrushUpdates: true
+  failureDomain: host
+  erasureCoded:
+    codingChunks: 0
+    dataChunks: 0
+  replicated:
+    replicasPerFailureDomain: 1
+    size: 3
+    targetSizeRatio: 0.49
+
+
