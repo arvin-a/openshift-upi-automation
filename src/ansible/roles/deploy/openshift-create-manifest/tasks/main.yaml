@@ -36,6 +36,7 @@
   with_items:
     - "{{ ocp_install_dir }}"
     - "{{ staging_backup_dir }}"
+  when: install_type is not defined or install_type == "agent"
 
 - name: Process disk wipe template
   template: 
@@ -45,6 +46,12 @@
 - name: Create OCP manifests
   shell: |
     {{ openshift_install_bin }} agent create cluster-manifests --dir {{ ocp_install_dir }}
+  when: install_type is not defined or install_type == "agent"
+
+- name: Create UPI manifests
+  shell: |
+    {{ openshift_install_bin }} create manifests --dir {{ ocp_install_dir }}
+  when: install_type is defined and install_type == "upi"
 
 - name: Create openshift directory under cluster config directory
   file:

@@ -26,22 +26,77 @@
       register: idrac_login_info
 
 
-    - name: Mount Agent ISO
-      dellemc.openmanage.idrac_virtual_media:
-        idrac_ip: "{{ lookup('community.general.dig', 'idrac-' ~ inventory_hostname) }}"
-        idrac_user: "{{ idrac_admin_user }}"
-        idrac_password: "{{ idrac_admin_password }}"
-        validate_certs: False
-        force: True
-        virtual_media:
-          - insert: true
-            image: "{{ web_server.http_base_url }}/{{ agent_iso_file_name }}"
-            media_type: "CD"
-            index: 1
-      register: mount_iso_operation
-      until: mount_iso_operation is not failed
-      retries: 2
-      delay: 30
+    - name: Mount Agent ISO (with recovery from stuck iDRAC8 virtual media service)
+      block:
+        - name: Mount Agent ISO
+          dellemc.openmanage.idrac_virtual_media:
+            idrac_ip: "{{ lookup('community.general.dig', 'idrac-' ~ inventory_hostname) }}"
+            idrac_user: "{{ idrac_admin_user }}"
+            idrac_password: "{{ idrac_admin_password }}"
+            validate_certs: False
+            force: True
+            virtual_media:
+              - insert: true
+                image: "{{ web_server.http_base_url }}/{{ agent_iso_file_name }}"
+                media_type: "CD"
+                index: 1
+          register: mount_iso_operation
+          until: mount_iso_operation is not failed
+          retries: 2
+          delay: 30
+      rescue:
+        # Base.1.2.InternalError on the VirtualMedia.InsertMedia Redfish action is a known
+        # iDRAC8 issue where the virtual media service gets stuck in a bad internal state.
+        # Clearing LC jobs alone (done above) is not always enough; a graceful iDRAC restart
+        # reliably clears it (see https://bugzilla.redhat.com/show_bug.cgi?id=1988879).
+        - name: Delete Session before resetting iDRAC
+          dellemc.openmanage.idrac_session:
+            hostname: "{{ lookup('community.general.dig', 'idrac-' ~ inventory_hostname) }}"
+            x_auth_token: "{{ idrac_login_info.x_auth_token }}"
+            session_id: "{{ idrac_login_info.session_data.Id }}"
+            validate_certs: False
+            state: absent
+          when: idrac_login_info.x_auth_token is defined
+          ignore_errors: True
+
+        - name: Gracefully restart iDRAC to clear stuck virtual media service
+          dellemc.openmanage.idrac_reset:
+            idrac_ip: "{{ lookup('community.general.dig', 'idrac-' ~ inventory_hostname) }}"
+            idrac_user: "{{ idrac_admin_user }}"
+            idrac_password: "{{ idrac_admin_password }}"
+            validate_certs: False
+            wait_for_idrac: True
+            job_wait_timeout: 600
+
+        - name: pause for 30 seconds after iDRAC reset
+          pause:
+            seconds: 30
+
+        - name: Re-create idrac session after reset
+          dellemc.openmanage.idrac_session:
+            hostname: "{{ lookup('community.general.dig', 'idrac-' ~ inventory_hostname) }}"
+            username: "{{ idrac_admin_user }}"
+            password: "{{ idrac_admin_password }}"
+            validate_certs: False
+            state: present
+          register: idrac_login_info
+
+        - name: Retry Mount Agent ISO after iDRAC reset
+          dellemc.openmanage.idrac_virtual_media:
+            idrac_ip: "{{ lookup('community.general.dig', 'idrac-' ~ inventory_hostname) }}"
+            idrac_user: "{{ idrac_admin_user }}"
+            idrac_password: "{{ idrac_admin_password }}"
+            validate_certs: False
+            force: True
+            virtual_media:
+              - insert: true
+                image: "{{ web_server.http_base_url }}/{{ agent_iso_file_name }}"
+                media_type: "CD"
+                index: 1
+          register: mount_iso_operation
+          until: mount_iso_operation is not failed
+          retries: 1
+          delay: 30
 
     - name: pause for 10 seconds
       pause:

@@ -65,8 +65,6 @@
     dest: "{{ ocp_binaries_archive_base_dir }}/{{ ocp_selected_version }}/butane"
   when: not butane_bin_stat_result.stat.exists
 
-
-
 - name: Copy oc, openshift-install and butane binaries to staging location
   copy:
     src: "{{ item }}"

@@ -14,6 +14,7 @@ spec:
         {
           "type": "cnv-bridge",
           "bridge": "{{ infra_cluster_bridge_name }}",
+          "mtu": {{ infra_cluster_bridge_mtu | default(9000) }},
           "ipam": {}
         },
         {

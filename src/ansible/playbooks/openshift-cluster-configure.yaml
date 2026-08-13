@@ -102,17 +102,17 @@
     - openshift-nmstate-install
     - post-install
 
-# - name: Install OpenShift Virtualization
-#   hosts: localhost
-#   connection: local
-#   environment:
-#     KUBECONFIG: "{{ cluster_kubeconfig }}"
-#   roles:
-#     - role: configure/openshift-virt-olm-install
-#       when: platform == "kvm_bm" and ocp_virt_install | default(false) | bool
-#   tags:
-#     - openshift-virt-install
-#     - post-install
+- name: Install OpenShift Virtualization
+  hosts: localhost
+  connection: local
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
+  roles:
+    - role: configure/openshift-virt-olm-install
+      when: platform == "kvm_bm" and ocp_virt_install | default(false) | bool
+  tags:
+    - openshift-virt-install
+    - post-install
 
 - name: Create network bridge
   hosts: worker:control

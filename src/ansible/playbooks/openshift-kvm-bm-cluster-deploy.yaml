@@ -1,6 +1,6 @@
 # cd to ansible directory
-# export CLUSTER_NAME=infra1
 # source venv/ansible2.20/bin/activate
+# export CLUSTER_NAME=infra1
 # ansible-playbook playbooks/openshift-kvm-bm-cluster-deploy.yaml -i ../ocp-cluster-vars/vars/$CLUSTER_NAME/inventory.yaml -e cluster_name=$CLUSTER_NAME --vault-password-file ./vault-password-file
 
 #### Options
@@ -69,6 +69,13 @@
     - deploy/openshift-agent-iso-create-and-stage
   tags:
     - openshift-agent-iso-create-and-stage
+
+- name: Save cluster credentials
+  hosts: localhost
+  roles:
+    - role: deploy/openshift-save-cluster-credentials
+  tags:
+    - openshift-save-cluster-credentials
 
 - name: Deploy KVM VMs
   hosts: control:worker

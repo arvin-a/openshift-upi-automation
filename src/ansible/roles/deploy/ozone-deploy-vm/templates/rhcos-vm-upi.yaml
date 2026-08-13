@@ -1,0 +1,105 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  labels:
+    app: {{ inventory_hostname }}
+  name: {{ inventory_hostname }}
+  namespace: {{ ocp_cluster_namespace }}
+spec:
+  dataVolumeTemplates:
+    - metadata:
+        name: rhcos-{{ inventory_hostname }}-disk-0
+      spec:
+        source:
+          registry:
+            pullMethod: node
+            url: 'docker://{{ coreos_image_url }}'
+        storage:
+          accessModes:
+            - {{ infra_cluster_storage_access_mode }}
+          resources:
+            requests:
+              storage: 30Gi
+          storageClassName: {{ infra_cluster_storage_class_name }}
+          volumeMode: {{ infra_cluster_storage_volume_mode }}
+{% if node_role == 'master' %}    
+    - metadata:
+        name: rhcos-{{ inventory_hostname }}-disk-1
+      spec:
+        pvc:
+          accessModes:
+            - {{ infra_cluster_storage_access_mode }}
+          resources:
+            requests:
+              storage: {{ rhcos_etcd_disk_size }}
+          storageClassName: {{ infra_cluster_storage_class_name }}
+          volumeMode: {{ infra_cluster_storage_volume_mode }}
+        source:
+          blank: {}  
+{% endif %}          
+  runStrategy: Always
+  template:
+    metadata:
+      annotations:
+        vm.kubevirt.io/os: rhel9
+        vm.kubevirt.io/workload: server
+      labels:
+        kubevirt.io/domain: {{ inventory_hostname }}
+    spec:
+      architecture: amd64
+      domain:
+        cpu:
+          cores: {{ cpu }}
+          sockets: 1
+          threads: 1
+        devices:
+          disks:
+            - disk:
+                bus: virtio
+              name: rhcos
+            - disk:
+                bus: virtio
+              name: cloudinitvolume
+{% if node_role == 'master' %}    
+            - disk:
+                bus: virtio
+              name: disk-1
+{% endif %}                    
+          interfaces:
+            - bridge: {}
+              macAddress: '{{ nic1.mac_address }}'
+              model: virtio
+              name: nic-0
+          networkInterfaceMultiqueue: true
+          rng: {}
+        features:
+          acpi: {}
+          smm:
+            enabled: true
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: false
+        machine:
+          type: pc-q35-rhel9.4.0
+        memory:
+          guest: {{ memory }}
+        resources: {}
+      networks:
+        - multus:
+            networkName: {{ infra_cluster_bridge_name }}
+          name: nic-0
+      terminationGracePeriodSeconds: 90
+      volumes:
+        - dataVolume:
+            name: rhcos-{{ inventory_hostname }}-disk-0
+          name: rhcos
+        - cloudInitConfigDrive:
+            secretRef:
+              name: {{ node_role }}-ign
+          name: cloudinitvolume
+{% if node_role == 'master' %}
+        - dataVolume:
+            name: rhcos-{{ inventory_hostname }}-disk-1
+          name: disk-1
+{% endif %}          

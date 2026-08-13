@@ -44,12 +44,12 @@ spec:
           resources:
             requests:
               storage: {{ rhcos_etcd_disk_size }}
-          storageClassName:  {{ infra_cluster_storage_class_name }}
+          storageClassName: {{ infra_cluster_storage_class_name }}
           volumeMode: {{ infra_cluster_storage_volume_mode }}
           accessModes:
             - {{ infra_cluster_storage_access_mode }}
 {% endif %}
-  running: true
+  runStrategy: Always
   template:
     metadata:
       annotations:

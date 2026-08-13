@@ -1,40 +1,105 @@
 ---
-- name: Wait for bootstrap completion
+- name: Wait for Agent bootstrap completion
   shell: |
-    {{ staging_dir }}/openshift-install agent wait-for bootstrap-complete --dir {{ ocp_install_dir }}
-  register: bootstrap_complete
+    {{ openshift_install_bin }} agent wait-for bootstrap-complete --dir {{ ocp_install_dir }}
+  register: agent_bootstrap_complete
   retries: 30
   delay: 60
-  until: bootstrap_complete.rc == 0
+  until: agent_bootstrap_complete.rc == 0
+  when: install_type is not defined or install_type == "agent"
+
+
+- name: Wait for UPI bootstrap completion
+  shell: |
+    {{ openshift_install_bin }} wait-for bootstrap-complete --dir {{ ocp_install_dir }}
+  register: upi_bootstrap_complete
+  retries: 30
+  delay: 60
+  until: upi_bootstrap_complete.rc == 0
+  when: install_type is defined and install_type == "upi"
 
 - ansible.builtin.debug:
-    var: bootstrap_complete
+    var: agent_bootstrap_complete
+  when: install_type is not defined or install_type == "agent"
 
-- name: Wite bootstrap logs to file
+- ansible.builtin.debug:
+    var: upi_bootstrap_complete
+  when: install_type is defined and install_type == "upi"
+
+- name: Wite Agent bootstrap logs to file
   ansible.builtin.copy:
-    content: "{{ bootstrap_complete.stdout }}"
+    content: "{{ agent_bootstrap_complete.stdout }}"
     dest: "{{ staging_dir }}/bootstrap.log"
+  when: install_type is not defined or install_type == "agent"
 
+- name: Wite UPI bootstrap logs to file
+  ansible.builtin.copy:
+    content: "{{ upi_bootstrap_complete.stdout }}"
+    dest: "{{ staging_dir }}/bootstrap.log"
+  when: install_type is defined and install_type == "upi"
+  
 - ansible.builtin.fail:
     msg: "Bootstrap failed"
-  when: bootstrap_complete.rc != 0
+  # default(0) neutralizes whichever of the two vars was skipped for this install_type - a
+  # skipped task's registered result has no `rc` key, and comparing that Undefined value with
+  # `!= 0` in Jinja always evaluates True, which would otherwise fail this task unconditionally.
+  when: agent_bootstrap_complete.rc | default(0) != 0 or upi_bootstrap_complete.rc | default(0) != 0
 
-- name: Wait for install completion
+- name: Approve certs for UPI install type
+  vars: 
+    # groups['worker'] | length renders as a native int (this var is a single Jinja expression),
+    # while result.stdout from the shell module is always a string - cast both sides the same
+    # way below or this comparison silently never succeeds.
+    worker_host_count: "{{ groups['worker'] | length }}" 
+  shell: |
+    {{ oc_bin }} get csr -o name | xargs {{ oc_bin }} adm certificate approve &> /dev/null
+    {{ oc_bin }} get nodes | grep worker | wc -l
+  register: result
+  until: result.stdout | int == worker_host_count | int
+  retries: 100
+  delay: 15
+  when: install_type is defined and install_type == "upi"
+
+- name: Wait for Agent install completion
   ansible.builtin.shell: |
     {{ staging_dir }}/openshift-install agent wait-for install-complete --dir {{ ocp_install_dir }}
-  register: install_complete
+  register: agent_install_complete
   retries: 30
   delay: 60
-  until: install_complete.rc == 0
+  until: agent_install_complete.rc == 0
+  when: install_type is not defined or install_type == "agent"
 
-- name: Wite install logs to file
+- name: Wait for UPI install completion
+  ansible.builtin.shell: |
+    {{ openshift_install_bin }} wait-for install-complete --dir {{ ocp_install_dir }}
+  register: upi_install_complete
+  retries: 30
+  delay: 60
+  until: upi_install_complete.rc == 0
+  when: install_type is defined and install_type == "upi"
+
+- name: Wite Agent install logs to file
   ansible.builtin.copy:
-    content: "{{ install_complete.stdout }}"
+    content: "{{ agent_install_complete.stdout }}"
     dest: "{{ staging_dir }}/install.log"
+  when: install_type is not defined or install_type == "agent"
+
+- name: Wite UPI install logs to file
+  ansible.builtin.copy:
+    content: "{{ upi_install_complete.stdout }}"
+    dest: "{{ staging_dir }}/install.log"
+  when: install_type is defined and install_type == "upi"
 
 - ansible.builtin.fail:
     msg: "Install failed"
-  when: install_complete.rc != 0
+  # see comment on the "Bootstrap failed" check above - same Undefined-vs-0 pitfall applies here.
+  when: agent_install_complete.rc | default(0) != 0 or upi_install_complete.rc | default(0) != 0
+
+# One last csr approve attempt in case there are any CSRs left over
+- name: Approve certs part 2 for UPI install type
+  shell: |
+    {{ oc_bin }} get csr -o name | xargs {{ oc_bin }} adm certificate approve &> /dev/null
+  when: install_type is defined and install_type == "upi"
 
 - name: Get kubeadmin password
   shell:

@@ -1,5 +1,31 @@
 ---
-- name: "Apply vm yaml for host {{ inventory_hostname }}"
+- name: "Apply Agent Install VM YAML for host {{ inventory_hostname }}"
   k8s:
     state: present
     definition: "{{ lookup('template', 'rhcos-vm.yaml') }}"
+  when: install_type is not defined or install_type == "agent"
+
+- name: Get RHCOS image for current version of OCP
+  shell:
+    cmd: "{{ openshift_install_bin }} coreos print-stream-json | jq .architectures.x86_64.images.kubevirt"
+  register: os_stream_json
+  run_once: true
+  when: install_type is defined and install_type == "upi"
+
+- name: Set Core OS image for current OCP release
+  # os_stream_json.stdout is already narrowed to .architectures.x86_64.images.kubevirt
+  # by the jq filter in the previous task, so query relative to that, not the full path.
+  set_fact:
+    coreos_image_url: '{{ (os_stream_json.stdout | from_json)["digest-ref"] }}'
+    coreos_version: '{{ (os_stream_json.stdout | from_json)["release"] }}'
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ ansible_play_hosts_all }}"
+  run_once: true
+  when: install_type is defined and install_type == "upi"
+
+- name: "Apply UPI Install VM YAML for host {{ inventory_hostname }}"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'rhcos-vm-upi.yaml') }}"
+  when: install_type is defined and install_type == "upi"

@@ -3,6 +3,23 @@ webserver:
     webserver.arvhomelab.com:
       ansible_python_interpreter: "/usr/bin/python3"
 
+# remove bootstrap from inventory if install_type is agent
+bootstrap:
+  hosts:
+    bootstrap.tenant1.k8s.arvhomelab.com:
+      nic1:
+        name: enp1s0
+        mac_address: '02:00:00:43:7a:2c'
+        vlan: '8'
+  vars:
+    type: 'ocp-v'
+    node_role: 'bootstrap'
+    cpu: '4'
+    memory: '28Gi'
+    rhcos_os_disk_size: '100Gi'
+    rhcos_etcd_disk_size: '5Gi'
+    nic1_name: 'enp1s0'
+
 control:
   hosts:
     control1.tenant1.k8s.arvhomelab.com:
@@ -57,3 +74,4 @@ ocp_nodes:
   children:
     control:
     worker:
+    bootstrap:

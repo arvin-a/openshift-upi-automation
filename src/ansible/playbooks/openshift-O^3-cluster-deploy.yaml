@@ -74,9 +74,25 @@
 - name: Create OpenShift Agent ISO and stage it on webserver
   hosts: localhost
   roles:
-    - deploy/openshift-agent-iso-create-and-stage
+    - role: deploy/openshift-agent-iso-create-and-stage
+      when: install_type is not defined or install_type == "agent"
   tags:
     - openshift-agent-iso-create-and-stage
+
+- name: Create OpenShift ignition config for UPI install
+  hosts: localhost
+  roles:
+    - role: deploy/openshift-ignition-config-create-and-stage
+      when: install_type is defined and install_type == "upi"
+  tags:
+    - openshift-ignition-config-create-and-stage
+
+- name: Save cluster credentials
+  hosts: localhost
+  roles:
+    - role: deploy/openshift-save-cluster-credentials
+  tags:
+    - openshift-save-cluster-credentials
 
 - name: Setup Project on Infra OCP cluster for tenant Ozone (aka O^3) cluster
   hosts: localhost
@@ -89,7 +105,7 @@
     - ozone-setup-project-on-infra-ocp
 
 - name: Deploy VMs for tenant O^3 cluster nodes
-  hosts: control:worker
+  hosts: ocp_nodes
   connection: local
   gather_facts: false
   environment:

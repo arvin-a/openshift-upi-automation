@@ -5,9 +5,10 @@ ocp_cluster_fqdn: "{{ ocp_cluster_name }}.{{ base_domain }}"
 ocp_cluster_namespace: "{{ ocp_cluster_fqdn.split('.') | join('-')}}" # namespace on the infra cluster
 cluster_role: tenant   # values can be infra or tenant
 agent_iso_url: "http://{{ groups.webserver[0] }}/{{ ocp_cluster_fqdn }}/agent.x86_64.iso"
+install_type: "upi" # upi or agent
 
 ## OCP Vars
-ocp_version: "4.21"
+ocp_version: "4.22"
 ocp_bin_channel: "stable"
 ocp_network_type: "OVNKubernetes"  # Calico,Cilium,OVNKubernetes"
 
@@ -15,6 +16,11 @@ ocp_network_type: "OVNKubernetes"  # Calico,Cilium,OVNKubernetes"
 infra_cluster_fqdn: "infra1.k8s.arvhomelab.com"
 infra_cluster_kubeconfig: "{{ staging_dir }}/{{ infra_cluster_fqdn }}-kubeconfig"
 infra_cluster_bridge_name: "bridge1"
+# Must match (or be <=) the actual MTU of bridge1/its underlying NIC on the infra cluster nodes
+# (see openshift-create-bridge role). OVN-Kubernetes's overlay MTU (cluster-network-03-config.yaml)
+# requires this to be >= ~8958 for its configured mtu: 8900, since the cnv-bridge CNI plugin does not
+# inherit the host bridge's MTU automatically - it must be set explicitly on the NetworkAttachmentDefinition.
+infra_cluster_bridge_mtu: 9000
 machine_network: 192.168.8.0/24
 infra_cluster_storage_volume_mode: "Block" # If your storage class supports block, its recommended you use that
 infra_cluster_storage_access_mode: "ReadWriteOnce" # If your storage class supports it, ReadWriteMany is recommended

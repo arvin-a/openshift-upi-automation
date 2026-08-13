@@ -1,0 +1,31 @@
+---
+- name: Generate OCP ignition config
+  environment:
+    PATH: "{{ staging_dir }}:{{ lookup('env', 'PATH') }}"
+  shell:
+    # chdir: "{{ staging_dir }}"
+    cmd: "{{ openshift_install_bin }} create ignition-configs --dir {{ ocp_install_dir }}"
+
+- name: Copy ignition files to webserver
+  delegate_to: "{{ groups.get('webserver', ['localhost']) | first }}"
+  become: True
+  copy:
+    src: "{{ ocp_install_dir }}/{{ item }}"
+    dest: "{{ web_server.files_root_path }}/{{ item }}"
+    mode: "0666"
+  loop:
+    - "master.ign"
+    - "worker.ign"
+    - "bootstrap.ign"
+
+- name: Get ignition spec version from generated bootstrap.ign
+  shell:
+    cmd: "jq -r '.ignition.version' {{ ocp_install_dir }}/bootstrap.ign"
+  register: ignition_version_result
+- set_fact:
+    ignition_spec_version: "{{ ignition_version_result.stdout }}"
+
+- name: Copy bootstrap ignition pointer file to ocp install folder
+  template: 
+    src: bootstrap-pointer.ign
+    dest: "{{ bootstrap_ign }}"
