@@ -1,4 +1,16 @@
 ---
+- name: Skip downloading OCP binaries (using pre-installed paths from common.yaml)
+  ansible.builtin.debug:
+    msg:
+      - "oc={{ oc_bin }}"
+      - "openshift-install={{ openshift_install_bin }}"
+      - "butane={{ butane_bin }}"
+  when: ocp_skip_download_artifacts | default(false) | bool
+
+- name: End play for artifact download when skipped
+  ansible.builtin.meta: end_host
+  when: ocp_skip_download_artifacts | default(false) | bool
+
 - name: "Get the current {{ ocp_bin_channel }} version of OCP {{ ocp_version }}"
   shell: |
     curl -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ ocp_bin_channel }}-{{ ocp_version }}/release.txt | grep -i "Name: " | awk '{print $2}'

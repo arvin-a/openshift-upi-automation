@@ -1,5 +1,6 @@
 ---
 - name: Create or update cluster kubeconfig in Bitwarden
+  when: openshift_credentials_store_enabled | default(true) | bool
   include_role:
     name: common/bitwarden-write-secret
   vars:

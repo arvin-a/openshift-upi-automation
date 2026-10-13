@@ -1,7 +1,22 @@
-### DO NOT ALTER THE VALUES IN THIS SECTION ################################################
-# Base directory for staging. This is where all the OCP binaries will be downloaded to.
-# Scoped per-user (via the controller's $USER) so concurrent runs by different users don't
-# collide on ownership/permissions of a shared /var/tmp/ansible directory.
+---
+# Client / static configuration (no Bitwarden, no Ansible Vault for secrets).
+# Load configs: secrets are read from this file when config_secrets_source is static.
+#
+# Cluster main.yaml should list only:
+#   - "{{ config_dir }}/../common.yaml"
+#   - "{{ config_dir }}/vars.yaml"
+# Remove credentials.yaml and drop --vault-password-file from ansible-playbook.
+#
+# Test Load configs only:
+#   cd src/ansible && ansible-playbook playbooks/openshift-kvm-bm-cluster-deploy.yaml \
+#     -i ../ocp-cluster-vars/vars/<cluster>/inventory.yaml -e cluster_name=<cluster> \
+#     --tags always --skip-tags pre-install-deco,staging-dir-setup,openshift-download-artifacts
+
+config_secrets_source: static
+
+###############################################################################
+# Staging paths (install working directory on the Ansible controller)
+###############################################################################
 staging_base_dir: "/var/tmp/ansible-{{ lookup('env', 'USER') }}"
 staging_temp_dir: "{{ staging_base_dir }}/tmp"
 binary_archive_base_dir: "{{ staging_base_dir }}/bin"
@@ -11,48 +26,100 @@ staging_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}"
 staging_backup_dir: "{{ staging_base_dir }}/{{ ocp_cluster_name }}/backup"
 ocp_install_dir: "{{ staging_dir }}/ocp-install"
 cluster_kubeconfig: "{{ staging_dir }}/{{ ocp_cluster_name }}-kubeconfig"
+rhcos_ssh_private_key_file: "{{ staging_dir }}/rhcos-ssh-pk"
 
-# OCP installer and client download URls.
+###############################################################################
+# OpenShift client / installer / butane (pre-installed on controller; no download)
+###############################################################################
+ocp_skip_download_artifacts: true
+oc_bin: "/usr/local/bin/oc"
+openshift_install_bin: "/usr/local/bin/openshift-install"
+butane_bin: "/usr/local/bin/butane"
+
+# Leave in place for roles that still reference URLs; unused when ocp_skip_download_artifacts is true.
 ocp_bin_base_url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp"
 ocp_bin_release_url: "{{ ocp_bin_base_url }}/{{ ocp_bin_channel }}-{{ ocp_version }}"
 ocp_bin_client_archive_name: "openshift-client-linux.tar.gz"
 ocp_bin_installer_archive_name: "openshift-install-linux.tar.gz"
 ocp_bin_client_url: "{{ ocp_bin_release_url }}/{{ ocp_bin_client_archive_name }}"
 ocp_bin_installer_url: "{{ ocp_bin_release_url }}/{{ ocp_bin_installer_archive_name }}"
-oc_bin: "{{ staging_dir }}/oc"
-openshift_install_bin: "{{ staging_dir }}/openshift-install"
-butane_bin: "{{ staging_dir }}/butane"
-bitwarden_secrets_cli: "/usr/bin/bws"
-bitwarden_homelab_project_name: "homelab"
-bitwarden_k8s_clusters_project_name: "k8s_clusters"
 jq_bin: "/usr/bin/jq"
 
-# Agent installer ISO vars
-############################################################################################
-## Hypervisor variables
+###############################################################################
+# Agent installer ISO
+###############################################################################
 agent_iso_file_name: "agent.x86_64.iso"
 agent_iso_file_path: "{{ staging_dir }}/{{ agent_iso_file_name }}"
-
-# kubeconfig folder, location of your kubeconfig files for your infra and tenant cluster
 kubeconfig_src_path: "{{ ocp_install_dir }}/auth/kubeconfig"
 kubeadmin_password_src_path: "{{ ocp_install_dir }}/auth/kubeadmin-password"
+bootstrap_ign: "{{ ocp_install_dir }}/bootstrap-pointer.ign"
 
-
-# Web Server
+###############################################################################
+# HTTP server that hosts the Agent ISO (BM iDRAC virtual media URL)
+# Set web_server_host to the same FQDN or IP as in inventory group webserver.
+###############################################################################
+web_server_host: "CHANGEME-webserver.example.com"
 web_server:
   files_root_path: "/var/www/html/{{ ocp_cluster_fqdn }}"
-  http_base_url: "http://{{ lookup('community.general.dig', groups.webserver[0]) }}/{{ ocp_cluster_fqdn }}"
-  python_interpreter: "/usr/bin/python"
+  http_base_url: "http://{{ web_server_host }}/{{ ocp_cluster_fqdn }}"
+  python_interpreter: "/usr/bin/python3"
 
 web_server_files_bin_path: "{{ web_server.files_root_path }}/bin/{{ ocp_version }}"
 web_server_files_cluster_path: "{{ web_server.files_root_path }}/{{ ocp_cluster_name }}"
-web_server_http_rhcos_url: "{{ web_server.http_base_url }}/bin/{{ ocp_version }}/{{ kubevirt_rhcos_bin_file_name }}"
-agent_iso_http_url: 
+web_server_http_rhcos_url: "{{ web_server.http_base_url }}/bin/{{ ocp_version }}/{{ kubevirt_rhcos_bin_file_name | default('rhcos-live.x86_64.iso') }}"
+agent_iso_http_url:
 
-# UPI install type specific variables
-bootstrap_ign: "{{ ocp_install_dir }}/bootstrap-pointer.ign"
+###############################################################################
+# Cluster secrets (were Bitwarden / vault; set every CHANGEME)
+###############################################################################
+idrac_admin_user: "CHANGEME"
+idrac_admin_password: "CHANGEME"
 
-# Other misc variables
+rhcos_ssh_pub_key: "ssh-ed25519 CHANGEME comment"
+
+rhcos_ssh_private_key: |
+  -----BEGIN OPENSSH PRIVATE KEY-----
+  CHANGEME
+  -----END OPENSSH PRIVATE KEY-----
+
+# PEM text for extra CAs (indent under install-config additionalTrustBundle). Use "" if none.
+additional_trust_bundle: ""
+
+# Red Hat pull secret: JSON string exactly as from console.redhat.com (not base64).
+pull_secret: '{"auths":{"cloud.openshift.com":{"auth":"CHANGEME","email":"you@example.com"},"quay.io":{"auth":"CHANGEME","email":"you@example.com"},"registry.connect.redhat.com":{"auth":"CHANGEME","email":"you@example.com"},"registry.redhat.io":{"auth":"CHANGEME","email":"you@example.com"}}}'
+
+# Post-install DNS-01 (cert-manager). Use placeholder if skipping post-install cert tags.
+cloudflare_api_token: "CHANGEME"
+cloudflare_zone_name: "example.com"
+letsencrypt_email: "admin@example.com"
+
+# Infra cluster / MetalLB BGP (cluster-config play). Dummy values OK if BGP post-install is skipped.
+network_bgp_peer_asn: "65000"
+network_bgp_peer_password: "CHANGEME"
+network_bgp_peer_ip_address: "CHANGEME"
+
+###############################################################################
+# cert-manager operator namespaces
+###############################################################################
+cert_manager_operator_namespace: cert-manager-operator
+cert_manager_operand_namespace: cert-manager
+cert_manager_webhook_rollout_timeout: 10m
+
+###############################################################################
+# Optional disconnected registry mirrors (uncomment and set client mirror host)
+###############################################################################
+# image_content_sources:
+#   - source: quay.io
+#     mirrors:
+#       - registry.example.com/mirror/quay.io
+#   - source: registry.redhat.io
+#     mirrors:
+#       - registry.example.com/mirror/registry.redhat.io
+
+# Legacy keys (unused when config_secrets_source is static; kept for reference)
+bitwarden_secrets_cli: "/usr/bin/bws"
+bitwarden_homelab_project_name: homelab
+bitwarden_k8s_clusters_project_name: k8s_clusters
 cluster_common_vault_secret_path: ahl-common
 idrac_admin_password_vault_key: idrac_admin_password
 idrac_admin_user_vault_key: idrac_admin_user
@@ -64,22 +131,6 @@ network_bgp_peer_asn_vault_key: network_bgp_peer_asn
 network_bgp_peer_password_vault_key: network_bgp_peer_password
 network_bgp_peer_ip_address_vault_key: network_bgp_peer_ip_address
 cloudflare_api_token_vault_key: cloudflare_api_token
-cloudflare_zone_name: "arvhomelab.com"
-letsencrypt_email: "arvin.amirian@pronton.me"
-cert_manager_operator_namespace: cert-manager-operator
-# Operand workloads (webhook, controller); used after operator CSV is ready
-cert_manager_operand_namespace: cert-manager
-cert_manager_webhook_rollout_timeout: 10m
-rhcos_ssh_private_key_file: "{{ staging_dir }}/rhcos-ssh-pk"
 
-
-# image_content_sources:
-#   - source: quay.io
-#     mirrors:
-#       - zot.arvhomelab.com/quay.io
-#   - source: registry.redhat.io
-#     mirrors:
-#       - zot.arvhomelab.com/registry.redhat.io
-#   - source: registry-1.docker.io
-#     mirrors:
-#       - zot.arvhomelab.com/registry-1.docker.io
+# Skip writing kubeconfig back to Bitwarden after install
+openshift_credentials_store_enabled: false

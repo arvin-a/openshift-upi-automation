@@ -2,10 +2,11 @@
 - name: Get cluster secrets from Bitwarden
   include_role:
     name: common/bitwarden-read-secret
-  vars: 
+  vars:
     project_name: "{{ bitwarden_homelab_project_name }}"
+  when: config_secrets_source | default('bitwarden') != 'static'
 
-- name: Set cluster secret vars
+- name: Set cluster secret vars from Bitwarden
   set_fact:
     idrac_admin_user: "{{ (bitwarden_payload | selectattr('key', 'equalto', idrac_admin_user_vault_key) | first).value }}"
     idrac_admin_password: "{{ (bitwarden_payload | selectattr('key', 'equalto', idrac_admin_password_vault_key) | first).value }}"
@@ -14,4 +15,10 @@
     additional_trust_bundle: "{{ (bitwarden_payload | selectattr('key', 'equalto', additional_trust_bundle_vault_key) | first).value }}"
     pull_secret: "{{ (bitwarden_payload | selectattr('key', 'equalto', pull_secret_vault_key) | first).value | b64decode | string }}"
     cloudflare_api_token: "{{ (bitwarden_payload | selectattr('key', 'equalto', cloudflare_api_token_vault_key) | first).value }}"
+  when: config_secrets_source | default('bitwarden') != 'static'
+
+- name: Confirm static cluster secrets are loaded from vars files
+  ansible.builtin.debug:
+    msg: "Using static secrets from common.yaml (config_secrets_source=static)"
+  when: config_secrets_source | default('bitwarden') == 'static'
 ...

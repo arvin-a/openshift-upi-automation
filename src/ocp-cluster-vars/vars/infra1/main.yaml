@@ -2,4 +2,4 @@
 configs:
 - "{{ config_dir }}/../common.yaml"
 - "{{ config_dir }}/vars.yaml"
-- "{{ config_dir }}/../credentials.yaml"
+# - "{{ config_dir }}/../credentials.yaml"  # only when config_secrets_source is bitwarden
